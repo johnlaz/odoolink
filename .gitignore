@@ -1,0 +1,11 @@
+# Credentials backup — never commit this
+odoo-email-link-credentials.json
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+*.swp
+*.swo

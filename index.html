@@ -1,0 +1,2144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="OEL">
+<meta name="theme-color" content="#c8f04e" id="meta-theme-color">
+<title>Odoo Email Link</title>
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="./icons/icon-192.png">
+<link rel="icon" type="image/svg+xml" href="./icons/icon.svg">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root, [data-theme="lime"] {
+    --bg: #0f0f0f;
+    --surface: #181818;
+    --surface2: #222222;
+    --border: #2e2e2e;
+    --accent: #c8f04e;
+    --accent-dim: rgba(200,240,78,0.12);
+    --text: #f0f0f0;
+    --muted: #888;
+    --danger: #ff6b6b;
+    --success: #4ef0a0;
+    --warning: #f0c84e;
+    --logo-ink: #0f0f0f;
+  }
+  [data-theme="cyan"] {
+    --bg: #080e14;
+    --surface: #0f1923;
+    --surface2: #162030;
+    --border: #1e3044;
+    --accent: #00d8ff;
+    --accent-dim: rgba(0,216,255,0.10);
+    --text: #e8f4f8;
+    --muted: #6a8fa8;
+    --danger: #ff6b6b;
+    --success: #4ef0a0;
+    --warning: #f0c84e;
+    --logo-ink: #080e14;
+  }
+  [data-theme="ember"] {
+    --bg: #0e0a07;
+    --surface: #1a1008;
+    --surface2: #241808;
+    --border: #3a2210;
+    --accent: #ff7c2a;
+    --accent-dim: rgba(255,124,42,0.12);
+    --text: #f5ece0;
+    --muted: #8a7060;
+    --danger: #ff6b6b;
+    --success: #4ef0a0;
+    --warning: #f0c84e;
+    --logo-ink: #0e0a07;
+  }
+  [data-theme="light"] {
+    --bg: #f7f6f2;
+    --surface: #ffffff;
+    --surface2: #f0ede8;
+    --border: #ddd9d0;
+    --accent: #6c47ff;
+    --accent-dim: rgba(108,71,255,0.08);
+    --text: #1a1a1a;
+    --muted: #888;
+    --danger: #d94040;
+    --success: #1e9e58;
+    --warning: #b87800;
+    --logo-ink: #ffffff;
+  }
+  [data-theme="violet"] {
+    --bg: #0d0910;
+    --surface: #160f1e;
+    --surface2: #1e1628;
+    --border: #2e2040;
+    --accent: #c77dff;
+    --accent-dim: rgba(199,125,255,0.12);
+    --text: #f0eaf8;
+    --muted: #7a6a90;
+    --danger: #ff6b6b;
+    --success: #4ef0a0;
+    --warning: #f0c84e;
+    --logo-ink: #0d0910;
+  }
+  .theme-switcher {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-left: auto;
+    flex-shrink: 0;
+    padding-top: 6px;
+  }
+  .theme-dot {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: transform 0.15s, border-color 0.15s;
+    flex-shrink: 0;
+  }
+  .theme-dot:hover { transform: scale(1.2); }
+  .theme-dot.active { border-color: var(--text); }
+  .theme-dot[data-t="lime"]   { background: #c8f04e; }
+  .theme-dot[data-t="cyan"]   { background: #00d8ff; }
+  .theme-dot[data-t="ember"]  { background: #ff7c2a; }
+  .theme-dot[data-t="light"]  { background: #6c47ff; }
+  .theme-dot[data-t="violet"] { background: #c77dff; }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px 80px;
+  }
+
+  /* Noise texture overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 680px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Header */
+  .header {
+    margin-bottom: 48px;
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+  }
+
+  .logo-mark {
+    width: 48px;
+    height: 48px;
+    background: var(--accent);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 4px;
+  }
+
+  .logo-mark svg {
+    width: 26px;
+    height: 26px;
+  }
+
+  .header-text h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2rem;
+    font-weight: 400;
+    line-height: 1.1;
+    color: var(--text);
+    letter-spacing: -0.02em;
+  }
+
+  .header-text p {
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin-top: 6px;
+    font-weight: 300;
+  }
+
+  /* Step indicator */
+  .steps {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin-bottom: 36px;
+  }
+
+  .step-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+  }
+
+  .step-dot {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-family: 'DM Mono', monospace;
+    color: var(--muted);
+    background: var(--surface);
+    flex-shrink: 0;
+    transition: all 0.3s ease;
+  }
+
+  .step-dot.active {
+    border-color: var(--accent);
+    color: var(--bg);
+    background: var(--accent);
+    font-weight: 500;
+  }
+
+  .step-dot.done {
+    border-color: var(--success);
+    background: var(--success);
+    color: var(--bg);
+  }
+
+  .step-label {
+    font-size: 0.72rem;
+    color: var(--muted);
+    font-weight: 400;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    transition: color 0.3s;
+  }
+
+  .step-label.active { color: var(--text); }
+
+  .step-line {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+    margin: 0 8px;
+    max-width: 40px;
+  }
+
+  /* Card */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 36px;
+    margin-bottom: 16px;
+    animation: fadeUp 0.35s ease both;
+    position: relative;
+    z-index: 2;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .card-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.35rem;
+    font-weight: 400;
+    margin-bottom: 6px;
+    letter-spacing: -0.01em;
+  }
+
+  .card-subtitle {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-bottom: 28px;
+    font-weight: 300;
+    line-height: 1.5;
+  }
+
+  /* Form fields */
+  .field {
+    margin-bottom: 18px;
+  }
+
+  .field label {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 8px;
+  }
+
+  .field input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 11px 14px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.85rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .field input:focus { border-color: var(--accent); }
+  .field input::placeholder { color: #444; }
+
+  .field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+
+  .field-hint {
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-top: 5px;
+    font-weight: 300;
+  }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+    text-decoration: none;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: var(--bg);
+  }
+
+  .btn-primary:hover { background: #d8ff5e; transform: translateY(-1px); }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+
+  .btn-ghost:hover { border-color: #555; color: var(--text); }
+
+  .btn-danger {
+    background: transparent;
+    color: var(--danger);
+    border: 1px solid rgba(255,107,107,0.3);
+  }
+
+  .btn-danger:hover { background: rgba(255,107,107,0.1); }
+
+  .btn-success {
+    background: var(--success);
+    color: var(--bg);
+  }
+
+  .btn-success:hover { background: #6ffbb5; }
+
+  .btn-row {
+    display: flex;
+    gap: 10px;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 28px;
+  }
+
+  /* Status / log */
+  .status-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+    margin-bottom: 18px;
+  }
+
+  .status-line {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 0.82rem;
+    font-family: 'DM Mono', monospace;
+    line-height: 1.5;
+    margin-bottom: 6px;
+    color: var(--muted);
+  }
+
+  .status-line:last-child { margin-bottom: 0; }
+
+  .status-line.ok { color: var(--success); }
+  .status-line.err { color: var(--danger); }
+  .status-line.info { color: var(--text); }
+  .status-line.warn { color: var(--warning); }
+
+  .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; margin-top: 6px; }
+  .dot.ok { background: var(--success); }
+  .dot.err { background: var(--danger); }
+  .dot.info { background: var(--accent); }
+  .dot.warn { background: var(--warning); }
+  .dot.spin {
+    background: var(--accent);
+    animation: pulse 1s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.2; }
+  }
+
+  /* Activity cards */
+  .activity-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 14px;
+    transition: border-color 0.2s;
+  }
+
+  .activity-card:hover { border-color: #444; }
+
+  .activity-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+  }
+
+  .activity-name {
+    font-weight: 500;
+    font-size: 0.95rem;
+  }
+
+  .activity-badge {
+    font-size: 0.7rem;
+    font-family: 'DM Mono', monospace;
+    padding: 3px 8px;
+    border-radius: 20px;
+    background: var(--accent-dim);
+    color: var(--accent);
+    border: 1px solid rgba(200,240,78,0.2);
+    flex-shrink: 0;
+  }
+
+  .activity-meta {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .meta-item {
+    font-size: 0.78rem;
+    color: var(--muted);
+    font-weight: 300;
+  }
+
+  .meta-item span {
+    color: var(--text);
+    font-weight: 400;
+  }
+
+  /* Email preview */
+  .email-preview {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 14px;
+  }
+
+  .email-preview-header {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .email-preview-header .record-name {
+    font-weight: 500;
+    font-size: 0.9rem;
+  }
+
+  .email-preview-header .contact-email {
+    font-size: 0.78rem;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+  }
+
+  .email-subject {
+    padding: 12px 18px 8px;
+    font-weight: 500;
+    font-size: 0.88rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--accent);
+    font-family: 'DM Mono', monospace;
+  }
+
+  .email-body-preview {
+    padding: 14px 18px;
+    font-size: 0.82rem;
+    color: var(--muted);
+    line-height: 1.6;
+    max-height: 120px;
+    overflow: hidden;
+    position: relative;
+    white-space: pre-wrap;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .email-body-preview::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 40px;
+    background: linear-gradient(transparent, var(--surface2));
+  }
+
+  .email-actions {
+    padding: 12px 18px;
+    display: flex;
+    gap: 10px;
+    border-top: 1px solid var(--border);
+    align-items: center;
+  }
+
+  .skipped-badge {
+    font-size: 0.75rem;
+    color: var(--muted);
+    font-style: italic;
+  }
+
+  /* Progress bar */
+  .progress-bar-wrap {
+    background: var(--surface2);
+    border-radius: 4px;
+    height: 4px;
+    margin-bottom: 24px;
+    overflow: hidden;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 4px;
+    transition: width 0.4s ease;
+  }
+
+  /* Summary numbers */
+  .summary-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .summary-stat {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+  }
+
+  .summary-stat .num {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2rem;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .summary-stat .num.green { color: var(--success); }
+  .summary-stat .num.yellow { color: var(--warning); }
+  .summary-stat .num.red { color: var(--danger); }
+
+  .summary-stat .label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+  }
+
+  /* Alert */
+  .alert {
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 0.83rem;
+    margin-bottom: 18px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    line-height: 1.5;
+  }
+
+  .alert.warn {
+    background: rgba(240,200,78,0.08);
+    border: 1px solid rgba(240,200,78,0.25);
+    color: var(--warning);
+  }
+
+  .alert.info {
+    background: var(--accent-dim);
+    border: 1px solid rgba(200,240,78,0.2);
+    color: var(--accent);
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 24px 0;
+  }
+
+  .hidden { display: none !important; }
+
+  /* Saved credentials notice */
+  .saved-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
+    color: var(--success);
+    background: rgba(78,240,160,0.1);
+    border: 1px solid rgba(78,240,160,0.2);
+    border-radius: 20px;
+    padding: 3px 10px;
+    margin-bottom: 16px;
+  }
+
+  /* Spinner */
+  .spin-icon {
+    display: inline-block;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Email editor modal */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: fadeIn 0.2s ease;
+  }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    width: 100%;
+    max-width: 660px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    animation: slideUp 0.25s ease;
+  }
+  @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+  .modal-header {
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-shrink: 0;
+  }
+
+  .modal-header-text .record { font-weight: 500; font-size: 0.95rem; }
+  .modal-header-text .contact { font-size: 0.78rem; color: var(--muted); font-family: 'DM Mono', monospace; margin-top: 2px; }
+
+  .modal-close {
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    padding: 4px;
+    font-size: 1.2rem;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+  .modal-close:hover { color: var(--text); }
+
+  .modal-body {
+    padding: 20px 24px;
+    overflow-y: auto;
+    flex: 1;
+  }
+
+  .modal-field { margin-bottom: 16px; }
+  .modal-field label {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 6px;
+  }
+
+  .modal-field input, .modal-field textarea {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.88rem;
+    outline: none;
+    transition: border-color 0.2s;
+    resize: vertical;
+  }
+  .modal-field input:focus, .modal-field textarea:focus { border-color: var(--accent); }
+  .modal-field textarea { min-height: 260px; line-height: 1.6; }
+
+  .modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 10px;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .modal-logging {
+    font-size: 0.78rem;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="logo-mark">
+      <svg viewBox="0 0 26 26" fill="none">
+        <path d="M3 6h14M3 11h20M3 16h14M3 21h20" stroke="var(--logo-ink,#0f0f0f)" stroke-width="2.2" stroke-linecap="round"/>
+        <circle cx="20" cy="6" r="3" fill="var(--logo-ink,#0f0f0f)"/>
+      </svg>
+    </div>
+    <div class="header-text">
+      <h1>Odoo Email Link</h1>
+      <p>AI-powered CRM follow-up emails — works with any email client</p>
+    </div>
+    <div class="theme-switcher" title="Change theme">
+      <div class="theme-dot active" data-t="lime"   onclick="setTheme('lime')"   title="Lime (default)"></div>
+      <div class="theme-dot"        data-t="cyan"   onclick="setTheme('cyan')"   title="Cyan"></div>
+      <div class="theme-dot"        data-t="ember"  onclick="setTheme('ember')"  title="Ember"></div>
+      <div class="theme-dot"        data-t="light"  onclick="setTheme('light')"  title="Light"></div>
+      <div class="theme-dot"        data-t="violet" onclick="setTheme('violet')" title="Violet"></div>
+    </div>
+  </div>
+
+  <!-- Step indicators -->
+  <div class="steps" id="steps">
+    <div class="step-item">
+      <div class="step-dot active" id="dot-1">1</div>
+      <div class="step-label active" id="label-1">Credentials</div>
+    </div>
+    <div class="step-line"></div>
+    <div class="step-item">
+      <div class="step-dot" id="dot-2">2</div>
+      <div class="step-label" id="label-2">Connect</div>
+    </div>
+    <div class="step-line"></div>
+    <div class="step-item">
+      <div class="step-dot" id="dot-3">3</div>
+      <div class="step-label" id="label-3">Draft</div>
+    </div>
+    <div class="step-line"></div>
+    <div class="step-item">
+      <div class="step-dot" id="dot-4">4</div>
+      <div class="step-label" id="label-4">Send</div>
+    </div>
+  </div>
+
+  <!-- STEP 1: Credentials -->
+  <div class="card" id="step-1">
+    <div class="card-title">Enter your credentials</div>
+    <div class="card-subtitle">Your credentials are saved locally in your browser and never shared.</div>
+
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:16px;flex-wrap:wrap">
+      <div id="saved-notice" class="saved-pill hidden" style="margin-bottom:0">
+        <svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="5" r="4" fill="currentColor"/></svg>
+        Credentials loaded from last session
+      </div>
+      <div style="flex:1"></div>
+      <button class="btn btn-ghost" style="padding:6px 12px;font-size:0.78rem;gap:6px" onclick="exportCredentials()">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 1v7M3.5 5l3 3 3-3M2 10h9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Export credentials
+      </button>
+      <label class="btn btn-ghost" style="padding:6px 12px;font-size:0.78rem;gap:6px;cursor:pointer">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 9V2M3.5 5l3-3 3 3M2 10h9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Import credentials
+        <input type="file" accept=".json" onchange="importCredentials(event)" style="display:none">
+      </label>
+    </div>
+
+    <!-- Connection Mode -->
+    <div style="margin-bottom:20px">
+      <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);margin-bottom:12px;font-weight:500;">Connection Mode</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px">
+        <div id="mode-proxy-btn" onclick="setConnectionMode('proxy')" style="padding:12px 14px;border-radius:8px;border:1.5px solid var(--accent);background:var(--accent-dim);cursor:pointer;transition:all 0.2s">
+          <div style="font-size:0.82rem;font-weight:500;color:var(--accent);margin-bottom:3px;pointer-events:none">🌐 CORS Proxy</div>
+          <div style="font-size:0.72rem;color:var(--muted);line-height:1.4;pointer-events:none">No setup needed. Uses public proxies with automatic fallback. May be unreliable.</div>
+        </div>
+        <div id="mode-local-btn" onclick="setConnectionMode('local')" style="padding:12px 14px;border-radius:8px;border:1.5px solid var(--border);background:transparent;cursor:pointer;transition:all 0.2s">
+          <div style="font-size:0.82rem;font-weight:500;color:var(--muted);margin-bottom:3px;pointer-events:none">⚡ Local Server</div>
+          <div style="font-size:0.72rem;color:var(--muted);line-height:1.4;pointer-events:none">Requires Python running in background. 100% reliable, no proxy needed.</div>
+        </div>
+      </div>
+      <div id="local-server-info" class="hidden" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;font-size:0.78rem;color:var(--muted);line-height:1.6">
+        Run <code style="background:#111;padding:2px 6px;border-radius:4px;color:var(--accent);font-family:'DM Mono',monospace">python server.py</code> from the same folder as this app before connecting.
+        <a href="#" onclick="downloadServer(event)" style="color:var(--accent);margin-left:4px">Download server.py</a> if you don't have it yet.
+        Server runs on <code style="background:#111;padding:2px 6px;border-radius:4px;color:var(--accent);font-family:'DM Mono',monospace">localhost:7842</code>.
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Odoo -->
+    <div style="margin-bottom:20px">
+      <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);margin-bottom:12px;font-weight:500;">Odoo</div>
+      <div class="field-row">
+        <div class="field">
+          <label>Odoo URL</label>
+          <input type="url" id="odoo-url" placeholder="https://yourcompany.odoo.com">
+        </div>
+        <div class="field">
+          <label>Database</label>
+          <input type="text" id="odoo-db" placeholder="yourcompany">
+          <div class="field-hint">Usually the subdomain of your URL</div>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Username (email)</label>
+          <input type="email" id="odoo-user" placeholder="you@company.com">
+        </div>
+        <div class="field">
+          <label>Odoo API Key</label>
+          <input type="password" id="odoo-key" placeholder="Your Odoo API key">
+          <div class="field-hint">Profile → Account Security → API Keys</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Groq AI -->
+    <div style="margin-bottom:20px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);font-weight:500;">AI — Groq</div>
+        <div style="font-size:0.72rem;color:var(--accent);background:var(--accent-dim);border:1px solid rgba(200,240,78,0.2);border-radius:20px;padding:2px 8px;">required</div>
+      </div>
+      <div class="field">
+        <label>Your Groq API Key</label>
+        <input type="password" id="gemini-key" placeholder="gsk_…">
+        <div class="field-hint">Get a free key at <a href="https://console.groq.com/keys" target="_blank" style="color:var(--accent)">console.groq.com/keys</a> — free forever, no credit card needed.</div>
+      </div>
+      <div class="field">
+        <label>Model</label>
+        <select id="gemini-model" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:11px 14px;color:var(--text);font-family:'DM Mono',monospace;font-size:0.85rem;outline:none;cursor:pointer;appearance:none;">
+          <option value="llama-3.3-70b-versatile">llama-3.3-70b-versatile — Free ✓ (recommended, best quality)</option>
+          <option value="llama-3.1-8b-instant">llama-3.1-8b-instant — Free ✓ (faster, higher limits)</option>
+          <option value="mixtral-8x7b-32768">mixtral-8x7b-32768 — Free ✓ (large context window)</option>
+        </select>
+        <div class="field-hint">All models are free. LLaMA 3.3 70B gives the best email quality.</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Settings -->
+    <div style="margin-bottom:8px">
+      <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);margin-bottom:12px;font-weight:500;">Settings</div>
+      <div class="field" style="max-width:200px">
+        <label>Follow-up Days</label>
+        <input type="number" id="followup-days" value="14" min="1" max="90">
+        <div class="field-hint">Days until next follow-up activity</div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <div></div>
+      <button class="btn btn-primary" onclick="goToStep2()">
+        Continue
+        <svg width="14" height="14" viewBox="0 0 14 14"><path d="M3 7h8M7 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- STEP 2: Connect & Fetch -->
+  <div class="card hidden" id="step-2">
+    <div class="card-title">Connecting to Odoo</div>
+    <div class="card-subtitle">Authenticating and fetching your due activities…</div>
+
+    <div class="status-box" id="connect-log"></div>
+
+    <div id="step2-actions" class="btn-row hidden">
+      <button class="btn btn-ghost" onclick="goToStep1()">← Back</button>
+      <button class="btn btn-primary" id="btn-proceed-draft" onclick="goToStep3()">
+        Draft emails
+        <svg width="14" height="14" viewBox="0 0 14 14"><path d="M3 7h8M7 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- STEP 3: Draft -->
+  <div class="card hidden" id="step-3">
+    <div class="card-title">Drafting emails with Claude</div>
+    <div class="card-subtitle" id="draft-subtitle">Processing your activities…</div>
+
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="draft-progress" style="width:0%"></div>
+    </div>
+
+    <div id="draft-log" class="status-box"></div>
+
+    <div id="step3-actions" class="btn-row hidden">
+      <button class="btn btn-ghost" onclick="goToStep2()">← Back</button>
+      <button class="btn btn-primary" onclick="goToStep4()">
+        Review & send
+        <svg width="14" height="14" viewBox="0 0 14 14"><path d="M3 7h8M7 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- STEP 4: Review & Send -->
+  <div class="card hidden" id="step-4">
+    <div class="card-title">Review & send your emails</div>
+    <div class="card-subtitle">Each button opens a pre-filled email in your default mail app. Review, adjust, and send at your discretion.</div>
+
+    <div class="alert info">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="flex-shrink:0;margin-top:1px"><circle cx="7" cy="7" r="6" stroke="currentColor" stroke-width="1.5"/><path d="M7 6v4M7 4.5v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Nothing is sent automatically. You control every email.
+    </div>
+
+    <div id="email-list"></div>
+
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="goToStep1()">Start over</button>
+      <button class="btn btn-success" onclick="openAllEmails()">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 4l5 4 5-4M2 4h10v7H2z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Send all without editing
+      </button>
+    </div>
+  </div>
+
+<!-- Email Editor Modal -->
+<div class="modal-overlay hidden" id="email-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-header-text">
+        <div class="record" id="modal-record"></div>
+        <div class="contact" id="modal-contact"></div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-field">
+        <label>To</label>
+        <input type="email" id="modal-to" readonly style="opacity:0.6;cursor:default;">
+      </div>
+      <div class="modal-field">
+        <label>Subject</label>
+        <input type="text" id="modal-subject">
+      </div>
+      <div class="modal-field">
+        <label>Body</label>
+        <textarea id="modal-body-text"></textarea>
+      </div>
+      <div class="modal-field" style="margin-bottom:0">
+        <label>Attachment (optional)</label>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <label style="display:inline-flex;align-items:center;gap:7px;padding:8px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:0.82rem;color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0;transition:border-color 0.2s" id="attach-label">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M11 6.5l-5 5a3.5 3.5 0 01-4.95-4.95l5-5a2 2 0 012.83 2.83L4 9.17a.5.5 0 01-.71-.71L8.5 3.24" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span id="attach-label-text">Choose file…</span>
+            <input type="file" id="modal-attachment" onchange="onAttachmentSelected()" style="display:none">
+          </label>
+          <button class="btn btn-ghost" id="attach-clear-btn" onclick="clearAttachment()" style="padding:6px 10px;font-size:0.78rem;display:none">✕ Remove</button>
+        </div>
+        <div style="margin-top:10px;display:flex;align-items:center;gap:8px">
+          <input type="checkbox" id="attach-log-odoo" style="accent-color:var(--accent);width:14px;height:14px;cursor:pointer">
+          <label for="attach-log-odoo" style="font-size:0.78rem;color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0;cursor:pointer">Also attach file to Odoo note</label>
+        </div>
+      </div>
+      <div class="modal-field" style="margin-bottom:0;padding-top:14px;border-top:1px solid var(--border)">
+        <label>Assign activity to another user</label>
+        <select id="modal-assign-user" onchange="onAssignUserChange()" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-family:'DM Mono',monospace;font-size:0.82rem;width:100%;outline:none;cursor:pointer">
+          <option value="">— None —</option>
+        </select>
+        <div id="assign-options" class="hidden" style="margin-top:10px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:8px">
+            <input type="checkbox" id="assign-immediate" onchange="onAssignImmediateChange()" style="accent-color:var(--accent);width:14px;height:14px;cursor:pointer">
+            <label for="assign-immediate" style="font-size:0.78rem;color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0;cursor:pointer;white-space:nowrap">Immediate follow-up</label>
+          </div>
+          <div id="assign-days-wrap" style="display:flex;align-items:center;gap:8px;font-size:0.8rem;color:var(--muted)">
+            <label style="white-space:nowrap">Follow-up in</label>
+            <input type="number" id="assign-followup-days" min="1" max="90" value="14" style="width:56px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:5px 8px;color:var(--text);font-family:'DM Mono',monospace;font-size:0.82rem;text-align:center;outline:none">
+            <label>days</label>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer" style="flex-wrap:wrap;gap:12px">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <div style="display:flex;align-items:center;gap:8px;font-size:0.8rem;color:var(--muted)">
+        <label style="white-space:nowrap">Follow-up in</label>
+        <input type="number" id="modal-followup-days" min="1" max="90" style="width:56px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:5px 8px;color:var(--text);font-family:'DM Mono',monospace;font-size:0.82rem;text-align:center;outline:none">
+        <label>days</label>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;margin-left:auto">
+        <div class="modal-logging hidden" id="modal-logging">
+          <div class="dot spin"></div> Logging to Odoo…
+        </div>
+        <button class="btn btn-primary" id="modal-send-btn" onclick="sendFromModal()">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M1.5 3l4.5 3.5L10.5 3M1.5 3h9v7h-9z" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Open in mail client & log to Odoo
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── State ────────────────────────────────────────────────
+let activities = [];
+let odooUsers = []; // cached employee list for activity assignment
+let draftedEmails = [];
+let odooConfig = {};
+let followUpDays = 14;
+
+const STORAGE_KEY = 'odoo_email_link_creds';
+
+// ─── Persistence ──────────────────────────────────────────
+function saveCredentials() {
+  const data = {
+    url: document.getElementById('odoo-url').value,
+    db: document.getElementById('odoo-db').value,
+    user: document.getElementById('odoo-user').value,
+    odooKey: document.getElementById('odoo-key').value,
+    geminiKey: document.getElementById('gemini-key').value,
+    geminiModel: document.getElementById('gemini-model').value,
+    followUpDays: document.getElementById('followup-days').value,
+  };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+function loadCredentials() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    if (data.url) document.getElementById('odoo-url').value = data.url;
+    if (data.db) document.getElementById('odoo-db').value = data.db;
+    if (data.user) document.getElementById('odoo-user').value = data.user;
+    if (data.odooKey) document.getElementById('odoo-key').value = data.odooKey;
+    if (data.geminiKey) document.getElementById('gemini-key').value = data.geminiKey;
+    if (data.geminiModel) document.getElementById('gemini-model').value = data.geminiModel;
+    if (data.followUpDays) document.getElementById('followup-days').value = data.followUpDays;
+    if (data.url || data.odooKey) {
+      document.getElementById('saved-notice').classList.remove('hidden');
+    }
+  } catch(e) {}
+}
+
+// ─── Step navigation ──────────────────────────────────────
+function setStep(n) {
+  [1,2,3,4].forEach(i => {
+    document.getElementById(`step-${i}`).classList.add('hidden');
+    const dot = document.getElementById(`dot-${i}`);
+    const label = document.getElementById(`label-${i}`);
+    dot.classList.remove('active','done');
+    label.classList.remove('active');
+    if (i < n) { dot.classList.add('done'); dot.innerHTML = '✓'; }
+    else if (i === n) { dot.classList.add('active'); dot.innerHTML = i; label.classList.add('active'); }
+    else { dot.innerHTML = i; }
+  });
+  document.getElementById(`step-${n}`).classList.remove('hidden');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function goToStep1() { setStep(1); }
+
+async function goToStep2() {
+  const url = document.getElementById('odoo-url').value.trim();
+  const db = document.getElementById('odoo-db').value.trim();
+  const user = document.getElementById('odoo-user').value.trim();
+  const key = document.getElementById('odoo-key').value.trim();
+  const geminiKey = document.getElementById('gemini-key').value.trim();
+  followUpDays = parseInt(document.getElementById('followup-days').value) || 14;
+
+  if (!url || !db || !user || !key) {
+    alert('Please fill in all Odoo fields before continuing.');
+    return;
+  }
+  if (!geminiKey) {
+    alert('Please enter your Gemini API key. Get a free one at aistudio.google.com.');
+    return;
+  }
+
+  odooConfig = { url: url.replace(/\/+$/, ''), database: db, username: user, api_key: key };
+  saveCredentials();
+  setStep(2);
+  await connectAndFetch();
+}
+
+async function goToStep3() {
+  setStep(3);
+  await draftAllEmails();
+}
+
+function goToStep4() {
+  setStep(4);
+  renderEmailList();
+}
+
+// ─── Odoo XML-RPC (multi-proxy fallback + local server) ──
+let connectionMode = 'proxy'; // 'proxy' or 'local'
+const LOCAL_SERVER = 'http://localhost:7842';
+const CORS_PROXIES = [
+  url => `https://corsproxy.io/?url=${encodeURIComponent(url)}`,
+  url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+  url => `https://proxy.cors.sh/${url}`,
+  url => `https://cors-anywhere.herokuapp.com/${url}`,
+];
+
+function setConnectionMode(mode) {
+  connectionMode = mode;
+  const proxyBtn = document.getElementById('mode-proxy-btn');
+  const localBtn = document.getElementById('mode-local-btn');
+  const localInfo = document.getElementById('local-server-info');
+
+  // Reset both first
+  [proxyBtn, localBtn].forEach(btn => {
+    btn.style.border = '1.5px solid var(--border)';
+    btn.style.background = 'transparent';
+    btn.querySelectorAll('div').forEach(d => d.style.color = 'var(--muted)');
+  });
+
+  // Highlight active
+  const activeBtn = mode === 'proxy' ? proxyBtn : localBtn;
+  activeBtn.style.border = '1.5px solid var(--accent)';
+  activeBtn.style.background = 'var(--accent-dim)';
+  activeBtn.querySelectorAll('div').forEach(d => d.style.color = 'var(--accent)');
+
+  localInfo.classList.toggle('hidden', mode !== 'local');
+  try { localStorage.setItem('odoo_conn_mode', mode); } catch(e) {}
+}
+
+function downloadServer(e) {
+  if (e) e.preventDefault();
+  triggerServerDownload();
+}
+
+
+function triggerServerDownload() {
+  const lines = [
+    '#!/usr/bin/env python3',
+    '"""Odoo Email Link - Local proxy server.',
+    'Run this once before opening the app: python server.py',
+    'Runs on http://localhost:7842',
+    '"""',
+    'from http.server import HTTPServer, BaseHTTPRequestHandler',
+    'from urllib.request import urlopen, Request',
+    'from urllib.parse import urlparse, parse_qs',
+    'import urllib.error',
+    '',
+    'PORT = 7842',
+    '',
+    'class ProxyHandler(BaseHTTPRequestHandler):',
+    '    def do_GET(self):',
+    '        if self.path == "/ping":',
+    '            self.send_response(200)',
+    '            self._cors()',
+    "            self.send_header('Content-Type', 'text/plain')",
+    '            self.end_headers()',
+    "            self.wfile.write(b'ok')",
+    '        else:',
+    '            self.send_response(404)',
+    '            self.end_headers()',
+    '',
+    '    def do_OPTIONS(self):',
+    '        self.send_response(200)',
+    '        self._cors()',
+    '        self.end_headers()',
+    '',
+    '    def do_POST(self):',
+    '        params = parse_qs(urlparse(self.path).query)',
+    "        target = params.get('url', [None])[0]",
+    '        if not target:',
+    '            self.send_response(400)',
+    '            self.end_headers()',
+    '            return',
+    "        length = int(self.headers.get('Content-Length', 0))",
+    '        body = self.rfile.read(length)',
+    '        try:',
+    "            req = Request(target, data=body, headers={'Content-Type': 'text/xml'})",
+    '            with urlopen(req, timeout=15) as resp:',
+    '                data = resp.read()',
+    '            self.send_response(200)',
+    '            self._cors()',
+    "            self.send_header('Content-Type', 'text/xml')",
+    '            self.end_headers()',
+    '            self.wfile.write(data)',
+    '        except urllib.error.URLError as e:',
+    '            self.send_response(502)',
+    '            self._cors()',
+    '            self.end_headers()',
+    '            self.wfile.write(str(e).encode())',
+    '',
+    '    def _cors(self):',
+    "        self.send_header('Access-Control-Allow-Origin', '*')",
+    "        self.send_header('Access-Control-Allow-Methods', 'POST, OPTIONS')",
+    "        self.send_header('Access-Control-Allow-Headers', 'Content-Type')",
+    '',
+    '    def log_message(self, fmt, *args):',
+    '        pass  # suppress all request logging',
+    '',
+    "if __name__ == '__main__':",
+    '    server = HTTPServer(("localhost", PORT), ProxyHandler)',
+    '    print("Odoo Email Link - Local Proxy Server")',
+    '    print(f"Running on http://localhost:{PORT}")',
+    '    print("Keep this window open while using the app.")',
+    '    print("Press Ctrl+C to stop.\\n")',
+    '    try:',
+    '        server.serve_forever()',
+    '    except KeyboardInterrupt:',
+    '        print("\\nServer stopped.")',
+  ];
+  const code = lines.join('\n');
+  const blob = new Blob([code], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'server.py';
+  a.click();
+}
+
+
+async function xmlrpcCallDirect(endpoint, method, params, url) {
+  const body = `<?xml version="1.0"?>
+<methodCall>
+  <methodName>${method}</methodName>
+  <params>${params.map(p => `<param><value>${toXml(p)}</value></param>`).join('')}</params>
+</methodCall>`;
+  const r = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/xml' },
+    body
+  });
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  return parseXmlRpcResponse(await r.text());
+}
+
+async function xmlrpcCall(endpoint, method, params) {
+  const targetUrl = `${odooConfig.url}${endpoint}`;
+
+  // Local server mode — single reliable call
+  if (connectionMode === 'local') {
+    try {
+      return await xmlrpcCallDirect(endpoint, method, params,
+        `${LOCAL_SERVER}/proxy?url=${encodeURIComponent(targetUrl)}`);
+    } catch(e) {
+      throw new Error(`Local server error: ${e.message}. Is server.py running?`);
+    }
+  }
+
+  // Proxy mode — try each proxy in sequence until one works
+  const body = `<?xml version="1.0"?>
+<methodCall>
+  <methodName>${method}</methodName>
+  <params>${params.map(p => `<param><value>${toXml(p)}</value></param>`).join('')}</params>
+</methodCall>`;
+
+  let lastError = null;
+  for (const proxyFn of CORS_PROXIES) {
+    const proxiedUrl = proxyFn(targetUrl);
+    try {
+      const r = await fetch(proxiedUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/xml' },
+        body,
+        signal: AbortSignal.timeout(8000)
+      });
+      if (!r.ok) { lastError = new Error(`HTTP ${r.status}`); continue; }
+      return parseXmlRpcResponse(await r.text());
+    } catch(e) {
+      lastError = e;
+      continue;
+    }
+  }
+  throw new Error(`All proxies failed. Last error: ${lastError?.message}. Try switching to Local Server mode.`);
+}
+
+// Wrap HTML strings so toXml skips escaping them
+function RawHtml(s) { this.html = s; }
+
+function toXml(val) {
+  if (val === null || val === undefined) return '<nil/>';
+  if (val instanceof RawHtml) return `<string>${val.html}</string>`;
+  if (typeof val === 'boolean') return `<boolean>${val ? 1 : 0}</boolean>`;
+  if (typeof val === 'number') return Number.isInteger(val) ? `<int>${val}</int>` : `<double>${val}</double>`;
+  if (typeof val === 'string') return `<string>${escXml(val)}</string>`;
+  if (Array.isArray(val)) return `<array><data>${val.map(v => `<value>${toXml(v)}</value>`).join('')}</data></array>`;
+  if (typeof val === 'object') {
+    const members = Object.entries(val).map(([k, v]) =>
+      `<member><name>${escXml(k)}</name><value>${toXml(v)}</value></member>`
+    ).join('');
+    return `<struct>${members}</struct>`;
+  }
+  return `<string>${escXml(String(val))}</string>`;
+}
+
+function escXml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function parseXmlRpcResponse(xmlStr) {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(xmlStr, 'text/xml');
+  const fault = doc.querySelector('fault');
+  if (fault) {
+    const val = parseValue(fault.querySelector('value'));
+    throw new Error(`Odoo error: ${val?.faultString || JSON.stringify(val)}`);
+  }
+  const valueEl = doc.querySelector('methodResponse > params > param > value');
+  if (!valueEl) throw new Error('Empty XML-RPC response');
+  return parseValue(valueEl);
+}
+
+function parseValue(el) {
+  if (!el) return null;
+  const child = el.children[0];
+  if (!child) return el.textContent.trim();
+  const tag = child.tagName;
+  if (tag === 'string') return child.textContent;
+  if (tag === 'int' || tag === 'i4' || tag === 'i8') return parseInt(child.textContent);
+  if (tag === 'double') return parseFloat(child.textContent);
+  if (tag === 'boolean') return child.textContent.trim() === '1';
+  if (tag === 'nil') return null;
+  if (tag === 'array') {
+    return Array.from(child.querySelector('data').children).map(parseValue);
+  }
+  if (tag === 'struct') {
+    const obj = {};
+    child.querySelectorAll(':scope > member').forEach(m => {
+      const name = m.querySelector('name').textContent;
+      obj[name] = parseValue(m.querySelector('value'));
+    });
+    return obj;
+  }
+  return child.textContent;
+}
+
+async function odooAuthenticate() {
+  const uid = await xmlrpcCall('/xmlrpc/2/common', 'authenticate', [
+    odooConfig.database, odooConfig.username, odooConfig.api_key, {}
+  ]);
+  if (!uid) throw new Error('Authentication failed. Check your credentials.');
+  return uid;
+}
+
+async function odooExecute(uid, model, method, args, kwargs) {
+  return xmlrpcCall('/xmlrpc/2/object', 'execute_kw', [
+    odooConfig.database, uid, odooConfig.api_key,
+    model, method, args || [], kwargs || {}
+  ]);
+}
+
+// ─── Connect & Fetch ──────────────────────────────────────
+let odooUid = null;
+
+async function connectAndFetch() {
+  const log = document.getElementById('connect-log');
+  log.innerHTML = '';
+  document.getElementById('step2-actions').classList.add('hidden');
+
+  function addLog(type, msg) {
+    const line = document.createElement('div');
+    line.className = `status-line ${type}`;
+    const dotClass = type === 'ok' ? 'ok' : type === 'err' ? 'err' : type === 'warn' ? 'warn' : 'info';
+    line.innerHTML = `<div class="dot ${type === 'loading' ? 'spin' : dotClass}"></div><div>${msg}</div>`;
+    log.appendChild(line);
+    return line;
+  }
+
+  const l1 = addLog('loading', `Connecting to ${odooConfig.url} via CORS proxy…`);
+  try {
+    odooUid = await odooAuthenticate();
+    l1.className = 'status-line ok';
+    l1.querySelector('.dot').className = 'dot ok';
+    l1.querySelector('div:last-child').textContent = `Authenticated as UID ${odooUid}`;
+  } catch(e) {
+    l1.className = 'status-line err';
+    l1.querySelector('.dot').className = 'dot err';
+    l1.querySelector('div:last-child').textContent = `Connection failed: ${e.message}`;
+    document.getElementById('step2-actions').classList.remove('hidden');
+    document.getElementById('btn-proceed-draft').classList.add('hidden');
+    return;
+  }
+
+  const today = new Date().toISOString().split('T')[0];
+  const l2 = addLog('loading', 'Fetching due activities…');
+  try {
+    activities = await odooExecute(odooUid, 'mail.activity', 'search_read', [[
+      ['user_id', '=', odooUid],
+      ['date_deadline', '<=', today]
+    ]], {
+      fields: ['res_model', 'res_id', 'summary', 'note', 'date_deadline', 'activity_type_id']
+    });
+    l2.className = 'status-line ok';
+    l2.querySelector('.dot').className = 'dot ok';
+    l2.querySelector('div:last-child').textContent = `Found ${activities.length} due activit${activities.length === 1 ? 'y' : 'ies'}`;
+  } catch(e) {
+    l2.className = 'status-line err';
+    l2.querySelector('.dot').className = 'dot err';
+    l2.querySelector('div:last-child').textContent = `Failed to fetch activities: ${e.message}`;
+    document.getElementById('step2-actions').classList.remove('hidden');
+    document.getElementById('btn-proceed-draft').classList.add('hidden');
+    return;
+  }
+
+  document.getElementById('step2-actions').classList.remove('hidden');
+
+  if (activities.length === 0) {
+    addLog('warn', 'No activities due today — nothing to process.');
+    document.getElementById('btn-proceed-draft').disabled = true;
+    document.getElementById('btn-proceed-draft').textContent = 'No activities due';
+  } else {
+    addLog('info', `Ready to draft ${activities.length} email${activities.length > 1 ? 's' : ''} with Groq.`);
+  }
+}
+
+// ─── Draft emails ─────────────────────────────────────────
+async function draftAllEmails() {
+  draftedEmails = [];
+  const log = document.getElementById('draft-log');
+  log.innerHTML = '';
+  document.getElementById('step3-actions').classList.add('hidden');
+
+  const subtitle = document.getElementById('draft-subtitle');
+  const progress = document.getElementById('draft-progress');
+
+  function addLog(type, msg) {
+    const line = document.createElement('div');
+    line.className = `status-line ${type}`;
+    const dotClass = type === 'ok' ? 'ok' : type === 'err' ? 'err' : type === 'warn' ? 'warn' : 'info';
+    line.innerHTML = `<div class="dot ${type === 'loading' ? 'spin' : dotClass}"></div><div>${msg}</div>`;
+    log.appendChild(line);
+    return line;
+  }
+
+  for (let i = 0; i < activities.length; i++) {
+    const act = activities[i];
+    const pct = Math.round((i / activities.length) * 100);
+    progress.style.width = pct + '%';
+    subtitle.textContent = `Processing ${i + 1} of ${activities.length}… (pacing requests to avoid rate limits)`;
+
+    let record;
+    const lRecord = addLog('loading', `Fetching record details for activity ${act.id}…`);
+    try {
+      record = await Promise.race([fetchRecord(act.res_model, act.res_id), new Promise((_,rej)=>setTimeout(()=>rej(new Error("Record fetch timed out")),15000))]);
+      lRecord.className = 'status-line ok';
+      lRecord.querySelector('.dot').className = 'dot ok';
+      lRecord.querySelector('div:last-child').textContent = `Got record: ${record.name}`;
+    } catch(e) {
+      lRecord.className = 'status-line err';
+      lRecord.querySelector('.dot').className = 'dot err';
+      lRecord.querySelector('div:last-child').textContent = `Could not fetch record: ${e.message}`;
+      continue;
+    }
+
+    if (!record.contact_email) {
+      addLog('warn', `No email for "${record.name}" — skipping`);
+      continue;
+    }
+
+    let history = '';
+    try {
+      history = await Promise.race([fetchChatterHistory(act.res_model, act.res_id), new Promise((_,rej)=>setTimeout(()=>rej(new Error("timeout")),10000))]);
+    } catch(e) { /* non-fatal */ }
+
+    const lDraft = addLog('loading', `Drafting email for ${record.name}…`);
+    try {
+      const ctx = {
+        task_name: record.name,
+        stage: record.stage || '',
+        contact_name: record.contact_name,
+        contact_email: record.contact_email,
+        deadline: record.deadline || 'Not set',
+        description: record.description || '',
+        activity_summary: act.summary || 'Follow up',
+        activity_notes: act.note || '',
+        history: history
+      };
+
+      // Auto-retry once on rate limit
+      let result;
+      try {
+        result = await draftEmail(ctx);
+      } catch(e) {
+        const retryMatch = e.message.match(/try again in ([\d.]+)s/i);
+        if (retryMatch) {
+          const waitSecs = Math.ceil(parseFloat(retryMatch[1])) + 2;
+          lDraft.querySelector('div:last-child').textContent = `Rate limited — waiting ${waitSecs}s then retrying…`;
+          await new Promise(r => setTimeout(r, waitSecs * 1000));
+          result = await draftEmail(ctx);
+        } else {
+          throw e;
+        }
+      }
+
+      const { subject, body } = result;
+      draftedEmails.push({
+        record_name: record.name,
+        contact_name: record.contact_name,
+        contact_email: record.contact_email,
+        subject, body,
+        activity_id: act.id,
+        res_model: act.res_model,
+        res_id: act.res_id,
+        activity_type_id: act.activity_type_id,
+        activity_summary: act.summary || 'Follow up',
+        skipped: false
+      });
+      lDraft.className = 'status-line ok';
+      lDraft.querySelector('.dot').className = 'dot ok';
+      lDraft.querySelector('div:last-child').textContent = `Draft ready: "${subject}"`;
+    } catch(e) {
+      lDraft.className = 'status-line err';
+      lDraft.querySelector('.dot').className = 'dot err';
+      lDraft.querySelector('div:last-child').textContent = `Draft failed for ${record.name}: ${e.message}`;
+    }
+
+    // Pace requests — wait 4s between drafts to stay under TPM limit
+    if (i < activities.length - 1) {
+      await new Promise(r => setTimeout(r, 4000));
+    }
+  } // end for loop
+
+  progress.style.width = '100%';
+  subtitle.textContent = `Done — ${draftedEmails.length} email${draftedEmails.length !== 1 ? 's' : ''} ready.`;
+  document.getElementById('step3-actions').classList.remove('hidden');
+}
+
+async function fetchRecord(res_model, res_id) {
+  if (res_model === 'crm.lead') {
+    const leads = await odooExecute(odooUid, 'crm.lead', 'read', [[res_id]], {
+      fields: ['name','partner_id','email_from','contact_name','partner_name','date_deadline','stage_id','description']
+    });
+    if (!leads || leads.length === 0) throw new Error(`Lead ${res_id} not found`);
+    const lead = leads[0];
+    let email = lead.email_from || '';
+    let cname = lead.contact_name || lead.partner_name || '';
+    if (!email && lead.partner_id) {
+      const pid = Array.isArray(lead.partner_id) ? lead.partner_id[0] : lead.partner_id;
+      const ps = await odooExecute(odooUid, 'res.partner', 'read', [[pid]], { fields: ['email','name'] });
+      if (ps && ps[0]) { email = ps[0].email || ''; if (!cname) cname = ps[0].name || ''; }
+    }
+    const stage = Array.isArray(lead.stage_id) ? lead.stage_id[1] : '';
+    return { name: lead.name, contact_name: cname, contact_email: email, stage, deadline: lead.date_deadline, description: lead.description || '' };
+  } else if (res_model === 'res.partner') {
+    const ps = await odooExecute(odooUid, 'res.partner', 'read', [[res_id]], {
+      fields: ['name','email','phone','function','parent_id','comment']
+    });
+    if (!ps || ps.length === 0) throw new Error(`Contact ${res_id} not found`);
+    const p = ps[0];
+    return { name: p.name, contact_name: p.name, contact_email: p.email || '', stage: '', deadline: '', description: p.comment || '' };
+  } else {
+    try {
+      const recs = await odooExecute(odooUid, res_model, 'read', [[res_id]], { fields: ['name'] });
+      const name = recs && recs[0] ? recs[0].name : `${res_model} #${res_id}`;
+      return { name, contact_name: '', contact_email: '', stage: '', deadline: '', description: '' };
+    } catch(e) {
+      return { name: `${res_model} #${res_id}`, contact_name: '', contact_email: '', stage: '', deadline: '', description: '' };
+    }
+  }
+}
+
+async function fetchChatterHistory(res_model, res_id) {
+  const msgs = await odooExecute(odooUid, 'mail.message', 'search_read', [[
+    ['res_id','=',res_id],['model','=',res_model],['message_type','in',['comment','email']]
+  ]], { fields: ['body','date','author_id','subject','message_type'], order: 'date desc', limit: 20 });
+
+  const formatted = msgs
+    .reverse() // back to chronological after desc fetch
+    .filter(m => m.body && m.body.trim())
+    .map(m => {
+      const author = Array.isArray(m.author_id) ? m.author_id[1] : 'Unknown';
+      const body = stripHtml(m.body || '').slice(0, 500); // cap each message at 500 chars
+      const subj = m.subject ? ` - Subject: ${m.subject}` : '';
+      return `[${m.date}] ${author} (${m.message_type})${subj}\n${body}`;
+    });
+
+  // Hard cap total history at ~4000 chars to stay within TPM limits
+  let history = '';
+  for (const msg of formatted) {
+    if ((history + msg).length > 4000) break;
+    history += (history ? '\n\n' : '') + msg;
+  }
+  return history || 'No previous messages found.';
+}
+
+function stripHtml(html) {
+  return html
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p>\s*<p>/gi, '\n\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#39;/g,"'")
+    .trim();
+}
+
+// ─── Groq API ─────────────────────────────────────────────
+async function draftEmail(ctx) {
+  const key = document.getElementById('gemini-key')?.value?.trim();
+  if (!key) throw new Error('No Groq API key entered. Please add your key in step 1.');
+  const model = document.getElementById('gemini-model')?.value || 'llama-3.3-70b-versatile';
+
+  const history = (ctx.history || '').trim() || 'No previous messages found.';
+  const notes = (ctx.activity_notes || '').trim() || 'None';
+  const desc = (ctx.description || '').trim() || 'None';
+
+  const prompt = `You are a professional email assistant. Draft a follow-up email based on CRM activity data.
+
+Analyze the conversation history carefully. Match the tone and style of previous messages. Write a natural, professional email that moves the relationship forward.
+
+=== OPPORTUNITY DETAILS ===
+Name: ${ctx.task_name}
+Pipeline Stage: ${ctx.stage}
+Expected Closing: ${ctx.deadline}
+
+=== CONTACT ===
+Name: ${ctx.contact_name}
+Email: ${ctx.contact_email}
+
+=== INTERNAL DESCRIPTION ===
+${desc}
+
+=== CURRENT ACTIVITY ===
+Summary: ${ctx.activity_summary}
+Notes: ${notes}
+
+=== CONVERSATION HISTORY (chronological) ===
+${history}
+
+=== INSTRUCTIONS ===
+1. Determine the appropriate follow-up type (check-in, proposal follow-up, meeting request, etc.)
+2. Reference relevant details from the conversation history naturally
+3. Include a clear call-to-action
+4. Keep it concise — no more than 3-4 short paragraphs
+5. Use the contact's actual name — do NOT use placeholder text
+6. Do NOT include a signature block
+
+Format EXACTLY like this (nothing before SUBJECT:):
+
+SUBJECT: [your subject line]
+BODY:
+[your email body]`;
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 30000);
+  let resp;
+  try {
+    resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      signal: controller.signal,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${key}`
+      },
+      body: JSON.stringify({
+        model,
+        max_tokens: 1024,
+        temperature: 0.7,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+  } catch(fetchErr) {
+    if (fetchErr.name === 'AbortError') throw new Error('Groq timed out after 30s — check API key or network.');
+    throw new Error('Groq fetch failed: ' + fetchErr.message);
+  } finally {
+    clearTimeout(timeout);
+  }
+
+  if (!resp.ok) {
+    const errBody = await resp.json().catch(() => ({}));
+    throw new Error(errBody.error?.message || 'Groq API error ' + resp.status);
+  }
+
+  const data = await resp.json();
+  const text = data.choices?.[0]?.message?.content?.trim();
+  if (!text) throw new Error('Groq returned empty response');
+  return parseEmailResponse(text);
+}
+
+function parseEmailResponse(text) {
+  const subjectMatch = text.match(/SUBJECT:\s*(.+)/);
+  const bodyMatch = text.match(/BODY:\s*\n([\s\S]*)/);
+  if (subjectMatch && bodyMatch) {
+    return {
+      subject: subjectMatch[1].trim().replace(/^\*+|\*+$/g,'').replace(/^#+\s*/,'').replace(/^SUBJECT:\s*/i,''),
+      body: bodyMatch[1].trim()
+    };
+  }
+  const lines = text.split('\n');
+  return { subject: lines[0].slice(0, 120) || 'Follow-up', body: lines.slice(1).join('\n').trim() || text };
+}
+
+// ─── Render email list ────────────────────────────────────
+function renderEmailList() {
+  const container = document.getElementById('email-list');
+  container.innerHTML = '';
+
+  if (draftedEmails.length === 0) {
+    container.innerHTML = '<div style="text-align:center;color:var(--muted);padding:30px;font-size:0.85rem;">No emails were drafted — all activities were skipped or had errors.</div>';
+    return;
+  }
+
+  draftedEmails.forEach((em, idx) => {
+    const card = document.createElement('div');
+    card.className = 'email-preview';
+    card.id = `email-card-${idx}`;
+
+    const bodyPreview = em.body.slice(0, 300);
+
+    card.innerHTML = `
+      <div class="email-preview-header">
+        <div>
+          <div class="record-name">${escHtml(em.record_name)}</div>
+          <div class="contact-email">${escHtml(em.contact_email)}</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span class="activity-badge" id="badge-${idx}">pending</span>
+        </div>
+      </div>
+      <div class="email-subject">${escHtml(em.subject)}</div>
+      <div class="email-body-preview">${escHtml(bodyPreview)}</div>
+      <div class="email-actions">
+        <button class="btn btn-primary" style="padding:8px 16px;font-size:0.82rem" onclick="openModal(${idx})">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 8.5V10h1.5l4.4-4.4-1.5-1.5L2 8.5zm7.1-4.6a.4.4 0 000-.57L8 2.2a.4.4 0 00-.57 0l-.93.93 1.5 1.5.93-.93z" fill="currentColor"/></svg>
+          Review & edit
+        </button>
+        <button class="btn btn-ghost" id="skip-btn-${idx}" style="padding:8px 16px;font-size:0.82rem" onclick="skipEmail(${idx})">Skip</button>
+        <div style="flex:1"></div>
+        <div style="font-size:0.75rem;color:var(--muted)">${escHtml(em.contact_name)}</div>
+      </div>
+    `;
+    container.appendChild(card);
+  });
+}
+
+let currentModalIdx = null;
+
+function skipEmail(idx) {
+  const em = draftedEmails[idx];
+  em.skipped = !em.skipped;
+  const card = document.getElementById(`email-card-${idx}`);
+  const badge = document.getElementById(`badge-${idx}`);
+  const skipBtn = document.getElementById(`skip-btn-${idx}`);
+  if (em.skipped) {
+    if (card) card.style.opacity = '0.4';
+    if (badge) { badge.textContent = 'skipped'; badge.style.color = 'var(--muted)'; badge.style.background = 'transparent'; badge.style.borderColor = 'var(--border)'; }
+    if (skipBtn) skipBtn.textContent = 'Unskip';
+  } else {
+    if (card) card.style.opacity = '1';
+    if (badge) { badge.textContent = 'pending'; badge.style.color = 'var(--accent)'; badge.style.background = 'var(--accent-dim)'; badge.style.borderColor = 'rgba(200,240,78,0.2)'; }
+    if (skipBtn) skipBtn.textContent = 'Skip';
+  }
+}
+
+function openModal(idx) {
+  const em = draftedEmails[idx];
+  currentModalIdx = idx;
+  document.getElementById('modal-record').textContent = em.record_name;
+  document.getElementById('modal-contact').textContent = em.contact_email;
+  document.getElementById('modal-to').value = em.contact_email;
+  document.getElementById('modal-subject').value = em.subject;
+  document.getElementById('modal-body-text').value = em.body;
+  document.getElementById('modal-followup-days').value = em.followUpDays || followUpDays;
+  document.getElementById('modal-logging').classList.add('hidden');
+  document.getElementById('modal-logging').style.color = 'var(--muted)';
+  document.getElementById('modal-send-btn').disabled = false;
+  // Reset attachment
+  document.getElementById('modal-attachment').value = '';
+  document.getElementById('attach-label-text').textContent = 'Choose file…';
+  document.getElementById('attach-label').style.borderColor = 'var(--border)';
+  document.getElementById('attach-clear-btn').style.display = 'none';
+  document.getElementById('attach-log-odoo').checked = false;
+  // Reset assign user
+  document.getElementById('modal-assign-user').value = '';
+  document.getElementById('assign-options').classList.add('hidden');
+  document.getElementById('assign-immediate').checked = false;
+  document.getElementById('assign-followup-days').value = followUpDays;
+  document.getElementById('assign-days-wrap').style.display = 'flex';
+  populateUserDropdown();
+  document.getElementById('email-modal').classList.remove('hidden');
+}
+
+function closeModal() {
+  document.getElementById('email-modal').classList.add('hidden');
+  currentModalIdx = null;
+}
+
+function onAttachmentSelected() {
+  const file = document.getElementById('modal-attachment').files[0];
+  if (!file) return;
+  document.getElementById('attach-label-text').textContent = file.name;
+  document.getElementById('attach-label').style.borderColor = 'var(--accent)';
+  document.getElementById('attach-clear-btn').style.display = 'inline-flex';
+}
+
+function clearAttachment() {
+  document.getElementById('modal-attachment').value = '';
+  document.getElementById('attach-label-text').textContent = 'Choose file…';
+  document.getElementById('attach-label').style.borderColor = 'var(--border)';
+  document.getElementById('attach-clear-btn').style.display = 'none';
+}
+
+function readFileAsBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = e => resolve(e.target.result.split(',')[1]);
+    reader.onerror = () => reject(new Error('Could not read file'));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function populateUserDropdown() {
+  const sel = document.getElementById('modal-assign-user');
+  // Keep existing options if already loaded
+  if (odooUsers.length > 0) {
+    rebuildUserSelect(sel);
+    return;
+  }
+  sel.innerHTML = '<option value="">Loading users…</option>';
+  try {
+    const users = await odooExecute(odooUid, 'res.users', 'search_read',
+      [[['active', '=', true], ['share', '=', false]]],
+      { fields: ['id', 'name'], limit: 200 }
+    );
+    odooUsers = (users || []).filter(u => u.id !== odooUid).sort((a,b) => a.name.localeCompare(b.name));
+    rebuildUserSelect(sel);
+  } catch(e) {
+    sel.innerHTML = '<option value="">Could not load users</option>';
+  }
+}
+
+function rebuildUserSelect(sel) {
+  sel.innerHTML = '<option value="">— None —</option>';
+  odooUsers.forEach(u => {
+    const opt = document.createElement('option');
+    opt.value = u.id;
+    opt.textContent = u.name;
+    sel.appendChild(opt);
+  });
+}
+
+function onAssignUserChange() {
+  const sel = document.getElementById('modal-assign-user');
+  const opts = document.getElementById('assign-options');
+  opts.classList.toggle('hidden', !sel.value);
+}
+
+function onAssignImmediateChange() {
+  const immediate = document.getElementById('assign-immediate').checked;
+  document.getElementById('assign-days-wrap').style.display = immediate ? 'none' : 'flex';
+}
+
+async function sendFromModal() {
+  if (currentModalIdx === null) return;
+  const idx = currentModalIdx;
+  const em = draftedEmails[idx];
+
+  // Read edited values from modal
+  const finalSubject = document.getElementById('modal-subject').value.trim() || em.subject;
+  const finalBody = document.getElementById('modal-body-text').value.trim() || em.body;
+  const modalFollowUpDays = parseInt(document.getElementById('modal-followup-days').value) || followUpDays;
+  em.followUpDays = modalFollowUpDays;
+
+  // Read attachment if selected
+  const attachInput = document.getElementById('modal-attachment');
+  const attachFile = attachInput.files[0] || null;
+  const logAttachment = document.getElementById('attach-log-odoo').checked;
+
+  // Read assign-to-user options
+  const assignUserId = parseInt(document.getElementById('modal-assign-user').value) || null;
+  const assignImmediate = document.getElementById('assign-immediate').checked;
+  const assignDays = parseInt(document.getElementById('assign-followup-days').value) || followUpDays;
+
+  // Open mailto — note: browsers cannot auto-attach files via mailto, so we remind the user
+  const mailto = `mailto:${encodeURIComponent(em.contact_email)}?subject=${encodeURIComponent(finalSubject)}&body=${encodeURIComponent(finalBody)}`;
+  window.location.href = mailto;
+
+  // If attachment selected, trigger download so user can manually attach in mail client
+  if (attachFile) {
+    setTimeout(() => {
+      const url = URL.createObjectURL(attachFile);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = attachFile.name;
+      a.click();
+      URL.revokeObjectURL(url);
+    }, 800);
+  }
+
+  // Update badge on card
+  const badge = document.getElementById(`badge-${idx}`);
+  if (badge) {
+    badge.textContent = 'sent';
+    badge.style.background = 'rgba(78,240,160,0.1)';
+    badge.style.color = 'var(--success)';
+    badge.style.borderColor = 'rgba(78,240,160,0.2)';
+  }
+
+  // Show logging spinner
+  document.getElementById('modal-logging').classList.remove('hidden');
+  document.getElementById('modal-send-btn').disabled = true;
+
+  // Log to Odoo in background
+  try {
+    await logToOdoo(em, finalSubject, finalBody, logAttachment ? attachFile : null, assignUserId, assignImmediate, assignDays);
+    document.getElementById('modal-logging').innerHTML = '<div class="dot ok"></div> Logged to Odoo ✓';
+    document.getElementById('modal-logging').style.color = 'var(--success)';
+  } catch(e) {
+    document.getElementById('modal-logging').innerHTML = `<div class="dot err"></div> Odoo log failed: ${e.message}`;
+    document.getElementById('modal-logging').style.color = 'var(--danger)';
+  }
+
+  // Close modal after short delay
+  setTimeout(() => closeModal(), 2000);
+}
+
+async function logToOdoo(em, subject, body, attachFile, assignUserId, assignImmediate, assignDays) {
+  // 1. Log note to chatter — build clean HTML Odoo will render correctly
+  const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+  // Build plain text note — avoids all HTML escaping issues with XML-RPC
+  const cleanBody = body
+    .replace(/\r\n/g, '\n')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .trim();
+
+  const noteText = [
+    'Follow-up email sent via Odoo Email Link',
+    '─────────────────────────────',
+    `To: ${em.contact_email}`,
+    `Subject: ${subject}`,
+    '─────────────────────────────',
+    cleanBody
+  ].join('\n');
+
+  const msgId = await odooExecute(odooUid, em.res_model, 'message_post', [[em.res_id]], {
+    body: noteText,
+    message_type: 'comment',
+    subtype_xmlid: 'mail.mt_note'
+  });
+
+  // 1b. Attach file to Odoo note if requested
+  if (attachFile && msgId) {
+    try {
+      const b64 = await readFileAsBase64(attachFile);
+      await odooExecute(odooUid, 'ir.attachment', 'create', [{
+        name: attachFile.name,
+        datas: b64,
+        res_model: 'mail.message',
+        res_id: msgId,
+        mimetype: attachFile.type || 'application/octet-stream'
+      }]);
+    } catch(e) {
+      console.warn('Could not attach file to Odoo:', e.message);
+    }
+  }
+
+  // 2. Mark activity as done
+  try {
+    await odooExecute(odooUid, 'mail.activity', 'action_feedback', [[em.activity_id]], {
+      feedback: 'Follow-up email sent via Odoo Email Link.'
+    });
+  } catch(e) {
+    await odooExecute(odooUid, 'mail.activity', 'unlink', [[em.activity_id]]);
+  }
+
+  // 3. Schedule follow-up activity
+  const followUpDate = new Date();
+  followUpDate.setDate(followUpDate.getDate() + (em.followUpDays || followUpDays));
+  const deadline = followUpDate.toISOString().split('T')[0];
+
+  const modelIds = await odooExecute(odooUid, 'ir.model', 'search', [[['model', '=', em.res_model]]]);
+  if (!modelIds || modelIds.length === 0) throw new Error(`Model ${em.res_model} not found`);
+
+  let activityTypeId = null;
+  if (em.activity_type_id) {
+    activityTypeId = Array.isArray(em.activity_type_id) ? em.activity_type_id[0] : em.activity_type_id;
+  }
+  if (!activityTypeId) {
+    const typeIds = await odooExecute(odooUid, 'mail.activity.type', 'search', [[['category', '=', 'default']]]);
+    activityTypeId = typeIds?.[0] || null;
+  }
+
+  const vals = {
+    res_model_id: modelIds[0],
+    res_id: em.res_id,
+    user_id: odooUid,
+    date_deadline: deadline,
+    summary: `Follow-up: ${em.activity_summary}`,
+    note: `Auto-scheduled after email sent on ${new Date().toISOString().split('T')[0]}.\nPrevious subject: ${subject}`
+  };
+  if (activityTypeId) vals.activity_type_id = activityTypeId;
+
+  await odooExecute(odooUid, 'mail.activity', 'create', [vals]);
+
+  // 4. Optionally create a second activity assigned to another user
+  if (assignUserId) {
+    const assignDate = new Date();
+    if (!assignImmediate) assignDate.setDate(assignDate.getDate() + (assignDays || followUpDays));
+    const assignDeadline = assignDate.toISOString().split('T')[0];
+    const assignVals = {
+      res_model_id: modelIds[0],
+      res_id: em.res_id,
+      user_id: assignUserId,
+      date_deadline: assignDeadline,
+      summary: `Follow-up assigned by ${odooConfig.user}: ${em.activity_summary}`,
+      note: `Assigned after email sent on ${new Date().toISOString().split('T')[0]}.
+Subject: ${subject}`
+    };
+    if (activityTypeId) assignVals.activity_type_id = activityTypeId;
+    await odooExecute(odooUid, 'mail.activity', 'create', [assignVals]);
+  }
+}
+
+function openAllEmails() {
+  draftedEmails.filter(e => !e.skipped).forEach((em, i) => {
+    setTimeout(() => openModal(draftedEmails.indexOf(em)), i * 300);
+  });
+}
+
+function escHtml(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ─── Credential import/export ─────────────────────────────
+function exportCredentials() {
+  const data = {
+    url: document.getElementById('odoo-url').value,
+    db: document.getElementById('odoo-db').value,
+    user: document.getElementById('odoo-user').value,
+    odooKey: document.getElementById('odoo-key').value,
+    geminiKey: document.getElementById('gemini-key').value,
+    geminiModel: document.getElementById('gemini-model').value,
+    followUpDays: document.getElementById('followup-days').value,
+  };
+  if (!data.url && !data.odooKey) {
+    alert('Fill in your credentials first before exporting.');
+    return;
+  }
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'odoo-email-link-credentials.json';
+  a.click();
+}
+
+function importCredentials(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (data.url) document.getElementById('odoo-url').value = data.url;
+      if (data.db) document.getElementById('odoo-db').value = data.db;
+      if (data.user) document.getElementById('odoo-user').value = data.user;
+      if (data.odooKey) document.getElementById('odoo-key').value = data.odooKey;
+      if (data.geminiKey) document.getElementById('gemini-key').value = data.geminiKey;
+      if (data.geminiModel) document.getElementById('gemini-model').value = data.geminiModel;
+      if (data.followUpDays) document.getElementById('followup-days').value = data.followUpDays;
+      // Also save to localStorage
+      localStorage.setItem('odoo_email_link_creds', JSON.stringify(data));
+      document.getElementById('saved-notice').classList.remove('hidden');
+      document.getElementById('saved-notice').querySelector('div') && 
+        (document.getElementById('saved-notice').lastChild.textContent = ' Credentials imported successfully');
+    } catch(err) {
+      alert('Could not read credentials file: ' + err.message);
+    }
+    // Reset file input so same file can be re-imported
+    event.target.value = '';
+  };
+  reader.readAsText(file);
+}
+
+// ─── Init ─────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  loadCredentials();
+  const savedMode = localStorage.getItem('odoo_conn_mode') || 'proxy';
+  setConnectionMode(savedMode);
+  const savedTheme = localStorage.getItem('oelTheme') || 'lime';
+  setTheme(savedTheme, true);
+});
+const THEME_COLORS = {
+  lime: '#c8f04e', cyan: '#00d8ff', ember: '#ff7c2a', light: '#6c47ff', violet: '#c77dff'
+};
+function setTheme(t, silent) {
+  document.documentElement.setAttribute('data-theme', t);
+  document.querySelectorAll('.theme-dot').forEach(d => {
+    d.classList.toggle('active', d.dataset.t === t);
+  });
+  const mc = document.getElementById('meta-theme-color');
+  if (mc) mc.setAttribute('content', THEME_COLORS[t] || '#c8f04e');
+  if (!silent) {
+    try { localStorage.setItem('oelTheme', t); } catch(e) {}
+  }
+}
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js', { scope: './' }).catch(e => console.warn('SW:', e));
+  });
+}
+</script>
+</body>
+</html>
