@@ -4,7 +4,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <meta name="oel-version" content="1773560307">
+  <meta name="oel-version" content="v3.02">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="mobile-web-app-capable" content="yes">
@@ -1546,10 +1546,6 @@
           <label>App Password</label>
           <input type="password" id="imap-password" placeholder="Yahoo App Password">
         </div>
-        <div class="form-group">
-          <label>Scan last (days)</label>
-          <input type="number" id="imap-days" value="14" min="1" max="90" style="width:80px">
-        </div>
       </div>
       <!-- Quick setup links -->
       <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;padding:9px 12px;background:var(--surface);border-radius:8px;border:1px solid var(--border)">
@@ -1680,6 +1676,13 @@
       <div id="spec-checklist-empty" style="display:none;font-size:0.78rem;color:var(--muted);margin-bottom:12px">No specs saved yet — create one in Lead Specifications above.</div>
 
       <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px">
+        <label style="font-size:0.8rem;color:var(--muted)">Scan last</label>
+        <select id="imap-days" style="background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:6px 10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.82rem;outline:none;cursor:pointer">
+          <option value="1" selected>1 day</option>
+          <option value="3">3 days</option>
+          <option value="7">7 days</option>
+          <option value="14">14 days</option>
+        </select>
         <button class="btn btn-primary" onclick="fetchLeads()" id="fetch-btn" style="padding:9px 20px;font-size:0.83rem;gap:7px">
           <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 1v8M3 6l3.5 3.5L10 6M1.5 11h10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
           Fetch & scan inbox
@@ -8519,6 +8522,7 @@ async function fetchLeads() {
   }
   saveImapCreds();
 
+  const btn        = document.getElementById('fetch-btn');
   const progArea   = document.getElementById('scan-progress-area');
   const bar        = document.getElementById('scan-bar');
   const statusEl   = document.getElementById('fetch-status');
@@ -8769,6 +8773,10 @@ function renderLeadCards() {
     <span id="batch-count" style="font-size:0.8rem;color:var(--accent);font-weight:500"></span>
     <div style="flex:1"></div>
     <button class="btn btn-primary" onclick="batchPush()" style="padding:6px 14px;font-size:0.78rem">Push selected to Odoo</button>
+    <button class="btn btn-ghost" onclick="batchScheduleActivity()" style="padding:6px 14px;font-size:0.78rem;gap:5px" title="Schedule an Odoo activity for selected leads">
+      <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><rect x="1" y="2" width="9" height="8" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M7 1v2M4 1v2M1 5h9" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+      Schedule activity
+    </button>
     <button class="btn btn-ghost" onclick="batchDismiss()" style="padding:6px 14px;font-size:0.78rem">Dismiss selected</button>
     <button class="btn btn-ghost" onclick="batchDelete()" style="padding:6px 14px;font-size:0.78rem;color:var(--danger);border-color:var(--danger);opacity:0.8">Delete selected</button>
   `;
@@ -8839,15 +8847,27 @@ function renderLeadCards() {
           <div style="font-size:0.74rem;color:var(--muted);line-height:1.5;margin-bottom:10px;max-height:52px;overflow:hidden">${escHtml((notes||'').slice(0,180))}${(notes||'').length>180?'…':''}</div>
 
           <!-- Action row -->
-          <div style="display:flex;gap:6px;align-items:center">
+          <div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap">
             ${!lead._pushed && !lead._dismissed ? `
               <button class="btn btn-primary" onclick="openLeadModal(${idx})" style="padding:5px 12px;font-size:0.77rem">Review &amp; push</button>
-              <button class="btn btn-ghost" onclick="dismissLead(${idx})" style="padding:5px 10px;font-size:0.77rem">Dismiss</button>
-              <button class="btn btn-ghost" onclick="deleteLead(${idx})" style="padding:5px 10px;font-size:0.77rem;color:var(--danger);opacity:0.7;margin-left:auto">✕ Delete</button>
+              <button class="btn btn-ghost" onclick="scheduleLeadActivity(${idx})" style="padding:5px 8px;font-size:0.77rem;gap:4px" title="Schedule Odoo activity">
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><rect x="0.5" y="1.5" width="9" height="8" rx="1.5" stroke="currentColor" stroke-width="1.1"/><path d="M6.5 0.5v2M3.5 0.5v2M0.5 4.5h9" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>
+                Schedule
+              </button>
+              <button class="btn btn-ghost" onclick="dismissLead(${idx})" style="padding:5px 8px;font-size:0.77rem" title="Dismiss — hide in this session, restore later">Dismiss</button>
+              <button class="btn btn-ghost" onclick="hideLeadEmail(${idx})" style="padding:5px 8px;font-size:0.77rem" title="Hide — remove from this scan">Hide</button>
+              <button class="btn btn-ghost" onclick="blockLeadSender(${idx})" style="padding:5px 8px;font-size:0.77rem;color:var(--danger)" title="Block sender permanently">Block</button>
+              <button class="btn btn-ghost" onclick="deleteLead(${idx})" style="padding:5px 7px;font-size:0.77rem;opacity:0.5;margin-left:auto" title="Delete">✕</button>
             ` : lead._dismissed ? `
-              <button class="btn btn-ghost" onclick="undismissLead(${idx})" style="padding:5px 12px;font-size:0.77rem">Restore</button>
-              <button class="btn btn-ghost" onclick="deleteLead(${idx})" style="padding:5px 10px;font-size:0.77rem;color:var(--danger);opacity:0.7;margin-left:auto">✕ Delete</button>
-            ` : `<span style="font-size:0.77rem;color:var(--success)">✓ Pushed to Odoo</span>`}
+              <span style="font-size:0.75rem;color:var(--muted)">Dismissed</span>
+              <button class="btn btn-ghost" onclick="undismissLead(${idx})" style="padding:5px 10px;font-size:0.77rem">Restore</button>
+              <button class="btn btn-ghost" onclick="blockLeadSender(${idx})" style="padding:5px 8px;font-size:0.77rem;color:var(--danger)" title="Block sender">Block</button>
+              <button class="btn btn-ghost" onclick="deleteLead(${idx})" style="padding:5px 7px;font-size:0.77rem;opacity:0.5;margin-left:auto">✕</button>
+            ` : `<span style="font-size:0.77rem;color:var(--success)">✓ Pushed to Odoo</span>
+              <button class="btn btn-ghost" onclick="scheduleLeadActivity(${idx})" style="padding:5px 8px;font-size:0.77rem;gap:4px;margin-left:auto" title="Schedule follow-up">
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><rect x="0.5" y="1.5" width="9" height="8" rx="1.5" stroke="currentColor" stroke-width="1.1"/><path d="M6.5 0.5v2M3.5 0.5v2M0.5 4.5h9" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>
+                Schedule
+              </button>`}
           </div>
         </div>
       </div>
@@ -9005,7 +9025,239 @@ function populateActivityTypeDropdown() {
   });
 }
 
+// ── Schedule Activity for lead ────────────────────────────
+
+function scheduleLeadActivity(idx) {
+  const lead = pendingLeads[idx];
+  if (!lead) return;
+  if (!odooUid) { alert('Connect to Odoo first (Steps 1-2).'); return; }
+
+  const name = lead.fields?.customer_name || lead.fields?.name || lead.subject || 'Lead';
+  const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate()+1);
+  const defaultDate = tomorrow.toISOString().split('T')[0];
+
+  // Build activity type options
+  const typeOpts = _activityTypes.length
+    ? _activityTypes.map(t=>`<option value="${t.id}">${escHtml(t.name)}</option>`).join('')
+    : '<option value="">— Default —</option>';
+
+  // Reuse a shared inline modal approach
+  const existing = document.getElementById('lead-schedule-modal');
+  if (existing) existing.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'lead-schedule-modal';
+  modal.className = 'modal-overlay';
+  modal.style.cssText = 'display:flex';
+  modal.innerHTML = `
+    <div class="modal" style="max-width:420px">
+      <div class="modal-header">
+        <div class="modal-header-text">
+          <div class="record">Schedule Activity</div>
+          <div class="contact" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(name)}</div>
+        </div>
+        <button class="modal-close" onclick="document.getElementById('lead-schedule-modal').remove()">✕</button>
+      </div>
+      <div class="modal-body" style="display:flex;flex-direction:column;gap:12px">
+        <div class="form-group">
+          <label>Activity type</label>
+          <select id="lsa-type" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.83rem;outline:none">
+            ${typeOpts}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Due date</label>
+          <input type="date" id="lsa-date" value="${defaultDate}" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-family:'DM Mono',monospace;font-size:0.83rem;outline:none">
+        </div>
+        <div class="form-group">
+          <label>Note <span style="color:var(--muted);font-weight:400">(optional)</span></label>
+          <textarea id="lsa-note" rows="3" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.83rem;outline:none;resize:vertical" placeholder="Call re: rental inquiry, follow up on quote…"></textarea>
+        </div>
+        <div id="lsa-status" style="font-size:0.78rem;color:var(--muted)"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="document.getElementById('lead-schedule-modal').remove()">Cancel</button>
+        <button class="btn btn-primary" onclick="scheduleLeadActivityConfirm(${idx})" style="gap:5px">
+          <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><rect x="0.5" y="1.5" width="10" height="9" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M7 0.5v2M4 0.5v2M0.5 5h10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+          Schedule in Odoo
+        </button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+}
+
+async function scheduleLeadActivityConfirm(idx) {
+  const lead = pendingLeads[idx];
+  if (!lead || !odooUid) return;
+
+  const typeId  = parseInt(document.getElementById('lsa-type')?.value) || null;
+  const date    = document.getElementById('lsa-date')?.value || new Date().toISOString().split('T')[0];
+  const note    = document.getElementById('lsa-note')?.value?.trim() || '';
+  const statusEl = document.getElementById('lsa-status');
+
+  const name = lead.fields?.customer_name || lead.subject || 'Lead';
+
+  // If lead already pushed, schedule against its Odoo lead ID
+  // If not pushed, create a lead first then schedule
+  try {
+    if (statusEl) { statusEl.style.color='var(--muted)'; statusEl.textContent='Scheduling…'; }
+
+    let leadOdooId = lead._odooLeadId || null;
+
+    if (!leadOdooId) {
+      // Create a minimal lead to attach the activity to
+      const partnerId = null;
+      const leadVals = {
+        name: `Follow-up: ${name}`,
+        type: 'opportunity',
+        user_id: odooUid,
+        description: note || `Scheduled via OEL from lead capture`,
+      };
+      if (lead.fields?.email) leadVals.email_from = lead.fields.email;
+      if (lead.fields?.phone) leadVals.phone = lead.fields.phone;
+      leadOdooId = await odooExecute(odooUid, 'crm.lead', 'create', [leadVals]);
+      lead._odooLeadId = leadOdooId;
+      lead._pushed = true;
+    }
+
+    const modelIds = await odooExecute(odooUid, 'ir.model', 'search', [[['model','=','crm.lead']]]);
+    const actVals = {
+      res_model_id:  modelIds[0],
+      res_id:        leadOdooId,
+      user_id:       odooUid,
+      date_deadline: date,
+      summary:       `Follow-up: ${name}`,
+      note:          note || `Scheduled via Odoo Email Link`,
+    };
+    if (typeId) {
+      actVals.activity_type_id = typeId;
+    } else {
+      const typeIds = await odooExecute(odooUid, 'mail.activity.type', 'search', [[['category','=','default']]]);
+      if (typeIds?.length) actVals.activity_type_id = typeIds[0];
+    }
+
+    await odooExecute(odooUid, 'mail.activity', 'create', [actVals]);
+
+    document.getElementById('lead-schedule-modal')?.remove();
+    renderLeadCards();
+
+    // Show brief confirmation
+    const card = document.getElementById(`lead-card-${idx}`);
+    if (card) {
+      const flash = document.createElement('div');
+      flash.style.cssText = 'font-size:0.74rem;color:var(--success);margin-top:4px';
+      flash.textContent = `✓ Activity scheduled for ${date}`;
+      card.querySelector('[style*="display:flex;gap:6px"]')?.appendChild(flash);
+      setTimeout(() => flash.remove(), 3000);
+    }
+
+  } catch(e) {
+    if (statusEl) { statusEl.style.color='var(--danger)'; statusEl.textContent='Error: '+e.message; }
+  }
+}
+
+async function batchScheduleActivity() {
+  const selected = pendingLeads.filter(l => l._selected && !l._dismissed);
+  if (!selected.length) { alert('Select at least one lead first.'); return; }
+  if (!odooUid) { alert('Connect to Odoo first (Steps 1-2).'); return; }
+
+  const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate()+1);
+  const defaultDate = tomorrow.toISOString().split('T')[0];
+  const typeOpts = _activityTypes.length
+    ? _activityTypes.map(t=>`<option value="${t.id}">${escHtml(t.name)}</option>`).join('')
+    : '<option value="">— Default —</option>';
+
+  const existing = document.getElementById('lead-schedule-modal');
+  if (existing) existing.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'lead-schedule-modal';
+  modal.className = 'modal-overlay';
+  modal.style.cssText = 'display:flex';
+  modal.innerHTML = `
+    <div class="modal" style="max-width:420px">
+      <div class="modal-header">
+        <div class="modal-header-text">
+          <div class="record">Schedule Activity</div>
+          <div class="contact">${selected.length} lead${selected.length!==1?'s':''} selected</div>
+        </div>
+        <button class="modal-close" onclick="document.getElementById('lead-schedule-modal').remove()">✕</button>
+      </div>
+      <div class="modal-body" style="display:flex;flex-direction:column;gap:12px">
+        <div class="form-group">
+          <label>Activity type</label>
+          <select id="lsa-type" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.83rem;outline:none">${typeOpts}</select>
+        </div>
+        <div class="form-group">
+          <label>Due date</label>
+          <input type="date" id="lsa-date" value="${defaultDate}" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-family:'DM Mono',monospace;font-size:0.83rem;outline:none">
+        </div>
+        <div class="form-group">
+          <label>Note <span style="color:var(--muted);font-weight:400">(optional)</span></label>
+          <textarea id="lsa-note" rows="2" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.83rem;outline:none;resize:vertical" placeholder="Follow up on rental inquiry…"></textarea>
+        </div>
+        <div id="lsa-status" style="font-size:0.78rem;color:var(--muted)"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="document.getElementById('lead-schedule-modal').remove()">Cancel</button>
+        <button class="btn btn-primary" onclick="batchScheduleActivityConfirm()" style="gap:5px">
+          <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><rect x="0.5" y="1.5" width="10" height="9" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M7 0.5v2M4 0.5v2M0.5 5h10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+          Schedule ${selected.length} in Odoo
+        </button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+}
+
+async function batchScheduleActivityConfirm() {
+  const selected = pendingLeads.map((l,i)=>({l,i})).filter(({l})=>l._selected&&!l._dismissed);
+  const typeId   = parseInt(document.getElementById('lsa-type')?.value) || null;
+  const date     = document.getElementById('lsa-date')?.value || new Date().toISOString().split('T')[0];
+  const note     = document.getElementById('lsa-note')?.value?.trim() || '';
+  const statusEl = document.getElementById('lsa-status');
+
+  let done = 0, failed = 0;
+  for (const {l, i} of selected) {
+    try {
+      await scheduleLeadActivityConfirmFor(l, i, typeId, date, note);
+      done++;
+      if (statusEl) { statusEl.style.color='var(--muted)'; statusEl.textContent=`Scheduled ${done} of ${selected.length}…`; }
+    } catch(e) { failed++; }
+  }
+  document.getElementById('lead-schedule-modal')?.remove();
+  renderLeadCards();
+  if (statusEl) { statusEl.style.color='var(--success)'; statusEl.textContent=`✓ Scheduled ${done}${failed?` (${failed} failed)`:''}`; }
+}
+
+async function scheduleLeadActivityConfirmFor(lead, idx, typeId, date, note) {
+  let leadOdooId = lead._odooLeadId || null;
+  const name = lead.fields?.customer_name || lead.subject || 'Lead';
+
+  if (!leadOdooId) {
+    const leadVals = { name:`Follow-up: ${name}`, type:'opportunity', user_id:odooUid, description:note||'' };
+    if (lead.fields?.email) leadVals.email_from = lead.fields.email;
+    if (lead.fields?.phone) leadVals.phone = lead.fields.phone;
+    leadOdooId = await odooExecute(odooUid, 'crm.lead', 'create', [leadVals]);
+    lead._odooLeadId = leadOdooId;
+    lead._pushed = true;
+  }
+
+  const modelIds = await odooExecute(odooUid, 'ir.model', 'search', [[['model','=','crm.lead']]]);
+  const actVals = { res_model_id:modelIds[0], res_id:leadOdooId, user_id:odooUid,
+    date_deadline:date, summary:`Follow-up: ${name}`, note:note||'Scheduled via OEL' };
+  if (typeId) {
+    actVals.activity_type_id = typeId;
+  } else {
+    const typeIds = await odooExecute(odooUid, 'mail.activity.type', 'search', [[['category','=','default']]]);
+    if (typeIds?.length) actVals.activity_type_id = typeIds[0];
+  }
+  await odooExecute(odooUid, 'mail.activity', 'create', [actVals]);
+}
+
 function dismissLead(idx) {
+  if (!pendingLeads[idx]) return;
+  pendingLeads[idx]._dismissed = true;
+  pendingLeads[idx]._selected  = false;
   renderLeadCards();
 }
 function undismissLead(idx) {
@@ -9015,6 +9267,33 @@ function undismissLead(idx) {
 function deleteLead(idx) {
   pendingLeads.splice(idx, 1);
   renderLeadCards();
+}
+
+function hideLeadEmail(idx) {
+  // Session-only: remove from view, comes back next scan
+  pendingLeads.splice(idx, 1);
+  renderLeadCards();
+}
+
+function blockLeadSender(idx) {
+  const lead = pendingLeads[idx];
+  if (!lead) return;
+  const sender = lead.sender_email || lead.sender || lead.fields?.email || '';
+  if (!sender) { alert('No sender address found.'); return; }
+  if (!confirm(`Block all emails from ${sender}?\nThey won't be fetched in future scans.`)) return;
+  loadBlocklist();
+  if (!_blocklist.find(b => b.pattern.toLowerCase() === sender.toLowerCase())) {
+    _blocklist.push({ id: 'bl_' + Date.now(), pattern: sender, note: 'Blocked from lead capture', ts: Date.now(), source: 'lead-capture', type: 'block' });
+    saveBlocklist();
+  }
+  // Remove all leads from this sender
+  pendingLeads = pendingLeads.filter((l,i) => {
+    const s = l.sender_email || l.sender || l.fields?.email || '';
+    return s.toLowerCase() !== sender.toLowerCase();
+  });
+  renderLeadCards();
+  const statusEl = document.getElementById('fetch-status-static');
+  if (statusEl) { statusEl.style.color='var(--success)'; statusEl.textContent=`✓ Blocked ${sender}`; }
 }
 function clearLeads() {
   pendingLeads = [];
@@ -14089,6 +14368,150 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-</script>
+// ── Global Debug Panel ────────────────────────────────────────────────────────
+
+const _oelDebugLog = [];
+
+function oelLog(msg, type = 'info') {
+  const ts = new Date().toLocaleTimeString('en-US', {hour12:false,hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  const entry = { ts, msg: String(msg), type };
+  _oelDebugLog.push(entry);
+  if (_oelDebugLog.length > 200) _oelDebugLog.shift();
+
+  const panel = document.getElementById('oel-debug-log');
+  if (panel && document.getElementById('oel-debug-panel').style.display !== 'none') {
+    oelDebugRenderLog();
+  }
+}
+
+function oelDebugRenderLog() {
+  const panel = document.getElementById('oel-debug-log');
+  if (!panel) return;
+  const colors = { error:'var(--danger)', warn:'var(--warning)', success:'var(--success)', info:'var(--muted)', head:'var(--accent)' };
+  panel.innerHTML = _oelDebugLog.map(e =>
+    `<div style="color:${colors[e.type]||'var(--text)'}"><span style="color:var(--muted);user-select:none">${e.ts} </span>${escHtml(e.msg)}</div>`
+  ).join('') || '<div style="color:var(--muted)">No log entries yet. Run a diagnostic above.</div>';
+  panel.scrollTop = panel.scrollHeight;
+}
+
+function oelDebugToggle() {
+  const panel = document.getElementById('oel-debug-panel');
+  if (!panel) return;
+  const open = panel.style.display !== 'none';
+  panel.style.display = open ? 'none' : 'flex';
+  if (!open) {
+    const ver = document.querySelector('meta[name="oel-version"]')?.content || '?';
+    const verEl = document.getElementById('oel-debug-version');
+    if (verEl) verEl.textContent = ver;
+    if (_oelDebugLog.length === 0) oelDebugRun('connections');
+    else oelDebugRenderLog();
+  }
+}
+
+function oelDebugClear() {
+  _oelDebugLog.length = 0;
+  oelDebugRenderLog();
+}
+
+async function oelDebugRun(mode) {
+  if (mode === 'connections') {
+    oelLog('── Connection Tests ──────────────────', 'head');
+
+    // IMAP server
+    try {
+      const r = await fetch('http://localhost:7843/ping', { signal: AbortSignal.timeout(3000) });
+      oelLog(`IMAP server (7843): ${r.ok ? '✓ online' : '✗ error ' + r.status}`, r.ok ? 'success' : 'error');
+    } catch(e) { oelLog(`IMAP server (7843): ✗ offline — ${e.message}`, 'error'); }
+
+    // CORS proxy
+    try {
+      const r = await fetch('http://localhost:7842/ping', { signal: AbortSignal.timeout(3000) });
+      oelLog(`CORS proxy  (7842): ${r.ok ? '✓ online' : '✗ error ' + r.status}`, r.ok ? 'success' : 'error');
+    } catch(e) { oelLog(`CORS proxy  (7842): ✗ offline — ${e.message}`, 'error'); }
+
+    // Gmail API
+    try {
+      const r = await fetch('http://localhost:7842/gmail/status', { signal: AbortSignal.timeout(3000) });
+      const d = await r.json();
+      oelLog(`Gmail API: libs=${d.has_libs} creds=${d.has_creds} token=${d.has_token} auth=${d.authorized}`, d.authorized ? 'success' : 'warn');
+    } catch(e) { oelLog(`Gmail API: ✗ — ${e.message}`, 'warn'); }
+
+    // Odoo
+    oelLog(`Odoo UID: ${odooUid || '✗ not connected'}`, odooUid ? 'success' : 'error');
+    if (odooConfig?.url) oelLog(`Odoo URL: ${odooConfig.url}`, 'info');
+
+  } else if (mode === 'state') {
+    oelLog('── App State ─────────────────────────', 'head');
+    oelLog(`Step: ${document.querySelector('.step-dot.active')?.textContent || '?'}`, 'info');
+    oelLog(`Laz Mode: ${lazModeUnlocked ? '✓ unlocked' : 'locked'}`, lazModeUnlocked ? 'success' : 'info');
+    oelLog(`Odoo users loaded: ${odooUsers?.length || 0}`, 'info');
+    oelLog(`Activity types: ${_activityTypes?.length || 0}`, 'info');
+    oelLog(`Lead specs: ${leadSpecs?.length || 0}`, 'info');
+    oelLog(`Pending leads: ${pendingLeads?.length || 0}`, 'info');
+    oelLog(`Personal accounts: ${_persAccounts?.length || 0}`, 'info');
+    oelLog(`Personal emails loaded: ${_persEmails?.length || 0}`, 'info');
+    oelLog(`Blocklist entries: ${_blocklist?.length || 0}`, 'info');
+    oelLog(`Theme: ${document.documentElement.getAttribute('data-theme') || 'lime'}`, 'info');
+
+  } else if (mode === 'storage') {
+    oelLog('── localStorage ──────────────────────', 'head');
+    const keys = ['odoo_email_link_creds','oel_imap_creds','oelTheme','oel_lead_specs',
+      'laz_notes','oel_pers_accounts','oel_pers_notes','oel_blocked_senders',
+      'oel_saved_searches','oel_quick_contacts','oel_my_name'];
+    keys.forEach(k => {
+      const val = localStorage.getItem(k);
+      if (val) {
+        try {
+          const parsed = JSON.parse(val);
+          const summary = Array.isArray(parsed) ? `[${parsed.length} items]`
+            : typeof parsed === 'object' ? `{${Object.keys(parsed).join(', ')}}` : String(parsed);
+          oelLog(`${k}: ${summary}`, 'info');
+        } catch { oelLog(`${k}: ${String(val).slice(0,80)}`, 'info'); }
+      } else {
+        oelLog(`${k}: (empty)`, 'warn');
+      }
+    });
+    oelLog(`Total localStorage keys: ${localStorage.length}`, 'info');
+  }
+
+  oelDebugRenderLog();
+}
+
+// Keyboard shortcut Ctrl+Shift+D
+document.addEventListener('keydown', e => {
+  if (e.ctrlKey && e.shiftKey && e.key === 'D') { e.preventDefault(); oelDebugToggle(); }
+});
+
+// Hook console.error to capture errors
+const _origConsoleError = console.error;
+console.error = (...args) => { _origConsoleError(...args); oelLog('✗ ' + args.join(' '), 'error'); };
+console.warn  = (...args) => { console.warn.orig?.(...args); oelLog('⚠ ' + args.join(' '), 'warn'); };
+
+// Capture unhandled errors
+window.addEventListener('error', e => oelLog(`✗ ${e.message} (${e.filename?.split('/').pop()}:${e.lineno})`, 'error'));
+window.addEventListener('unhandledrejection', e => oelLog(`✗ Unhandled promise: ${e.reason}`, 'error'));
+
+<!-- ── Global Debug Panel ──────────────────────────────────────────────── -->
+<div id="oel-debug-btn" onclick="oelDebugToggle()" title="OEL Debug Console (Ctrl+Shift+D)"
+  style="position:fixed;bottom:18px;left:18px;width:34px;height:34px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:9998;opacity:0.5;transition:opacity 0.2s;font-size:0.75rem;color:var(--muted);font-family:'DM Mono',monospace;font-weight:700;user-select:none"
+  onmouseover="this.style.opacity='1';this.style.borderColor='var(--accent)'"
+  onmouseout="this.style.opacity='0.5';this.style.borderColor='var(--border)'">
+  DBG
+</div>
+
+<div id="oel-debug-panel" style="display:none;position:fixed;bottom:64px;left:18px;width:580px;max-width:calc(100vw - 36px);max-height:70vh;background:var(--surface);border:1px solid var(--border);border-radius:12px;z-index:9999;box-shadow:0 12px 40px rgba(0,0,0,0.4);flex-direction:column;overflow:hidden">
+  <div style="display:flex;align-items:center;padding:10px 14px;border-bottom:1px solid var(--border);gap:10px;background:var(--surface2)">
+    <span style="font-size:0.72rem;font-weight:700;letter-spacing:0.06em;color:var(--accent);font-family:'DM Mono',monospace">OEL DEBUG</span>
+    <span id="oel-debug-version" style="font-size:0.68rem;color:var(--muted);font-family:'DM Mono',monospace"></span>
+    <div style="flex:1"></div>
+    <button onclick="oelDebugRun('connections')" style="background:none;border:1px solid var(--border);border-radius:5px;padding:2px 8px;font-size:0.7rem;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif" onmouseover="this.style.color='var(--accent)';this.style.borderColor='var(--accent)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--border)'">Test connections</button>
+    <button onclick="oelDebugRun('state')" style="background:none;border:1px solid var(--border);border-radius:5px;padding:2px 8px;font-size:0.7rem;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif" onmouseover="this.style.color='var(--accent)';this.style.borderColor='var(--accent)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--border)'">App state</button>
+    <button onclick="oelDebugRun('storage')" style="background:none;border:1px solid var(--border);border-radius:5px;padding:2px 8px;font-size:0.7rem;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif" onmouseover="this.style.color='var(--accent)';this.style.borderColor='var(--accent)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--border)'">Storage</button>
+    <button onclick="oelDebugClear()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.8rem;padding:2px 6px" title="Clear log">⌫</button>
+    <button onclick="oelDebugToggle()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.9rem;padding:2px 6px">✕</button>
+  </div>
+  <div id="oel-debug-log" style="flex:1;overflow-y:auto;padding:10px 14px;font-family:'DM Mono',monospace;font-size:0.73rem;line-height:1.6;max-height:calc(70vh - 80px)"></div>
+</div>
+
 </body>
 </html>
