@@ -1,0 +1,43 @@
+{
+  "name": "OEL Command — OdooLink",
+  "short_name": "OEL",
+  "description": "AI-powered sales operations command center — unified inbox, Odoo CRM, email drafting, vendor outreach, and more.",
+  "start_url": "/odoolink/app/index.html",
+  "scope": "/odoolink/app/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0f0f0f",
+  "theme_color": "#c9a84c",
+  "categories": ["business", "productivity"],
+  "version": "12.0.0",
+  "icons": [
+    { "src": "icons/icon-192.png",          "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png",          "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/icon.svg",              "sizes": "any",     "type": "image/svg+xml", "purpose": "any maskable" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Inbox",
+      "short_name": "Inbox",
+      "description": "Open unified inbox",
+      "url": "/odoolink/app/index.html#inbox",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Quotes",
+      "short_name": "Quotes",
+      "description": "Build a quote",
+      "url": "/odoolink/app/index.html#quotes",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Lead Capture",
+      "short_name": "Leads",
+      "description": "Capture and push leads to Odoo CRM",
+      "url": "/odoolink/app/index.html#leads",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
