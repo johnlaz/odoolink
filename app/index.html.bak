@@ -3,7 +3,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <meta name="oel-version" content="v13.0">
+  <meta name="oel-version" content="v5.0">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="mobile-web-app-capable" content="yes">
@@ -915,11 +915,6 @@
         </svg>
       </div>
       <span class="sb-item-label">Bounces</span>
-    </div>
-
-    <div class="sb-item" id="nav-dataexplorer" onclick="navTo('dataexplorer')" title="Data Explorer">
-      <div class="sb-item-icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="12" height="12" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M1 4h12M1 7h12M1 10h12" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg></div>
-      <span class="sb-item-label">Data Explorer</span>
     </div>
 
     <div class="sb-item" id="nav-catchup" onclick="navTo('catchup')" title="Dormant Contacts">
@@ -2834,7 +2829,7 @@ Support Team"></textarea>
         </div>
 
         <div style="text-align:center;font-size:0.72rem;color:var(--muted);padding:12px 0">
-          OEL Command v13.0 · Built by Lazzaro · Powered by Groq AI + Odoo 19
+          OEL Command v11.1 · Built by Lazzaro · Powered by Groq AI + Odoo 19
         </div>
 
       </div>
@@ -2944,7 +2939,7 @@ Support Team"></textarea>
           <div class="card-title" style="font-family:'DM Serif Display',serif;font-size:1.2rem;margin-bottom:6px">Dashboard</div>
           <div class="card-subtitle" style="margin-bottom:16px">Pipeline, opportunities, and team performance from Odoo.</div>
           <div style="display:inline-flex;align-items:center;gap:6px;margin-bottom:8px">
-            <span style="font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace;box-shadow:0 0 8px rgba(201,168,76,0.35),0 0 20px rgba(201,168,76,0.12);animation:versionGlow 3s ease-in-out infinite alternate">OEL Command v13.0</span>
+            <span style="font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace;box-shadow:0 0 8px rgba(201,168,76,0.35),0 0 20px rgba(201,168,76,0.12);animation:versionGlow 3s ease-in-out infinite alternate">OEL Command v11.1</span>
             <span style="font-size:0.68rem;color:var(--muted)">Built by Lazzaro</span>
           </div>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px">
@@ -3047,105 +3042,6 @@ Support Team"></textarea>
       </div>
     </div>
 
-    <!-- DATA EXPLORER -->
-    <div class="section-panel" id="panel-dataexplorer">
-      <div class="section-scroll" style="padding:20px 24px">
-        <div id="de-upload-phase">
-          <div style="margin-bottom:16px">
-            <div style="font-size:1.05rem;font-weight:600;margin-bottom:4px">Data Explorer</div>
-            <div style="font-size:0.83rem;color:var(--muted)">Upload a QuickBooks export or customer list to review and sync with Odoo</div>
-          </div>
-          <div style="border:2px dashed var(--border);border-radius:10px;padding:40px 20px;text-align:center;background:var(--surface2)">
-            <div style="font-size:2rem;margin-bottom:10px">&#128193;</div>
-            <div style="font-weight:600;font-size:0.9rem;margin-bottom:6px">Upload Your File</div>
-            <div style="font-size:0.82rem;color:var(--muted);margin-bottom:18px">Excel (.xlsx, .xls) or CSV</div>
-            <label style="cursor:pointer">
-              <input type="file" accept=".xlsx,.xls,.csv" id="de-file-input" style="display:none" onchange="deHandleUpload(this)">
-              <span class="btn btn-primary" style="padding:8px 20px;font-size:0.85rem">Choose File</span>
-            </label>
-          </div>
-        </div>
-        <div id="de-preview-phase" style="display:none">
-          <a onclick="deGoTo('upload')" style="cursor:pointer;color:var(--primary);font-size:0.83rem;display:inline-block;margin-bottom:14px">&#8592; Upload Different File</a>
-          <div id="de-file-banner" style="background:var(--accent);color:var(--bg);padding:9px 13px;border-radius:7px;font-size:0.83rem;font-weight:500;margin-bottom:16px"></div>
-          <div style="font-weight:600;font-size:0.88rem;margin-bottom:8px">Data Preview (first 10 rows)</div>
-          <div style="overflow-x:auto;border:1px solid var(--border);border-radius:8px;margin-bottom:16px"><table id="de-preview-tbl" style="width:100%;border-collapse:collapse;font-size:0.79rem"></table></div>
-          <div style="display:flex;gap:8px;padding-top:14px;border-top:1px solid var(--border)">
-            <button class="btn btn-ghost" onclick="deGoTo('upload')" style="padding:7px 14px;font-size:0.83rem">&#8592; Back</button>
-            <button class="btn btn-primary" onclick="deGoTo('columns')" style="padding:7px 16px;font-size:0.83rem;margin-left:auto">Select Columns &#8594;</button>
-          </div>
-        </div>
-        <div id="de-columns-phase" style="display:none">
-          <a onclick="deGoTo('preview')" style="cursor:pointer;color:var(--primary);font-size:0.83rem;display:inline-block;margin-bottom:14px">&#8592; Back to Preview</a>
-          <div style="font-weight:600;font-size:0.88rem;margin-bottom:4px">Select Columns to Use</div>
-          <div id="de-col-count" style="font-size:0.82rem;color:var(--muted);margin-bottom:14px">Click a column card to select it.</div>
-          <div id="de-col-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;margin-bottom:16px"></div>
-          <div style="font-weight:600;font-size:0.88rem;margin-bottom:8px">Preview of Selected Columns</div>
-          <div style="overflow-x:auto;border:1px solid var(--border);border-radius:8px;margin-bottom:16px"><table id="de-sel-tbl" style="width:100%;border-collapse:collapse;font-size:0.79rem"></table></div>
-          <div style="display:flex;gap:8px;padding-top:14px;border-top:1px solid var(--border)">
-            <button class="btn btn-ghost" onclick="deGoTo('preview')" style="padding:7px 14px;font-size:0.83rem">&#8592; Back</button>
-            <button id="de-proceed-btn" class="btn btn-primary" onclick="deGoTo('matching')" style="padding:7px 16px;font-size:0.83rem;margin-left:auto" disabled>Scan Odoo &#8594;</button>
-          </div>
-        </div>
-        <!-- ── PHASE: MATCHING ─────────────────────────────────────────── -->
-        <div id="de-matching-phase" style="display:none;text-align:center;padding:40px 20px">
-          <div id="de-match-spinner" style="width:36px;height:36px;border:3px solid var(--border);border-top:3px solid var(--accent);border-radius:50%;margin:0 auto 16px;animation:de-spin 1s linear infinite"></div>
-          <div id="de-match-status" style="font-size:0.85rem;color:var(--muted)">Loading partners from Odoo...</div>
-        </div>
-
-        <!-- ── PHASE: RESULTS ──────────────────────────────────────────── -->
-        <div id="de-results-phase" style="display:none">
-
-          <!-- Bulk actions bar -->
-          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-            <span id="de-checked-count" style="font-size:0.82rem;color:var(--muted);min-width:80px">0 selected</span>
-            <select id="de-bulk-rep" style="flex:1;min-width:140px;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-size:0.82rem;font-family:'DM Sans',sans-serif;outline:none">
-              <option value="">Assign rep to all checked...</option>
-            </select>
-            <input type="date" id="de-bulk-date" style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-size:0.82rem;font-family:'DM Sans',sans-serif;outline:none">
-            <button class="btn btn-primary" onclick="deBulkAssign()" style="padding:6px 14px;font-size:0.82rem;white-space:nowrap">Apply to checked</button>
-            <div style="flex:1"></div>
-            <button class="btn btn-ghost" onclick="deCreateActivities()" id="de-create-btn" style="padding:6px 14px;font-size:0.82rem;white-space:nowrap" disabled>Create activities</button>
-            <button class="btn btn-ghost" onclick="deExportExcel()" style="padding:6px 14px;font-size:0.82rem;white-space:nowrap">&#8203;Export XLSX</button>
-            <button class="btn btn-ghost" onclick="dePrintReport()" style="padding:6px 14px;font-size:0.82rem;white-space:nowrap">&#8203;Print report</button>
-          </div>
-
-          <!-- Filter pills -->
-          <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap">
-            <button class="de-filter-pill active" data-filter="all" onclick="deFilter('all')" style="padding:4px 12px;border-radius:20px;font-size:0.78rem;border:1px solid var(--accent);background:var(--accent);color:var(--bg);cursor:pointer">All</button>
-            <button class="de-filter-pill" data-filter="exact" onclick="deFilter('exact')" style="padding:4px 12px;border-radius:20px;font-size:0.78rem;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer">Exact</button>
-            <button class="de-filter-pill" data-filter="partial" onclick="deFilter('partial')" style="padding:4px 12px;border-radius:20px;font-size:0.78rem;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer">Partial</button>
-            <button class="de-filter-pill" data-filter="new" onclick="deFilter('new')" style="padding:4px 12px;border-radius:20px;font-size:0.78rem;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer">New</button>
-          </div>
-
-          <!-- Results table -->
-          <div id="de-results-list" style="display:flex;flex-direction:column;gap:6px"></div>
-
-        </div>
-
-        <!-- ── PHASE: CREATING ─────────────────────────────────────────── -->
-        <div id="de-creating-phase" style="display:none;text-align:center;padding:40px 20px">
-          <div style="width:36px;height:36px;border:3px solid var(--border);border-top:3px solid var(--accent);border-radius:50%;margin:0 auto 16px;animation:de-spin 1s linear infinite"></div>
-          <div id="de-creating-status" style="font-size:0.85rem;color:var(--muted)">Creating activities...</div>
-        </div>
-
-        <!-- ── PHASE: COMPLETE ─────────────────────────────────────────── -->
-        <div id="de-done-phase" style="display:none;text-align:center;padding:40px 20px">
-          <div style="font-size:2rem;margin-bottom:12px">&#10003;</div>
-          <div style="font-size:1rem;font-weight:600;margin-bottom:6px">Activities Created</div>
-          <div id="de-done-txt" style="font-size:0.85rem;color:var(--muted);margin-bottom:20px"></div>
-          <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
-            <button class="btn btn-ghost" onclick="deExportExcel()" style="padding:7px 16px;font-size:0.83rem">Export XLSX</button>
-            <button class="btn btn-ghost" onclick="dePrintReport()" style="padding:7px 16px;font-size:0.83rem">Print Report</button>
-            <button class="btn btn-ghost" onclick="deGoTo('upload')" style="padding:7px 16px;font-size:0.83rem">Start Over</button>
-          </div>
-        </div>
-        <div id="de-err-banner" style="display:none;margin-top:14px;padding:9px 13px;background:#fee2e2;border:1px solid #fecaca;border-radius:6px;color:#991b1b;font-size:0.82rem;align-items:center;gap:8px">
-          <span id="de-err-txt"></span>
-          <button onclick="document.getElementById('de-err-banner').style.display='none'" style="margin-left:auto;background:none;border:none;cursor:pointer;color:inherit">&#10005;</button>
-        </div>
-      </div>
-    </div>
     <!-- ── CATCH UP ──────────────────────────────────────────────────────── -->
     <div class="section-panel" id="panel-catchup">
       <div class="section-scroll">
@@ -3550,12 +3446,11 @@ Thank you</textarea>
 
         <div class="divider"></div>
 
-                <!-- Sidebar Order -->
+        <!-- Sidebar Order -->
         <div style="font-size:0.72rem;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px">Sidebar Order</div>
-        <button class="gear-item" onclick="openSidebarOrderModal()">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 4h10M2 7h10M2 10h10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
-          Reorder sidebar items
-        </button>
+        <div style="font-size:0.75rem;color:var(--muted);margin-bottom:10px;line-height:1.5">Use ▲ ▼ to reorder. Settings is always pinned last.</div>
+        <div id="sidebar-order-list" style="display:flex;flex-direction:column;gap:3px"></div>
+        <button onclick="resetSidebarOrder()" style="margin-top:10px;background:none;border:1px solid var(--border);border-radius:6px;padding:5px 12px;color:var(--muted);font-size:0.75rem;cursor:pointer;font-family:'DM Sans',sans-serif" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">Reset to default</button>
 
         <div class="divider"></div>
 
@@ -9365,9 +9260,9 @@ async function projChatSend() {
     if (taskNames.length) {
       taskBtns = '<div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:8px">' +
         taskNames.map(function(name, i) {
-          return '<button onclick="projStageBrainstormTask(\'' + escHtml(name).replace(/'/g,"\\'") + '\')" style="background:var(--accent-dim);border:1px solid rgba(201,168,76,0.4);border-radius:6px;padding:3px 10px;font-size:0.73rem;color:var(--accent);cursor:pointer;font-family:DM Sans,sans-serif">+ ' + escHtml(name.slice(0,35)) + (name.length>35?'…':'') + '</button>';
+          return '<button onclick="projStageBrainstormTask(\'' + escHtml(name).replace(/'/g,"\\'") + '\')" style="background:var(--accent-dim);border:1px solid rgba(201,168,76,0.4);border-radius:6px;padding:3px 10px;font-size:0.73rem;color:var(--accent);cursor:pointer;font-family:\'DM Sans\',sans-serif">+ ' + escHtml(name.slice(0,35)) + (name.length>35?'…':'') + '</button>';
         }).join('') +
-        (taskNames.length > 1 ? '<button onclick="projStageAllBrainstormTasks(' + JSON.stringify(taskNames).replace(/"/g,"'") + ')" style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:3px 10px;font-size:0.73rem;color:var(--muted);cursor:pointer;font-family:DM Sans,sans-serif">+ All ' + taskNames.length + ' tasks</button>' : '') +
+        (taskNames.length > 1 ? '<button onclick="projStageAllBrainstormTasks(' + JSON.stringify(taskNames).replace(/"/g,"'") + ')" style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:3px 10px;font-size:0.73rem;color:var(--muted);cursor:pointer;font-family:\'DM Sans\',sans-serif">+ All ' + taskNames.length + ' tasks</button>' : '') +
       '</div>';
     }
 
@@ -9793,7 +9688,7 @@ async function ptmAIRewrite() {
       suggestionsEl.style.display = 'flex';
       suggestionsEl.innerHTML = '<div style="font-size:0.71rem;color:var(--muted);margin-bottom:3px">Choose a rewrite:</div>' +
         lines.map(function(l) {
-          return '<button onclick="ptmPickRewrite(\'' + escHtml(l).replace(/'/g,"\\'") + '\')" style="background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:7px 11px;font-size:0.8rem;color:var(--text);cursor:pointer;text-align:left;font-family:DM Sans,sans-serif;transition:border-color 0.12s" onmouseover="this.style.borderColor=\'var(--accent)\'" onmouseout="this.style.borderColor=\'var(--border)\'">' + escHtml(l) + '</button>';
+          return '<button onclick="ptmPickRewrite(\'' + escHtml(l).replace(/'/g,"\\'") + '\')" style="background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:7px 11px;font-size:0.8rem;color:var(--text);cursor:pointer;text-align:left;font-family:\'DM Sans\',sans-serif;transition:border-color 0.12s" onmouseover="this.style.borderColor=\'var(--accent)\'" onmouseout="this.style.borderColor=\'var(--border)\'">' + escHtml(l) + '</button>';
         }).join('');
     }
   } catch(e) {
@@ -10041,7 +9936,7 @@ function qspRenderEquipment() {
           '<div style="flex-shrink:0;position:relative">' +
             '<input type="text" placeholder="Search catalog…" ' +
               'oninput="qspSearchProduct(this,\'' + idx + '\')" ' +
-              'style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:5px 8px;color:var(--text);font-size:0.76rem;outline:none;width:140px;font-family:DM Sans,sans-serif" ' +
+              'style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:5px 8px;color:var(--text);font-size:0.76rem;outline:none;width:140px;font-family:\'DM Sans\',sans-serif" ' +
               'id="qsp-search-' + idx + '">' +
             '<div id="qsp-results-' + idx + '" style="display:none;position:absolute;top:calc(100%+2px);right:0;background:var(--surface);border:1px solid var(--border);border-radius:7px;z-index:200;min-width:200px;max-height:150px;overflow-y:auto;box-shadow:0 4px 14px rgba(0,0,0,0.25)"></div>' +
           '</div>' +
@@ -10791,11 +10686,9 @@ window.addEventListener('DOMContentLoaded', () => {
   if (typeof loadImapCreds  === 'function') loadImapCreds();
   // Update lights after credentials are restored
   setTimeout(updateStatusLights, 800);
-  // v13: restore sidebar order + load document library
+  // v11: restore sidebar order + load document library
   if (typeof docLibLoad === 'function') docLibLoad();
   if (typeof docLibRender  === 'function') docLibRender();
-  // Re-apply sidebar order after all init is complete (prevents race with nav render)
-  setTimeout(function(){ if (typeof window.applySidebarOrder === 'function') window.applySidebarOrder(); }, 100);
 });
 const THEME_COLORS = {
   lime: '#c8f04e', cyan: '#00d8ff', ember: '#ff7c2a', light: '#6c47ff', violet: '#c77dff'
@@ -13142,7 +13035,7 @@ async function lazSilentConnect() {
     const parts = [];
     if (!odooOk) parts.push(
       '<span style="color:var(--warning)">⚠ Odoo not connected — ' +
-      '<button onclick="setStep(1)" style="background:none;border:none;color:var(--accent);cursor:pointer;font-size:0.78rem;font-family:DM Sans,sans-serif;text-decoration:underline;padding:0">go to Step 1</button>' +
+      '<button onclick="setStep(1)" style="background:none;border:none;color:var(--accent);cursor:pointer;font-size:0.78rem;font-family:\'DM Sans\',sans-serif;text-decoration:underline;padding:0">go to Step 1</button>' +
       '</span>'
     );
     if (!imapOk) parts.push(
@@ -14478,7 +14371,7 @@ function renderLazNotes() {
     // Individual AI cleanup button
     const aiBtn = document.createElement('button');
     aiBtn.innerHTML = '<svg width="10" height="10" viewBox="0 0 11 11" fill="none"><path d="M5.5 1l1 3L10 5.5l-3 1-1 3-1-3-3-1 3-1z" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/></svg> Clean up';
-    aiBtn.style.cssText = 'background:none;border:none;color:var(--accent);cursor:pointer;font-size:0.71rem;padding:0 4px;display:flex;align-items:center;gap:3px;font-family:DM Sans,sans-serif;opacity:0.7';
+    aiBtn.style.cssText = 'background:none;border:none;color:var(--accent);cursor:pointer;font-size:0.71rem;padding:0 4px;display:flex;align-items:center;gap:3px;font-family:\'DM Sans\',sans-serif;opacity:0.7';
     aiBtn.onmouseover = () => aiBtn.style.opacity = '1';
     aiBtn.onmouseout  = () => aiBtn.style.opacity = '0.7';
     aiBtn.onclick     = () => notesCleanupOne(note.id);
@@ -14486,7 +14379,7 @@ function renderLazNotes() {
 
     const deleteBtn = document.createElement('button');
     deleteBtn.textContent = 'Delete';
-    deleteBtn.style.cssText = 'background:none;border:none;color:var(--danger);cursor:pointer;font-size:0.71rem;padding:0 0 0 8px;opacity:0.6;font-family:DM Sans,sans-serif';
+    deleteBtn.style.cssText = 'background:none;border:none;color:var(--danger);cursor:pointer;font-size:0.71rem;padding:0 0 0 8px;opacity:0.6;font-family:\'DM Sans\',sans-serif';
     deleteBtn.onmouseover = () => deleteBtn.style.opacity = '1';
     deleteBtn.onmouseout  = () => deleteBtn.style.opacity = '0.6';
     deleteBtn.onclick     = () => lazDeleteNote(note.id);
@@ -20864,7 +20757,7 @@ function ddOppsHTML(opps, base) {
   const oppsToolbar = '<div style="padding:9px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;background:var(--surface2)">'+
     '<div><span style="font-size:0.72rem;color:var(--muted)">TOTAL</span> <strong style="color:var(--accent);font-family:\'DM Mono\',monospace">'+ddFmt(total)+'</strong></div>'+
     '<div><span style="font-size:0.72rem;color:var(--muted)">DEALS</span> <strong style="color:var(--text)">'+opps.length+'</strong></div>'+
-    '<button onclick="ddOppsTeamView()" style="background:none;border:1px solid var(--accent);border-radius:7px;padding:5px 12px;font-size:0.77rem;color:var(--accent);cursor:pointer;font-family:DM Sans,sans-serif;white-space:nowrap;margin-left:auto">Team view</button>'+
+    '<button onclick="ddOppsTeamView()" style="background:none;border:1px solid var(--accent);border-radius:7px;padding:5px 12px;font-size:0.77rem;color:var(--accent);cursor:pointer;font-family:\'DM Sans\',sans-serif;white-space:nowrap;margin-left:auto">Team view</button>'+
   '</div>';
   let html = ddTableStyles()+oppsToolbar+'<div style="overflow-y:auto;max-height:460px">';
   Object.entries(stages).forEach(([stage,deals]) => {
@@ -20908,7 +20801,7 @@ function ddWonHTML(won, base) {
   return ddTableStyles()+
     '<div style="padding:10px 14px;background:var(--surface2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:16px">'+
     '<span style="font-size:0.72rem;color:var(--muted)">TOTAL WON</span><strong style="color:var(--success);font-size:1.1rem;font-family:\'DM Serif Display\',serif">'+ddFmt(total)+'</strong>'+
-    '<button onclick="ddWonTeamView()" style="background:none;border:1px solid var(--accent);border-radius:7px;padding:5px 12px;font-size:0.77rem;color:var(--accent);cursor:pointer;font-family:DM Sans,sans-serif;white-space:nowrap;margin-left:auto">Team view</button>'+
+    '<button onclick="ddWonTeamView()" style="background:none;border:1px solid var(--accent);border-radius:7px;padding:5px 12px;font-size:0.77rem;color:var(--accent);cursor:pointer;font-family:\'DM Sans\',sans-serif;white-space:nowrap;margin-left:auto">Team view</button>'+
     '</div>'+
     '<div style="border-bottom:2px solid var(--border)">'+repRows+'</div>'+
     '<div style="overflow-y:auto;max-height:280px"><table class="dd-table"><thead><tr><th>Deal</th><th>Revenue</th><th>Owner</th><th>Closed</th></tr></thead><tbody>'+dealRows+'</tbody></table></div>';
@@ -20970,7 +20863,7 @@ function ddInboxHTML(msgs, base) {
       '<button class="dd-act-btn" onclick="ddMarkMsgRead('+m.id+',this)">Mark read ✓</button>'+
       (base&&m.model&&m.res_id?'<button class="dd-act-btn" onclick="window.open(\''+base+'/odoo/'+m.model.replace('.','-')+'/'+m.res_id+'\',\'_blank\')">Open ↗</button>':'')+
       '</div><div id="dd-reply-'+i+'" style="display:none;margin-top:8px">'+
-      '<textarea id="dd-reply-text-'+i+'" style="width:100%;min-height:60px;background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:DM Sans,sans-serif;font-size:0.82rem;outline:none;resize:none;line-height:1.5" placeholder="Write reply…"></textarea>'+
+      '<textarea id="dd-reply-text-'+i+'" style="width:100%;min-height:60px;background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:\'DM Sans\',sans-serif;font-size:0.82rem;outline:none;resize:none;line-height:1.5" placeholder="Write reply…"></textarea>'+
       '<div style="display:flex;gap:6px;margin-top:6px">'+
       '<button class="dd-act-btn" onclick="ddSendReply('+m.id+',\''+m.model+'\','+m.res_id+','+i+')">Send</button>'+
       '<button class="dd-act-btn" onclick="document.getElementById(\'dd-reply-'+i+'\').style.display=\'none\'">Cancel</button></div></div></div>';
@@ -21023,7 +20916,7 @@ function ddVelocityHTML(opps, base) {
     '<div style="padding:10px 14px;background:var(--surface2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;font-size:0.78rem;color:var(--muted)">'+
     '<span>🔴 30+ days &nbsp;·&nbsp; 🟡 14-29 days &nbsp;·&nbsp; 🟢 Active</span>'+
     '<span style="color:var(--warning)">'+sc+' deal'+(sc!==1?'s':'')+' need attention</span>'+
-    '<button onclick="ddVelocityTeamView()" style="background:none;border:1px solid var(--accent);border-radius:7px;padding:5px 12px;font-size:0.77rem;color:var(--accent);cursor:pointer;font-family:DM Sans,sans-serif;white-space:nowrap;margin-left:auto">Team view</button>'+
+    '<button onclick="ddVelocityTeamView()" style="background:none;border:1px solid var(--accent);border-radius:7px;padding:5px 12px;font-size:0.77rem;color:var(--accent);cursor:pointer;font-family:\'DM Sans\',sans-serif;white-space:nowrap;margin-left:auto">Team view</button>'+
     '</div>'+
     '<div style="overflow-y:auto;max-height:440px"><table class="dd-table">'+
     '<thead><tr><th>Deal</th><th>Value</th><th>Stage</th><th>Last Activity</th><th>Owner</th></tr></thead>'+
@@ -21379,7 +21272,7 @@ function briefingRender(text, flaggedEmails, overAchiever, imapOnline) {
   // Parse numbered items (1. 2. 3. etc) into checkbox rows
   // Split on numbered list items while preserving section structure
   const lines = text.split('\n');
-  let html = '<div style="font-family:DM Sans,sans-serif;font-size:0.87rem;line-height:1.75;color:var(--text)">';
+  let html = '<div style="font-family:\'DM Sans\',sans-serif;font-size:0.87rem;line-height:1.75;color:var(--text)">';
   let itemIdx = 0;
 
   lines.forEach(line => {
@@ -21432,7 +21325,7 @@ function briefingRender(text, flaggedEmails, overAchiever, imapOnline) {
       html += '<div style="font-size:0.72rem;color:var(--muted);margin-top:2px">'+escHtml(e.sender_email)+' · '+escHtml(e.date||'')+'</div>';
       html += '</div>';
       html += '<div style="display:flex;gap:5px;flex-shrink:0">';
-      html += '<button onclick="openQuickCompose({to:\'' + senderAttr + '\',subject:\'Re: ' + subjectAttr + '\',context:\'' + subjectAttr + '\'})" style="background:none;border:1px solid var(--border);border-radius:6px;padding:3px 8px;font-size:0.71rem;color:var(--muted);cursor:pointer;font-family:DM Sans,sans-serif" onmouseover="this.style.borderColor=\'var(--accent)\';this.style.color=\'var(--accent)\'" onmouseout="this.style.borderColor=\'var(--border)\';this.style.color=\'var(--muted)\'">Reply</button>';
+      html += '<button onclick="openQuickCompose({to:\'' + senderAttr + '\',subject:\'Re: ' + subjectAttr + '\',context:\'' + subjectAttr + '\'})" style="background:none;border:1px solid var(--border);border-radius:6px;padding:3px 8px;font-size:0.71rem;color:var(--muted);cursor:pointer;font-family:\'DM Sans\',sans-serif" onmouseover="this.style.borderColor=\'var(--accent)\';this.style.color=\'var(--accent)\'" onmouseout="this.style.borderColor=\'var(--border)\';this.style.color=\'var(--muted)\'">Reply</button>';
       html += '</div></div>';
     });
     html += '</div></div>';
@@ -22029,135 +21922,140 @@ window.actTab = function(tab) {
 
 
 // ── Sidebar Order ──────────────────────────────────────────────
-(function() {
-  var KEY = 'oel_sidebar_order';
-  var DEFAULTS = [
-    ['nav-inbox','Inbox'],['nav-leads','Lead Capture'],['nav-activities','Activities'],
-    ['nav-quotes','Quotes'],['nav-smartbuilder','Smart Builder'],['nav-quotedesk','Request Desk'],
-    ['nav-projects','Projects'],['nav-templates','Templates'],['nav-discuss','Discuss'],
-    ['nav-support','Support'],['nav-bounces','Bounces'],['nav-dataexplorer','Data Explorer'],['nav-catchup','Dormant Contacts'],
-    ['nav-vendor','Vendor Outreach'],['nav-docs','Documents'],['nav-prospect','Prospecting'],
-    ['nav-reports','Reports'],['nav-help','Help']
-  ];
+const OEL_SIDEBAR_ORDER_KEY = 'oel_sidebar_order';
 
-  function load() { try { return JSON.parse(localStorage.getItem(KEY)) || null; } catch(e) { return null; } }
-  function save(ids) { localStorage.setItem(KEY, JSON.stringify(ids)); }
-  function defaultIds() { return DEFAULTS.map(function(d){return d[0];}); }
-  function labelFor(id) { for(var i=0;i<DEFAULTS.length;i++){if(DEFAULTS[i][0]===id)return DEFAULTS[i][1];} return id; }
+// All reorderable nav items in default order (id, label)
+const SIDEBAR_ITEMS_DEFAULT = [
+  { id: 'nav-inbox',        label: '📥 Inbox' },
+  { id: 'nav-leads',        label: '🎯 Lead Capture' },
+  { id: 'nav-activities',   label: '📋 Activities' },
+  { id: 'nav-quotes',       label: '💬 Quotes' },
+  { id: 'nav-smartbuilder', label: '🤖 Smart Builder' },
+  { id: 'nav-quotedesk',    label: '📝 Request Desk' },
+  { id: 'nav-projects',     label: '📁 Projects' },
+  { id: 'nav-templates',    label: '✉️ Templates' },
+  { id: 'nav-discuss',      label: '💬 Discuss' },
+  { id: 'nav-support',      label: '🛠 Support' },
+  { id: 'nav-bounces',      label: '⚠️ Bounces' },
+  { id: 'nav-catchup',      label: '💤 Dormant Contacts' },
+  { id: 'nav-vendor',       label: '⭐ Vendor Outreach' },
+  { id: 'nav-docs',         label: '📄 Documents' },
+  { id: 'nav-prospect',     label: '🔍 Prospecting' },
+  { id: 'nav-reports',      label: '📊 Reports' },
+  { id: 'nav-help',         label: 'ℹ️ Help' },
+];
 
-  function applyOrder() {
-    var saved = load();
-    if (!saved || !saved.length) return;
-    var nav = document.querySelector('#sidebar nav.sb-nav');
-    var settingsEl = document.getElementById('nav-settings');
-    if (!nav || !settingsEl) return;
-    // The divider immediately before nav-settings is our anchor
-    var anchor = settingsEl.previousElementSibling;
-    if (!anchor || anchor.parentNode !== nav) {
-      // fallback: just use settingsEl itself as anchor
-      anchor = settingsEl;
-    }
-    var ordered = [];
-    for(var i=0;i<saved.length;i++){var el=document.getElementById(saved[i]);if(el)ordered.push(el);}
-    for(var j=0;j<DEFAULTS.length;j++){var el2=document.getElementById(DEFAULTS[j][0]);if(el2&&ordered.indexOf(el2)<0)ordered.push(el2);}
-    for(var k=0;k<ordered.length;k++){nav.insertBefore(ordered[k],anchor);}
-    nav.querySelectorAll('.sb-section-label').forEach(function(l){l.style.display='none';});
+function loadSidebarOrder() {
+  try { return JSON.parse(localStorage.getItem(OEL_SIDEBAR_ORDER_KEY)) || null; } catch { return null; }
+}
+function saveSidebarOrder(ids) {
+  localStorage.setItem(OEL_SIDEBAR_ORDER_KEY, JSON.stringify(ids));
+}
+
+function applySidebarOrder() {
+  const saved = loadSidebarOrder();
+  if (!saved || !saved.length) return;
+  const sidebar = document.getElementById('sidebar');
+  if (!sidebar) return;
+  // Find the nav-items container area (between sb-toggle and settings)
+  // We'll reorder by moving each element in order
+  const settingsEl = document.getElementById('nav-settings');
+  // Build ordered list of elements
+  const ordered = [];
+  saved.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) ordered.push(el);
+  });
+  // Also include any items not in saved (fallback)
+  SIDEBAR_ITEMS_DEFAULT.forEach(item => {
+    const el = document.getElementById(item.id);
+    if (el && !ordered.includes(el)) ordered.push(el);
+  });
+  // Insert them before settings
+  // Find the dividers — we keep the section labels in place but move items
+  // Simpler: just reinsert all sb-items (excluding settings) in new order before settings
+  if (!settingsEl) return;
+  // Remove existing dividers between items (sb-divider before settings stays)
+  const dividers = sidebar.querySelectorAll('.sb-divider');
+  // Keep first divider (after toggle) and last (before settings)
+  // We'll reconstruct: find the parent container
+  // Actually the simplest approach: move each nav item node before the settings divider
+  const lastDivider = settingsEl.previousElementSibling; // the sb-divider before settings
+  ordered.forEach(el => {
+    sidebar.insertBefore(el, lastDivider);
+  });
+  // Hide section labels (DAILY / MORE) since order is now custom
+  sidebar.querySelectorAll('.sb-section-label').forEach(lbl => {
+    lbl.style.display = 'none';
+  });
+}
+
+let _sboDragSrc = null;
+
+window.moveSidebarItem = function(idx, dir) {
+  const saved = loadSidebarOrder() || SIDEBAR_ITEMS_DEFAULT.map(i => i.id);
+  const newIdx = idx + dir;
+  if (newIdx < 0 || newIdx >= saved.length) return;
+  const tmp = saved[idx];
+  saved[idx] = saved[newIdx];
+  saved[newIdx] = tmp;
+  saveSidebarOrder(saved);
+  applySidebarOrder();
+  renderSidebarOrderList();
+};
+
+window.renderSidebarOrderList = function() {
+  const container = document.getElementById('sidebar-order-list');
+  if (!container) return;
+  const saved = loadSidebarOrder() || SIDEBAR_ITEMS_DEFAULT.map(i => i.id);
+  const idToLabel = {};
+  SIDEBAR_ITEMS_DEFAULT.forEach(i => { idToLabel[i.id] = i.label; });
+  container.innerHTML = '';
+  saved.forEach(function(id, idx) {
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;font-size:0.8rem;color:var(--text)';
+    const upBtn = document.createElement('button');
+    upBtn.textContent = '▲';
+    upBtn.title = 'Move up';
+    upBtn.style.cssText = 'background:none;border:1px solid var(--border);border-radius:4px;color:var(--muted);cursor:pointer;width:24px;height:24px;font-size:0.7rem;flex-shrink:0;padding:0';
+    if (idx === 0) { upBtn.style.opacity = '0.2'; upBtn.disabled = true; }
+    upBtn.onclick = (function(i){ return function(){ window.moveSidebarItem(i, -1); }; })(idx);
+    const downBtn = document.createElement('button');
+    downBtn.textContent = '▼';
+    downBtn.title = 'Move down';
+    downBtn.style.cssText = 'background:none;border:1px solid var(--border);border-radius:4px;color:var(--muted);cursor:pointer;width:24px;height:24px;font-size:0.7rem;flex-shrink:0;padding:0';
+    if (idx === saved.length - 1) { downBtn.style.opacity = '0.2'; downBtn.disabled = true; }
+    downBtn.onclick = (function(i){ return function(){ window.moveSidebarItem(i, 1); }; })(idx);
+    const label = document.createElement('span');
+    label.style.flex = '1';
+    label.textContent = idToLabel[id] || id;
+    row.appendChild(upBtn);
+    row.appendChild(downBtn);
+    row.appendChild(label);
+    container.appendChild(row);
+  });
+};
+
+function renderSidebarOrderList() { window.renderSidebarOrderList(); }
+
+window.resetSidebarOrder = function() {
+  localStorage.removeItem(OEL_SIDEBAR_ORDER_KEY);
+  // Restore default DOM order
+  const sidebar = document.getElementById('sidebar');
+  const settingsEl = document.getElementById('nav-settings');
+  if (sidebar && settingsEl) {
+    const lastDivider = settingsEl.previousElementSibling;
+    SIDEBAR_ITEMS_DEFAULT.forEach(item => {
+      const el = document.getElementById(item.id);
+      if (el) sidebar.insertBefore(el, lastDivider);
+    });
+    // Restore section labels
+    sidebar.querySelectorAll('.sb-section-label').forEach(lbl => {
+      lbl.style.display = '';
+    });
   }
-
-  function buildModal() {
-    var existing = document.getElementById('sbo-modal');
-    if (existing) existing.parentNode.removeChild(existing);
-    var saved = load() || defaultIds();
-
-    var overlay = document.createElement('div');
-    overlay.id = 'sbo-modal';
-    overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.5)';
-    overlay.addEventListener('click', function(e){ if(e.target===overlay) overlay.remove(); });
-
-    var panel = document.createElement('div');
-    panel.style.cssText = 'width:280px;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.6);overflow:hidden';
-    panel.addEventListener('click', function(e){ e.stopPropagation(); });
-
-    var header = document.createElement('div');
-    header.style.cssText = 'padding:12px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center';
-    var title = document.createElement('span');
-    title.style.cssText = 'font-size:0.85rem;font-weight:600;color:var(--text)';
-    title.textContent = 'Reorder Sidebar';
-    var closeBtn = document.createElement('button');
-    closeBtn.textContent = '✕';
-    closeBtn.style.cssText = 'background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;padding:2px 6px';
-    closeBtn.addEventListener('click', function(){ overlay.remove(); });
-    header.appendChild(title);
-    header.appendChild(closeBtn);
-
-    var listWrap = document.createElement('div');
-    listWrap.style.cssText = 'padding:10px 12px;max-height:380px;overflow-y:auto;display:flex;flex-direction:column;gap:4px';
-
-    for (var i = 0; i < saved.length; i++) {
-      (function(idx){
-        var row = document.createElement('div');
-        row.style.cssText = 'display:flex;align-items:center;gap:6px;padding:6px 8px;background:var(--surface2);border:1px solid var(--border);border-radius:6px';
-        var upBtn = document.createElement('button');
-        upBtn.textContent = '▲';
-        upBtn.style.cssText = 'background:none;border:1px solid var(--border);border-radius:4px;color:var(--muted);width:26px;height:26px;font-size:0.65rem;cursor:pointer;flex-shrink:0';
-        if (idx === 0) upBtn.style.opacity = '0.2';
-        upBtn.addEventListener('click', function(){ sboMove(idx,-1); });
-        var dnBtn = document.createElement('button');
-        dnBtn.textContent = '▼';
-        dnBtn.style.cssText = 'background:none;border:1px solid var(--border);border-radius:4px;color:var(--muted);width:26px;height:26px;font-size:0.65rem;cursor:pointer;flex-shrink:0';
-        if (idx === saved.length-1) dnBtn.style.opacity = '0.2';
-        dnBtn.addEventListener('click', function(){ sboMove(idx,1); });
-        var label = document.createElement('span');
-        label.style.cssText = 'flex:1;font-size:0.8rem;color:var(--text)';
-        label.textContent = labelFor(saved[idx]);
-        row.appendChild(upBtn); row.appendChild(dnBtn); row.appendChild(label);
-        listWrap.appendChild(row);
-      })(i);
-    }
-
-    var footer = document.createElement('div');
-    footer.style.cssText = 'padding:10px 12px;border-top:1px solid var(--border);display:flex;gap:8px';
-    var resetBtn = document.createElement('button');
-    resetBtn.textContent = 'Reset to default';
-    resetBtn.style.cssText = 'flex:1;background:none;border:1px solid var(--border);border-radius:6px;padding:6px;font-size:0.75rem;color:var(--muted);cursor:pointer';
-    resetBtn.addEventListener('click', function(){ sboReset(); });
-    var doneBtn = document.createElement('button');
-    doneBtn.textContent = 'Done';
-    doneBtn.style.cssText = 'flex:1;background:var(--accent);border:none;border-radius:6px;padding:6px;font-size:0.75rem;color:var(--bg);cursor:pointer;font-weight:600';
-    doneBtn.addEventListener('click', function(){ overlay.remove(); });
-    footer.appendChild(resetBtn);
-    footer.appendChild(doneBtn);
-    panel.appendChild(header); panel.appendChild(listWrap); panel.appendChild(footer);
-    overlay.appendChild(panel);
-    document.body.appendChild(overlay);
-  }
-
-  function sboMove(idx, dir) {
-    var saved = load() || defaultIds();
-    var newIdx = idx + dir;
-    if (newIdx < 0 || newIdx >= saved.length) return;
-    var tmp = saved[idx]; saved[idx] = saved[newIdx]; saved[newIdx] = tmp;
-    save(saved); applyOrder(); buildModal();
-  }
-
-  function sboReset() {
-    localStorage.removeItem(KEY);
-    var nav = document.querySelector('#sidebar nav.sb-nav');
-    var settingsEl = document.getElementById('nav-settings');
-    if (nav && settingsEl) {
-      var anchor = settingsEl.previousElementSibling;
-      if (!anchor || anchor.parentNode !== nav) anchor = settingsEl;
-      for(var i=0;i<DEFAULTS.length;i++){var el=document.getElementById(DEFAULTS[i][0]);if(el)nav.insertBefore(el,anchor);}
-      nav.querySelectorAll('.sb-section-label').forEach(function(l){l.style.display='';});
-    }
-    buildModal();
-  }
-
-  window.openSidebarOrderModal = function() { buildModal(); };
-  window.applySidebarOrder = applyOrder;
-
-  document.addEventListener('DOMContentLoaded', applyOrder);
-})();
+  renderSidebarOrderList();
+};
 // ── End Sidebar Order ──────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', applySidebarOrder);
 
@@ -22166,6 +22064,7 @@ window.openSettings = function() {
   document.getElementById('settings-overlay').classList.add('open');
   // step-1 is permanently in settings drawer
   if (typeof oelRefreshStatusLights === 'function') oelRefreshStatusLights();
+  renderSidebarOrderList();
 };
 
 window.closeSettings = function() {
@@ -22191,7 +22090,6 @@ window.navTo = function(section) {
     vendor:     {panel:'panel-vendor',     title:'Vendor Outreach', hasSrc:false},
     docs:       {panel:'panel-docs',       title:'Documents',       hasSrc:false},
     bounces:    {panel:'panel-bounces',     title:'Bounce Manager',  hasSrc:false},
-    dataexplorer:{panel:'panel-dataexplorer',title:'Data Explorer',   hasSrc:false},
     help:       {panel:'panel-help',        title:'Help & Guide',    hasSrc:false},
   };
   if (!NAV_PANELS[section]) return;
@@ -23619,1223 +23517,4 @@ window.persTab = function(tab) {
   </div>
 </div>
 
-<style>
-@keyframes de-spin { to { transform: rotate(360deg); } }
-.de-row-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; transition: border-color 0.15s; }
-.de-row-card:hover { border-color: var(--accent); }
-.de-row-header { display: flex; align-items: center; gap: 10px; padding: 10px 14px; cursor: pointer; }
-.de-row-body { display: none; padding: 14px 16px; border-top: 1px solid var(--border); background: var(--surface); }
-.de-row-body.open { display: block; }
-.de-badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 0.72rem; font-weight: 600; }
-.de-badge-exact   { background: #d1fae5; color: #065f46; }
-.de-badge-partial { background: #fef3c7; color: #92400e; }
-.de-badge-new     { background: #f3e8ff; color: #5b21b6; }
-@media print {
-  #sidebar, #topbar, #de-upload-phase, #de-preview-phase, #de-columns-phase,
-  #de-matching-phase, #de-creating-phase, .de-row-body, .btn, .de-filter-pill,
-  #de-bulk-rep, #de-bulk-date, #de-checked-count { display: none !important; }
-  .de-print-report { display: block !important; }
-  body { background: white !important; color: black !important; }
-  .de-print-table { width: 100%; border-collapse: collapse; font-size: 11px; }
-  .de-print-table th, .de-print-table td { border: 1px solid #ccc; padding: 5px 8px; text-align: left; }
-  .de-print-table th { background: #f0f0f0; font-weight: 600; }
-}
-</style>
-<script>
-(function () {
-
-  var S = {
-    rows: [], cols: [], sel: new Set(),
-    matches: [],
-    reps: [],
-    assignments: {},
-    checked: new Set(),
-    filter: 'all',
-    activityTypes: [],
-    createdActivities: []
-  };
-
-  var ALL_PHASES = ['upload','preview','columns','matching','results','creating','done'];
-
-  window.deGoTo = function (phase) {
-    ALL_PHASES.forEach(function (p) {
-      var el = document.getElementById('de-' + p + '-phase');
-      if (el) el.style.display = (p === phase) ? '' : 'none';
-    });
-    var errBanner = document.getElementById('de-err-banner');
-    if (errBanner) errBanner.style.display = 'none';
-    if (phase === 'upload') {
-      S.rows = []; S.cols = []; S.sel = new Set();
-      S.matches = []; S.assignments = {}; S.checked = new Set();
-      S.createdActivities = [];
-      var old = document.getElementById('de-file-input');
-      if (old) {
-        var fresh = old.cloneNode(true);
-        fresh.value = '';
-        old.parentNode.replaceChild(fresh, old);
-      }
-    }
-    if (phase === 'columns')  { deRenderGrid(); deRenderSelTbl(); }
-    if (phase === 'matching') { deStartMatching(); }
-    if (phase === 'results')  { deRenderResults(); }
-  };
-
-  window.deHandleUpload = async function (input) {
-    var file = input.files && input.files[0];
-    if (!file) return;
-    var errBanner = document.getElementById('de-err-banner');
-    if (errBanner) errBanner.style.display = 'none';
-    try {
-      var rows = [], firstSheet = '';
-      if (file.name.toLowerCase().endsWith('.csv')) {
-        var lines = (await file.text()).trim().split('\n');
-        var hdrs = lines[0].split(',').map(function (h) { return h.trim().replace(/^"|"$/g, ''); });
-        for (var i = 1; i < lines.length; i++) {
-          if (!lines[i].trim()) continue;
-          var vals = lines[i].split(',').map(function (v) { return v.trim().replace(/^"|"$/g, ''); });
-          var row = {};
-          hdrs.forEach(function (h, j) { row[h] = vals[j] || ''; });
-          rows.push(row);
-        }
-        firstSheet = 'CSV';
-      } else {
-        if (typeof XLSX === 'undefined') { deErr('Excel library not loaded - please use a CSV file'); return; }
-        var wb = XLSX.read(await file.arrayBuffer(), { type: 'array' });
-        var skip = ['tip', 'instruction', 'info', 'guide', 'help', 'readme'];
-        firstSheet = wb.SheetNames.find(function (s) {
-          return !skip.some(function (w) { return s.toLowerCase().indexOf(w) > -1; });
-        }) || wb.SheetNames[0];
-        rows = XLSX.utils.sheet_to_json(wb.Sheets[firstSheet], { defval: '' });
-        if (!rows.length) {
-          for (var si = 0; si < wb.SheetNames.length; si++) {
-            rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[si]], { defval: '' });
-            if (rows.length) { firstSheet = wb.SheetNames[si]; break; }
-          }
-        }
-        if (!rows.length) { deErr('No data found in any sheet'); return; }
-      }
-      S.rows = rows;
-      S.cols = Object.keys(rows[0] || {});
-      S.sel = new Set();
-      S.assignments = {};
-      S.checked = new Set();
-      var banner = document.getElementById('de-file-banner');
-      if (banner) banner.textContent = file.name + '  x  ' + rows.length + ' rows  x  ' + S.cols.length + ' columns  x  Sheet: ' + firstSheet;
-      deTbl('de-preview-tbl', S.cols, rows.slice(0, 10));
-      deGoTo('preview');
-    } catch (e) { deErr('Upload failed: ' + e.message); }
-  };
-
-  function deTbl(id, cols, rows) {
-    var t = document.getElementById(id);
-    if (!t) return;
-    var h = '<thead style="background:var(--surface2)"><tr>' +
-      cols.map(function (c) {
-        return '<th style="padding:9px 7px;text-align:left;font-weight:600;border-bottom:1px solid var(--border);white-space:nowrap;font-size:0.78rem">' + esc(c) + '</th>';
-      }).join('') + '</tr></thead>';
-    var b = '<tbody>' + rows.map(function (row) {
-      return '<tr style="border-bottom:1px solid var(--border)">' +
-        cols.map(function (c) {
-          return '<td style="padding:8px 7px;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:0.78rem">' + esc(String(row[c] || '').substring(0, 80)) + '</td>';
-        }).join('') + '</tr>';
-    }).join('') + '</tbody>';
-    t.innerHTML = h + b;
-  }
-
-  function deRenderGrid() {
-    var g = document.getElementById('de-col-grid');
-    if (!g) return;
-    g.innerHTML = S.cols.map(function (col) {
-      var on = S.sel.has(col);
-      var cnt = S.rows.filter(function (r) { return String(r[col] || '').trim().length > 0; }).length;
-      return '<div class="de-col-card" data-col="' + esc(col) + '" style="padding:12px;border:2px solid ' +
-        (on ? 'var(--accent)' : 'var(--border)') +
-        ';border-radius:7px;background:var(--surface2);cursor:pointer;position:relative">' +
-        (on ? '<div style="position:absolute;top:6px;right:6px;width:16px;height:16px;background:var(--accent);border-radius:3px;color:var(--bg);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700">&#10003;</div>' : '') +
-        '<div style="font-size:0.83rem;font-weight:600;margin-bottom:2px;padding-right:' + (on ? '18px' : '0') + ';word-break:break-word">' + esc(col) + '</div>' +
-        '<div style="font-size:0.76rem;color:var(--muted)">' + cnt + ' non-empty rows</div></div>';
-    }).join('');
-    g.onclick = function (e) {
-      var card = e.target.closest('.de-col-card');
-      if (!card) return;
-      var col = card.getAttribute('data-col');
-      if (S.sel.has(col)) { S.sel.delete(col); } else { S.sel.add(col); }
-      deRenderGrid();
-      deRenderSelTbl();
-    };
-    var countEl = document.getElementById('de-col-count');
-    if (countEl) countEl.textContent = S.sel.size + ' column' + (S.sel.size !== 1 ? 's' : '') + ' selected. Click to toggle.';
-    var btn = document.getElementById('de-proceed-btn');
-    if (btn) btn.disabled = S.sel.size === 0;
-  }
-
-  function deRenderSelTbl() {
-    var cols = Array.from(S.sel);
-    if (!cols.length) {
-      var t = document.getElementById('de-sel-tbl');
-      if (t) t.innerHTML = '<tbody><tr><td style="padding:14px;color:var(--muted);font-style:italic;font-size:0.82rem">Select columns above to preview</td></tr></tbody>';
-      return;
-    }
-    deTbl('de-sel-tbl', cols, S.rows.slice(0, 5));
-  }
-
-  // ── Fuzzy matching ─────────────────────────────────────────────────────────
-  function levenshtein(a, b) {
-    a = a.toLowerCase(); b = b.toLowerCase();
-    var m = a.length, n = b.length, dp = [], i, j;
-    for (i = 0; i <= m; i++) { dp[i] = [i]; }
-    for (j = 0; j <= n; j++) { dp[0][j] = j; }
-    for (i = 1; i <= m; i++) {
-      for (j = 1; j <= n; j++) {
-        dp[i][j] = a[i-1] === b[j-1] ? dp[i-1][j-1] : 1 + Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);
-      }
-    }
-    return dp[m][n];
-  }
-
-  function similarity(a, b) {
-    var d = levenshtein(a, b);
-    var mx = Math.max(a.length, b.length);
-    return mx === 0 ? 1 : 1 - d / mx;
-  }
-
-  async function deStartMatching() {
-    var statusEl = document.getElementById('de-match-status');
-    if (statusEl) statusEl.textContent = 'Checking Odoo connection...';
-    if (!window.odooUid || !window.odooConfig) {
-      deErr('Not connected to Odoo. Please connect in Settings first.');
-      deGoTo('columns');
-      return;
-    }
-    var cols = Array.from(S.sel);
-    var nameCol = cols.find(function (c) {
-      var cl = c.toLowerCase();
-      return cl.includes('customer') || cl.includes('name') || cl.includes('company');
-    }) || cols[0];
-    var amtCol = cols.find(function (c) {
-      var cl = c.toLowerCase();
-      return cl.includes('amount') || cl.includes('revenue') || cl.includes('spend');
-    });
-    try {
-      if (statusEl) statusEl.textContent = 'Fetching partners from Odoo...';
-      // Fetch ALL active partners with name + email for matching
-      var partners = await window.odooExecute(window.odooUid, 'res.partner', 'search_read',
-        [[['active', '=', true]]],
-        { fields: ['id', 'name', 'email', 'is_company', 'parent_id'], limit: 8000 }
-      );
-      if (!partners || !partners.length) {
-        deErr('No records returned from Odoo. Check your connection.');
-        deGoTo('columns');
-        return;
-      }
-      if (statusEl) statusEl.textContent = 'Loading sales reps...';
-      var reps = await window.odooExecute(window.odooUid, 'res.users', 'search_read',
-        [[['active', '=', true], ['share', '=', false]]],
-        { fields: ['id', 'name'], limit: 200 }
-      );
-      S.reps = reps;
-      var actTypes = await window.odooExecute(window.odooUid, 'mail.activity.type', 'search_read',
-        [[]], { fields: ['id', 'name'], limit: 50 }
-      );
-      S.activityTypes = actTypes;
-      var bulkSel = document.getElementById('de-bulk-rep');
-      if (bulkSel) {
-        bulkSel.innerHTML = '<option value="">Assign rep to all checked...</option>' +
-          reps.map(function (r) { return '<option value="' + r.id + '">' + esc(r.name) + '</option>'; }).join('');
-      }
-
-      // Pre-process partners: extract email domain, prefer company records
-      // Group by name+domain so we surface the best representative record per company
-      var partnerIndex = {};
-      partners.forEach(function (p) {
-        var domain = '';
-        var emailStr = p.email ? String(p.email) : '';
-        if (emailStr) {
-          var at = emailStr.indexOf('@');
-          if (at > -1) domain = emailStr.substring(at + 1).toLowerCase().split('.')[0]; // e.g. "casio" from "casio.com"
-        }
-        p._domain = domain;
-        // Index by id for dedup
-        if (!partnerIndex[p.id]) partnerIndex[p.id] = p;
-      });
-      var partnerList = Object.values(partnerIndex);
-
-      if (statusEl) statusEl.textContent = 'Matching ' + S.rows.length + ' companies...';
-      var matches = [];
-      S.rows.forEach(function (row) {
-        var name = String(row[nameCol] || '').trim();
-        var amount = amtCol ? parseFloat(row[amtCol]) || 0 : 0;
-        if (!name) return;
-
-        // Simplified name for comparison: lowercase, strip common suffixes
-        var simpleName = String(name || '').toLowerCase()
-          .replace(/(inc|llc|ltd|corp|co|company|group|global|international|intl|north america|south america|na|usa|us)/g, '')
-          .replace(/[^a-z0-9]/g, ' ')
-          .replace(/\s+/g, ' ')
-          .trim();
-
-        var candidates = [];
-        partnerList.forEach(function (p) {
-          var pSimple = String(p.name || '').toLowerCase()
-            .replace(/(inc|llc|ltd|corp|co|company|group|global|international|intl|north america|south america|na|usa|us)/g, '')
-            .replace(/[^a-z0-9]/g, ' ')
-            .replace(/\s+/g, ' ')
-            .trim();
-
-          // Name similarity on simplified names
-          var nameSim = similarity(simpleName, pSimple);
-
-          // Domain match bonus — if email domain contains the company name root
-          var domainBonus = 0;
-          if (p._domain && p._domain.length > 2) {
-            if (simpleName.includes(p._domain) || p._domain.includes(simpleName.split(' ')[0])) {
-              domainBonus = 0.5;
-            }
-          }
-
-          // Also check if one name CONTAINS the other (handles "Casio" vs "Casio America")
-          var containsBonus = 0;
-          if (simpleName && pSimple) {
-            if (pSimple.startsWith(simpleName) || simpleName.startsWith(pSimple)) {
-              containsBonus = 0.2;
-            }
-          }
-
-          var score = Math.min(1, nameSim + domainBonus + containsBonus);
-          if (score > 0.25) {
-            candidates.push({ id: p.id, name: p.name, score: score, is_company: p.is_company });
-          }
-        });
-
-        candidates.sort(function (a, b) {
-          // Prefer company records, then score
-          if (b.is_company !== a.is_company) return b.is_company ? 1 : -1;
-          return b.score - a.score;
-        });
-
-        var top = candidates.slice(0, 5);
-        var best = top[0] || null;
-        var bestScore = best ? best.score : 0;
-        var match_type = bestScore >= 0.85 ? 'exact' : bestScore >= 0.4 ? 'partial' : 'new';
-        matches.push({
-          original_name: name,
-          amount: amount,
-          partner_id: best ? best.id : null,
-          partner_name: best ? best.name : null,
-          confidence: Math.min(bestScore, 1),
-          match_type: match_type,
-          candidates: top
-        });
-      });
-      S.matches = matches;
-      S.assignments = {};
-      S.checked = new Set();
-      deGoTo('results');
-    } catch (e) {
-      console.error('deStartMatching error:', e);
-      if (statusEl) statusEl.textContent = 'Error: ' + e.message;
-      setTimeout(function() {
-        deErr('Matching failed: ' + e.message);
-        deGoTo('columns');
-      }, 1500);
-    }
-  }
-
-  // ── Results ────────────────────────────────────────────────────────────────
-  window.deFilter = function (f) {
-    S.filter = f;
-    document.querySelectorAll('.de-filter-pill').forEach(function (el) {
-      var active = el.getAttribute('data-filter') === f;
-      el.style.background = active ? 'var(--accent)' : 'var(--surface2)';
-      el.style.color = active ? 'var(--bg)' : 'var(--muted)';
-      el.style.borderColor = active ? 'var(--accent)' : 'var(--border)';
-    });
-    deRenderResults();
-  };
-
-  function deRenderResults() {
-    var list = document.getElementById('de-results-list');
-    if (!list) return;
-    var filtered = S.matches.filter(function (m) {
-      return S.filter === 'all' || m.match_type === S.filter;
-    });
-    list.innerHTML = '';
-    filtered.forEach(function (m) {
-      var realIdx = S.matches.indexOf(m);
-      var isChecked = S.checked.has(realIdx);
-      var asgn = S.assignments[realIdx] || {};
-      var badgeClass = 'de-badge-' + m.match_type;
-      var confPct = m.match_type === 'new' ? '' : Math.round(m.confidence * 100) + '%';
-      var repOptions = '<option value="">Select rep...</option>' +
-        S.reps.map(function (r) {
-          return '<option value="' + r.id + '"' + (asgn.rep_id == r.id ? ' selected' : '') + '>' + esc(r.name) + '</option>';
-        }).join('');
-      var card = document.createElement('div');
-      card.className = 'de-row-card';
-      card.id = 'de-card-' + realIdx;
-      card.innerHTML =
-        '<div class="de-row-header" data-rowidx="' + realIdx + '">' +
-          '<input type="checkbox"' + (isChecked ? ' checked' : '') +
-            ' class="de-row-check" data-rowidx="' + realIdx + '"' +
-            ' style="flex-shrink:0;cursor:pointer;accent-color:var(--accent)">' +
-          '<div style="flex:1;min-width:0">' +
-            '<div style="font-size:0.88rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(m.original_name) + '</div>' +
-            (m.partner_name && m.partner_name !== m.original_name
-              ? '<div class="de-partner-sub" style="font-size:0.75rem;color:var(--muted)">Odoo: ' + esc(m.partner_name) + '</div>' : '<div class="de-partner-sub"></div>') +
-          '</div>' +
-          '<span style="font-size:0.78rem;color:var(--muted);white-space:nowrap;flex-shrink:0">' + (m.amount ? '$' + m.amount.toLocaleString() : '') + '</span>' +
-          '<span class="de-badge ' + badgeClass + '">' + m.match_type + (confPct ? ' ' + confPct : '') + '</span>' +
-          '<select class="de-rep-sel" data-rowidx="' + realIdx + '"' +
-            ' style="background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:4px 8px;color:var(--text);font-size:0.78rem;font-family:inherit,sans-serif;outline:none;max-width:140px;flex-shrink:0">' +
-            repOptions + '</select>' +
-          '<input type="date" value="' + (asgn.date || '') + '"' +
-            ' class="de-date-inp" data-rowidx="' + realIdx + '"' +
-            ' style="background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:4px 8px;color:var(--text);font-size:0.78rem;font-family:inherit,sans-serif;outline:none;width:130px;flex-shrink:0">' +
-          '<span style="color:var(--muted);font-size:0.8rem;flex-shrink:0" class="de-expand-arrow">&#9660;</span>' +
-        '</div>' +
-        '<div class="de-row-body" id="de-body-' + realIdx + '">' +
-          '<div id="de-enrich-' + realIdx + '" style="color:var(--muted);font-size:0.82rem;font-style:italic">Click row header to load details...</div>' +
-        '</div>';
-      list.appendChild(card);
-    });
-
-    // Event delegation on the list — handles row expand, checkbox, rep, date
-    list.onclick = function (e) {
-      var check = e.target.closest('.de-row-check');
-      if (check) { e.stopPropagation(); deCheckRow(parseInt(check.getAttribute('data-rowidx'))); return; }
-      var repSel = e.target.closest('.de-rep-sel');
-      if (repSel) { e.stopPropagation(); return; }
-      var dateInp = e.target.closest('.de-date-inp');
-      if (dateInp) { e.stopPropagation(); return; }
-      var header = e.target.closest('.de-row-header');
-      if (header) {
-        var ridx = parseInt(header.getAttribute('data-rowidx'));
-        var body = document.getElementById('de-body-' + ridx);
-        if (body) {
-          var isOpen = body.classList.toggle('open');
-          if (isOpen) deLoadEnrichment(ridx);
-        }
-      }
-    };
-    list.onchange = function (e) {
-      var repSel = e.target.closest('.de-rep-sel');
-      if (repSel) {
-        var ridx = parseInt(repSel.getAttribute('data-rowidx'));
-        if (!S.assignments[ridx]) S.assignments[ridx] = {};
-        S.assignments[ridx].rep_id = repSel.value;
-        S.assignments[ridx].rep_name = repSel.options[repSel.selectedIndex].text;
-        return;
-      }
-      var dateInp = e.target.closest('.de-date-inp');
-      if (dateInp) {
-        var ridx = parseInt(dateInp.getAttribute('data-rowidx'));
-        if (!S.assignments[ridx]) S.assignments[ridx] = {};
-        S.assignments[ridx].date = dateInp.value;
-      }
-    };
-    deUpdateCheckedCount();
-  }
-
-  function deCheckRow(idx) {
-    if (S.checked.has(idx)) { S.checked.delete(idx); } else { S.checked.add(idx); }
-    var cb = document.querySelector('.de-row-check[data-rowidx="' + idx + '"]');
-    if (cb) cb.checked = S.checked.has(idx);
-    deUpdateCheckedCount();
-    var btn = document.getElementById('de-create-btn');
-    if (btn) btn.disabled = S.checked.size === 0;
-  }
-
-  function deUpdateCheckedCount() {
-    var el = document.getElementById('de-checked-count');
-    if (el) el.textContent = S.checked.size + ' selected';
-  }
-
-  window.deBulkAssign = function () {
-    var repSel  = document.getElementById('de-bulk-rep');
-    var dateEl  = document.getElementById('de-bulk-date');
-    var repId   = repSel ? repSel.value : '';
-    var repName = repSel ? repSel.options[repSel.selectedIndex].text : '';
-    var date    = dateEl ? dateEl.value : '';
-    S.checked.forEach(function (idx) {
-      if (!S.assignments[idx]) S.assignments[idx] = {};
-      if (repId)  { S.assignments[idx].rep_id = repId; S.assignments[idx].rep_name = repName; }
-      if (date)   { S.assignments[idx].date = date; }
-    });
-    deRenderResults();
-  };
-
-  // ── Enrichment ─────────────────────────────────────────────────────────────
-  async function deLoadEnrichment(idx) {
-    var el = document.getElementById('de-enrich-' + idx);
-    if (!el || el.getAttribute('data-loaded')) return;
-    el.setAttribute('data-loaded', '1');
-    var m = S.matches[idx];
-    el.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;font-style:italic">Loading...</div>';
-    try {
-      // Fetch ALL records matching this company name (persons + companies)
-      // so we can detect structure issues regardless of whether we have a partner_id
-      var nameToSearch = m.partner_name || m.original_name;
-      var allContacts = await window.odooExecute(window.odooUid, 'res.partner', 'search_read',
-        [[['active', '=', true], '|', ['name', 'ilike', nameToSearch], ['parent_id.name', 'ilike', nameToSearch]]],
-        { fields: ['id', 'name', 'is_company', 'function', 'email', 'phone', 'parent_id'], limit: 50 }
-      );
-
-      // Analyse structure
-      var structure = await deAnalyseStructure(idx, m, allContacts);
-
-      // If no partner_id and structure found something, auto-pick best company
-      if (!m.partner_id && structure && structure.companies.length > 0) {
-        var bestCo = structure.companies[0];
-        dePickMatch(idx, bestCo.id, bestCo.name);
-        m = S.matches[idx]; // refresh after pick
-      }
-
-      // If still no partner_id show search + structure panel
-      if (!m.partner_id) {
-        el.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;margin-bottom:10px">No Odoo company match found.</div>';
-        el.innerHTML += deStructurePanel(idx, m, structure, allContacts);
-        el.innerHTML += deSearchBox(idx);
-        deWireStructure(idx);
-        return;
-      }
-
-      // Fetch contacts under the matched company
-      var contacts = await window.odooExecute(window.odooUid, 'res.partner', 'search_read',
-        [[['parent_id', '=', m.partner_id], ['active', '=', true]]],
-        { fields: ['id', 'name', 'function', 'email', 'phone'], limit: 20 }
-      );
-      var since = new Date(); since.setFullYear(since.getFullYear() - 1);
-      var sinceStr = since.toISOString().split('T')[0] + ' 00:00:00';
-      var messages = await window.odooExecute(window.odooUid, 'mail.message', 'search_read',
-        [[['res_id', '=', m.partner_id], ['model', '=', 'res.partner'], ['date', '>=', sinceStr], ['message_type', 'in', ['comment', 'email']]]],
-        { fields: ['date', 'body', 'author_id'], limit: 10, order: 'date desc' }
-      );
-      var opps = await window.odooExecute(window.odooUid, 'crm.lead', 'search_read',
-        [[['partner_id', '=', m.partner_id], ['active', '=', true], ['type', '=', 'opportunity']]],
-        { fields: ['name', 'expected_revenue', 'stage_id', 'user_id'], limit: 10 }
-      );
-
-      var html = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:14px">';
-
-      // Contacts
-      html += '<div>';
-      html += '<div style="font-size:0.78rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px">Contacts (' + contacts.length + ')</div>';
-      if (!contacts.length) {
-        html += '<div style="font-size:0.82rem;color:var(--muted)">No contacts on record</div>';
-      } else {
-        contacts.forEach(function (c) {
-          html += '<div style="margin-bottom:6px;padding:6px 8px;background:var(--surface2);border-radius:5px">' +
-            '<div style="font-size:0.82rem;font-weight:600">' + esc(c.name) + '</div>' +
-            (c.function ? '<div style="font-size:0.76rem;color:var(--muted)">' + esc(c.function) + '</div>' : '') +
-            (c.email ? '<div style="font-size:0.76rem;color:var(--muted)">' + esc(c.email) + '</div>' : '') +
-            '</div>';
-        });
-      }
-      html += '</div>';
-
-      // Notes + Opps
-      html += '<div>';
-      html += '<div style="font-size:0.78rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px">Last 12 Months Notes</div>';
-      if (!messages.length) {
-        html += '<div style="font-size:0.82rem;color:var(--muted);margin-bottom:12px">No notes on record</div>';
-      } else {
-        messages.slice(0, 3).forEach(function (msg) {
-          var body = msg.body.replace(/<[^>]+>/g, '').substring(0, 120);
-          html += '<div style="margin-bottom:6px;padding:6px 8px;background:var(--surface2);border-radius:5px">' +
-            '<div style="font-size:0.74rem;color:var(--muted)">' + esc(msg.date.substring(0, 10)) + (msg.author_id ? ' - ' + esc(msg.author_id[1]) : '') + '</div>' +
-            '<div style="font-size:0.8rem">' + esc(body) + (msg.body.length > 120 ? '...' : '') + '</div>' +
-            '</div>';
-        });
-      }
-      if (opps.length) {
-        html += '<div style="font-size:0.78rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px;margin-top:10px">Open Opps (' + opps.length + ')</div>';
-        opps.forEach(function (o) {
-          html += '<div style="margin-bottom:4px;padding:5px 8px;background:var(--surface2);border-radius:5px">' +
-            '<div style="font-size:0.82rem;font-weight:600">' + esc(o.name) + '</div>' +
-            '<div style="font-size:0.76rem;color:var(--muted)">' + (o.stage_id ? esc(o.stage_id[1]) : '') + (o.expected_revenue ? ' - $' + o.expected_revenue.toLocaleString() : '') + '</div></div>';
-        });
-      }
-      html += '</div></div>';
-
-      // AI Coaching
-      html += '<div style="margin-bottom:14px;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:7px">';
-      html += '<div style="font-size:0.78rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">AI Coaching Strategy</div>';
-      html += '<div id="de-coaching-' + idx + '" style="font-size:0.82rem;color:var(--muted);font-style:italic">Generating...</div>';
-      html += '<div style="margin-top:8px"><label style="font-size:0.78rem;color:var(--muted);display:block;margin-bottom:4px">Activity note:</label>' +
-        '<textarea id="de-note-' + idx + '" class="de-note-ta" data-rowidx="' + idx + '"' +
-        ' style="width:100%;min-height:48px;background:var(--surface);border:1px solid var(--border);border-radius:5px;padding:6px 9px;color:var(--text);font-size:0.8rem;font-family:inherit,sans-serif;resize:vertical;outline:none;box-sizing:border-box"' +
-        ' placeholder="Activity note..."></textarea></div>';
-      html += '</div>';
-
-      // Partial match picker
-      if (m.match_type === 'partial' && m.candidates && m.candidates.length > 1) {
-        html += '<div style="margin-bottom:14px;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:7px">';
-        html += '<div style="font-size:0.8rem;font-weight:600;margin-bottom:8px">Confirm best Odoo match:</div>';
-        m.candidates.forEach(function (c, ci) {
-          html += '<label style="display:flex;align-items:center;gap:8px;margin-bottom:5px;cursor:pointer;font-size:0.82rem">' +
-            '<input type="radio" name="de-pick-' + idx + '" value="' + c.id + '"' +
-            ' class="de-pick-radio" data-rowidx="' + idx + '" data-pid="' + c.id + '" data-pname="' + esc(c.name) + '"' +
-            (ci === 0 ? ' checked' : '') + ' style="accent-color:var(--accent)">' +
-            esc(c.name) + ' <span style="color:var(--muted)">(' + Math.round(c.score * 100) + '%)</span></label>';
-        });
-        html += '<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:0.82rem">' +
-          '<input type="radio" name="de-pick-' + idx + '" value="0"' +
-          ' class="de-pick-radio" data-rowidx="' + idx + '" data-pid="0" data-pname=""' +
-          ' style="accent-color:var(--accent)">None - skip this company</label>';
-        html += '</div>';
-      }
-
-      // Structure panel (shown when orphaned contacts detected)
-      html += deStructurePanel(idx, m, structure, allContacts);
-
-      // Search & relink
-      html += deSearchBox(idx);
-
-      el.innerHTML = html;
-
-      // Wire structure buttons
-      deWireStructure(idx);
-
-      // Wire up note textarea
-      var ta = document.getElementById('de-note-' + idx);
-      if (ta) {
-        ta.onchange = function () {
-          if (!S.assignments[idx]) S.assignments[idx] = {};
-          S.assignments[idx].note = ta.value;
-        };
-      }
-
-      // Wire up radio buttons for partial match
-      document.querySelectorAll('.de-pick-radio[data-rowidx="' + idx + '"]').forEach(function (radio) {
-        radio.onchange = function () {
-          var pid   = parseInt(radio.getAttribute('data-pid'));
-          var pname = radio.getAttribute('data-pname');
-          dePickMatch(idx, pid, pname);
-        };
-      });
-
-      // Generate AI coaching
-      deGenerateCoaching(idx, m, contacts, messages, opps);
-
-    } catch (e) {
-      el.innerHTML = '<div style="color:var(--muted);font-size:0.82rem">Could not load details: ' + esc(e.message) + '</div>' + deSearchBox(idx);
-    }
-  }
-
-
-  // ── Company structure analysis ─────────────────────────────────────────────
-  // Called during enrichment when we detect contacts without a parent company
-
-  async function deAnalyseStructure(idx, m, allContacts) {
-    // allContacts = every record found for this company name (persons + companies)
-    // Split into: existing company records, contacts with a parent, orphaned contacts
-    var companies  = allContacts.filter(function(p){ return p.is_company; });
-    var withParent = allContacts.filter(function(p){ return !p.is_company && p.parent_id; });
-    var orphans    = allContacts.filter(function(p){ return !p.is_company && !p.parent_id; });
-
-    // Scenario C — a company record already exists and our match points at it — normal, no action
-    if (m.partner_id && companies.find(function(c){ return c.id === m.partner_id; })) {
-      return null; // no structure panel needed
-    }
-
-    // Build unique existing parents from withParent contacts
-    var existingParents = {};
-    withParent.forEach(function(p){
-      if (p.parent_id) {
-        var pid = p.parent_id[0], pname = p.parent_id[1];
-        if (!existingParents[pid]) existingParents[pid] = { id: pid, name: pname, contacts: [] };
-        existingParents[pid].contacts.push(p);
-      }
-    });
-    var existingParentList = Object.values(existingParents);
-
-    return {
-      companies:          companies,
-      withParent:         withParent,
-      orphans:            orphans,
-      existingParents:    existingParentList,
-      needsAction:        orphans.length > 0 || (companies.length === 0 && allContacts.length > 0)
-    };
-  }
-
-  function deStructurePanel(idx, m, structure, allContacts) {
-    if (!structure || !structure.needsAction) return '';
-
-    var orphans         = structure.orphans;
-    var existingParents = structure.existingParents;
-    var companies       = structure.companies;
-    var defaultName     = m.original_name;
-
-    var html = '<div id="de-struct-' + idx + '" style="margin-bottom:14px;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:7px">';
-    html += '<div style="font-size:0.78rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px">Company Structure</div>';
-
-    // Summary line
-    if (orphans.length > 0 && companies.length === 0) {
-      html += '<div style="font-size:0.82rem;margin-bottom:10px;padding:6px 8px;background:#fef3c7;border-radius:5px;color:#92400e">';
-      html += orphans.length + ' contact' + (orphans.length > 1 ? 's' : '') + ' found with no parent company record in Odoo.';
-      html += '</div>';
-    } else if (orphans.length > 0) {
-      html += '<div style="font-size:0.82rem;margin-bottom:10px;padding:6px 8px;background:#fef3c7;border-radius:5px;color:#92400e">';
-      html += orphans.length + ' contact' + (orphans.length > 1 ? 's' : '') + ' not yet linked to a parent company.';
-      html += '</div>';
-    }
-
-    // Existing parent options (Scenario B)
-    if (existingParents.length > 0) {
-      html += '<div style="font-size:0.8rem;font-weight:600;margin-bottom:6px">Existing parent companies found:</div>';
-      existingParents.forEach(function(ep) {
-        html += '<div style="padding:6px 8px;background:var(--surface);border:1px solid var(--border);border-radius:5px;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between">';
-        html += '<div>';
-        html += '<div style="font-size:0.82rem;font-weight:600">' + esc(ep.name) + '</div>';
-        html += '<div style="font-size:0.76rem;color:var(--muted)">' + ep.contacts.length + ' contact' + (ep.contacts.length > 1 ? 's' : '') + ' linked</div>';
-        html += '</div>';
-        if (orphans.length > 0) {
-          html += '<button class="de-use-parent-btn" data-idx="' + idx + '" data-pid="' + ep.id + '" data-pname="' + esc(ep.name) + '"' +
-            ' style="padding:4px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:5px;cursor:pointer;font-size:0.78rem;color:var(--text)">Use as parent</button>';
-        }
-        html += '</div>';
-      });
-    }
-
-    // Create new company section
-    if (orphans.length > 0) {
-      html += '<div style="margin-top:10px">';
-      html += '<div style="font-size:0.8rem;font-weight:600;margin-bottom:6px">' + (existingParents.length > 0 ? 'Or create a new parent:' : 'Create parent company:') + '</div>';
-
-      // Editable name
-      html += '<input id="de-newco-name-' + idx + '" type="text" value="' + esc(defaultName) + '"' +
-        ' style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:5px;padding:7px 10px;color:var(--text);font-size:0.82rem;margin-bottom:8px;box-sizing:border-box;font-family:inherit,sans-serif;outline:none"' +
-        ' placeholder="Parent company name...">';
-
-      // Orphan checkboxes
-      html += '<div style="font-size:0.78rem;color:var(--muted);margin-bottom:6px">Link these contacts:</div>';
-      orphans.forEach(function(p) {
-        html += '<label style="display:flex;align-items:center;gap:8px;margin-bottom:4px;cursor:pointer;font-size:0.82rem">';
-        html += '<input type="checkbox" checked class="de-orphan-cb" data-cid="' + p.id + '" data-idx="' + idx + '"' +
-          ' style="accent-color:var(--accent);cursor:pointer">';
-        html += esc(p.name);
-        if (p.function) html += ' <span style="color:var(--muted);font-size:0.76rem">— ' + esc(p.function) + '</span>';
-        html += '</label>';
-      });
-
-      // Create button
-      html += '<button class="de-create-co-btn" data-idx="' + idx + '"' +
-        ' style="margin-top:10px;width:100%;padding:8px;background:var(--accent);color:var(--bg);border:none;border-radius:6px;cursor:pointer;font-size:0.82rem;font-weight:600">Create Company & Link Contacts</button>';
-      html += '</div>';
-    }
-
-    html += '</div>';
-    return html;
-  }
-
-  // Wire up structure panel buttons via event delegation on the DE panel
-  // (added to existing dePanel delegation block)
-  async function deHandleStructureClick(e) {
-
-    // "Use as parent" button
-    var useBtn = e.target.closest('.de-use-parent-btn');
-    if (useBtn) {
-      var idx   = parseInt(useBtn.getAttribute('data-idx'));
-      var pid   = parseInt(useBtn.getAttribute('data-pid'));
-      var pname = useBtn.getAttribute('data-pname');
-
-      useBtn.textContent = 'Linking...';
-      useBtn.disabled = true;
-
-      try {
-        // Find all orphan checkboxes for this row that are checked
-        var cbs = document.querySelectorAll('.de-orphan-cb[data-idx="' + idx + '"]:checked');
-        var contactIds = Array.from(cbs).map(function(cb){ return parseInt(cb.getAttribute('data-cid')); });
-
-        if (contactIds.length > 0) {
-          await window.odooExecute(window.odooUid, 'res.partner', 'write', [contactIds, { parent_id: pid }]);
-        }
-
-        // Update match to point at this parent
-        dePickMatch(idx, pid, pname);
-
-        // Refresh the structure panel
-        var el = document.getElementById('de-enrich-' + idx);
-        if (el) {
-          el.removeAttribute('data-loaded');
-          el.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;font-style:italic">Reloading...</div>';
-          await deLoadEnrichment(idx);
-        }
-      } catch(err) {
-        useBtn.textContent = 'Error: ' + err.message;
-      }
-      return;
-    }
-
-    // "Create Company & Link" button
-    var createBtn = e.target.closest('.de-create-co-btn');
-    if (createBtn) {
-      var idx = parseInt(createBtn.getAttribute('data-idx'));
-      var m   = S.matches[idx];
-
-      var nameEl = document.getElementById('de-newco-name-' + idx);
-      var coName = nameEl ? nameEl.value.trim() : m.original_name;
-      if (!coName) { alert('Please enter a company name'); return; }
-
-      createBtn.textContent = 'Creating...';
-      createBtn.disabled = true;
-
-      try {
-        // 1. Create the company record
-        var newCoId = await window.odooExecute(window.odooUid, 'res.partner', 'create', [{
-          name:       coName,
-          is_company: true,
-          active:     true
-        }]);
-
-        // 2. Collect checked contact IDs
-        var cbs = document.querySelectorAll('.de-orphan-cb[data-idx="' + idx + '"]:checked');
-        var contactIds = Array.from(cbs).map(function(cb){ return parseInt(cb.getAttribute('data-cid')); });
-
-        // 3. Re-parent them
-        if (contactIds.length > 0) {
-          await window.odooExecute(window.odooUid, 'res.partner', 'write', [contactIds, { parent_id: newCoId }]);
-        }
-
-        // 4. Update the match to point at the new company
-        dePickMatch(idx, newCoId, coName);
-
-        // 5. Reload enrichment
-        var el = document.getElementById('de-enrich-' + idx);
-        if (el) {
-          el.removeAttribute('data-loaded');
-          el.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;font-style:italic">Company created — reloading...</div>';
-          await deLoadEnrichment(idx);
-        }
-      } catch(err) {
-        createBtn.disabled = false;
-        createBtn.textContent = 'Create Company & Link Contacts';
-        var structEl = document.getElementById('de-struct-' + idx);
-        if (structEl) {
-          var errDiv = document.createElement('div');
-          errDiv.style.cssText = 'color:#991b1b;font-size:0.8rem;margin-top:6px;padding:6px 8px;background:#fee2e2;border-radius:5px';
-          errDiv.textContent = 'Error: ' + err.message;
-          structEl.appendChild(errDiv);
-        }
-      }
-      return;
-    }
-  }
-
-
-  function deWireStructure(idx) {
-    var panel = document.getElementById('de-enrich-' + idx);
-    if (!panel) return;
-    panel.addEventListener('click', deHandleStructureClick);
-  }
-
-  function deSearchBox(idx) {
-    return '<div style="padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:7px">' +
-      '<div style="font-size:0.78rem;font-weight:600;margin-bottom:6px">&#128269; Search &amp; Relink Odoo Partner</div>' +
-      '<div style="font-size:0.78rem;color:var(--muted);margin-bottom:6px">Type to find the correct Odoo company record</div>' +
-      '<input id="de-search-input-' + idx + '" type="text" placeholder="Search Odoo companies..." ' +
-        'class="de-search-inp" data-rowidx="' + idx + '" ' +
-        'style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:5px;padding:7px 10px;color:var(--text);font-size:0.82rem;font-family:inherit,sans-serif;outline:none;box-sizing:border-box">' +
-      '<div id="de-search-results-' + idx + '" style="background:var(--surface);border:1px solid var(--border);border-radius:5px;margin-top:2px;max-height:180px;overflow-y:auto"></div>' +
-      '</div>';
-  }
-
-  // Wire up search inputs via event delegation on the whole panel
-  var dePanel = document.getElementById('panel-dataexplorer');
-  if (dePanel) {
-    var deSearchTimer = null;
-    dePanel.addEventListener('input', function (e) {
-      var inp = e.target.closest('.de-search-inp');
-      if (!inp) return;
-      var idx = parseInt(inp.getAttribute('data-rowidx'));
-      var query = inp.value;
-      clearTimeout(deSearchTimer);
-      deSearchTimer = setTimeout(function () { deRunSearch(idx, query); }, 300);
-    });
-    dePanel.addEventListener('click', function (e) {
-      // Cancel / clear button
-      var cancelBtn = e.target.closest('.de-sr-cancel');
-      if (cancelBtn) {
-        var ridx = parseInt(cancelBtn.getAttribute('data-ridx'));
-        var res = document.getElementById('de-search-results-' + ridx);
-        if (res) res.innerHTML = '';
-        var inp = document.getElementById('de-search-input-' + ridx);
-        if (inp) inp.value = '';
-        return;
-      }
-
-      // Confirm button — collect all checked boxes
-      var confirmBtn = e.target.closest('.de-sr-confirm');
-      if (confirmBtn) {
-        var ridx = parseInt(confirmBtn.getAttribute('data-ridx'));
-        var res = document.getElementById('de-search-results-' + ridx);
-        var checked = res ? res.querySelectorAll('.de-sr-cb:checked') : [];
-        if (!checked.length) {
-          confirmBtn.textContent = 'Select at least one';
-          setTimeout(function() { confirmBtn.textContent = 'Confirm selection'; }, 1500);
-          return;
-        }
-
-        // If only one checked — use as the match target directly
-        if (checked.length === 1) {
-          var cb = checked[0];
-          var pid   = parseInt(cb.getAttribute('data-pid'));
-          var pname = cb.getAttribute('data-pname');
-          dePickMatch(ridx, pid, pname);
-          if (res) res.innerHTML = '';
-          var inp = document.getElementById('de-search-input-' + ridx);
-          if (inp) inp.value = pname;
-          return;
-        }
-
-        // Multiple checked — store them for the structure panel to handle
-        // Show a mini summary and offer "Create parent & link all" or "pick one as the match"
-        var selectedContacts = Array.from(checked).map(function(cb) {
-          return { id: parseInt(cb.getAttribute('data-pid')), name: cb.getAttribute('data-pname') };
-        });
-
-        // Store on the match for the structure panel
-        var m = S.matches[ridx];
-        if (m) m._searchSelected = selectedContacts;
-
-        // Build a summary panel replacing the dropdown
-        var summaryHtml = '<div style="padding:8px 10px;font-size:0.82rem">' +
-          '<div style="font-weight:600;margin-bottom:6px">' + selectedContacts.length + ' contacts selected:</div>' +
-          selectedContacts.map(function(c) {
-            return '<div style="padding:3px 0;color:var(--muted)">' + esc(c.name) + '</div>';
-          }).join('') +
-          '<div style="display:flex;gap:6px;margin-top:8px">' +
-            '<button class="de-sr-create-parent" data-ridx="' + ridx + '"' +
-            ' style="flex:1;padding:6px;background:var(--accent);color:var(--bg);border:none;border-radius:5px;cursor:pointer;font-size:0.78rem;font-weight:600">Create parent & link all</button>' +
-            '<button class="de-sr-cancel" data-ridx="' + ridx + '"' +
-            ' style="padding:6px 10px;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:5px;cursor:pointer;font-size:0.78rem">Back</button>' +
-          '</div>' +
-        '</div>';
-        if (res) res.innerHTML = summaryHtml;
-        return;
-      }
-
-      // Create parent & link all (from multi-select summary)
-      var createParentBtn = e.target.closest('.de-sr-create-parent');
-      if (createParentBtn) {
-        var ridx = parseInt(createParentBtn.getAttribute('data-ridx'));
-        var m = S.matches[ridx];
-        var selected = (m && m._searchSelected) || [];
-        if (!selected.length) return;
-
-        // Pre-fill the structure panel's name input with the original Excel name
-        // and populate orphans with the selected contacts
-        // Easiest: inject a temporary structure panel
-        var res = document.getElementById('de-search-results-' + ridx);
-        var enrichEl = document.getElementById('de-enrich-' + ridx);
-
-        if (enrichEl) {
-          // Build inline create form
-          var formHtml = '<div id="de-inline-create-' + ridx + '" style="margin-top:8px;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:7px">' +
-            '<div style="font-size:0.8rem;font-weight:600;margin-bottom:8px">Create parent company</div>' +
-            '<input id="de-inline-name-' + ridx + '" type="text" value="' + esc(m ? m.original_name : '') + '"' +
-            ' style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:5px;padding:7px 10px;color:var(--text);font-size:0.82rem;margin-bottom:8px;box-sizing:border-box;font-family:inherit;outline:none"' +
-            ' placeholder="Parent company name...">' +
-            '<div style="font-size:0.78rem;color:var(--muted);margin-bottom:6px">Link these contacts:</div>' +
-            selected.map(function(c) {
-              return '<label style="display:flex;align-items:center;gap:8px;margin-bottom:4px;cursor:pointer;font-size:0.82rem">' +
-                '<input type="checkbox" checked class="de-inline-cb" data-cid="' + c.id + '"' +
-                ' style="accent-color:var(--accent);cursor:pointer">' +
-                esc(c.name) + '</label>';
-            }).join('') +
-            '<button class="de-inline-confirm" data-ridx="' + ridx + '"' +
-            ' style="margin-top:8px;width:100%;padding:8px;background:var(--accent);color:var(--bg);border:none;border-radius:6px;cursor:pointer;font-size:0.82rem;font-weight:600">Create & Link</button>' +
-          '</div>';
-
-          // Append after search box area
-          var existingForm = document.getElementById('de-inline-create-' + ridx);
-          if (existingForm) existingForm.remove();
-          enrichEl.insertAdjacentHTML('beforeend', formHtml);
-          if (res) res.innerHTML = '';
-        }
-        return;
-      }
-
-      // Inline confirm create
-      var inlineConfirm = e.target.closest('.de-inline-confirm');
-      if (inlineConfirm) {
-        var ridx = parseInt(inlineConfirm.getAttribute('data-ridx'));
-        var m = S.matches[ridx];
-        var nameEl = document.getElementById('de-inline-name-' + ridx);
-        var coName = nameEl ? nameEl.value.trim() : (m ? m.original_name : '');
-        if (!coName) return;
-        var form = document.getElementById('de-inline-create-' + ridx);
-        var cbs = form ? form.querySelectorAll('.de-inline-cb:checked') : [];
-        var contactIds = Array.from(cbs).map(function(cb) { return parseInt(cb.getAttribute('data-cid')); });
-
-        inlineConfirm.textContent = 'Creating...';
-        inlineConfirm.disabled = true;
-
-        (async function() {
-          try {
-            var newCoId = await window.odooExecute(window.odooUid, 'res.partner', 'create', [{
-              name: coName, is_company: true, active: true
-            }]);
-            if (contactIds.length) {
-              await window.odooExecute(window.odooUid, 'res.partner', 'write', [contactIds, { parent_id: newCoId }]);
-            }
-            dePickMatch(ridx, newCoId, coName, true);
-            // Reload enrichment
-            var enrichEl = document.getElementById('de-enrich-' + ridx);
-            if (enrichEl) {
-              enrichEl.removeAttribute('data-loaded');
-              enrichEl.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;font-style:italic">Company created — reloading...</div>';
-              await deLoadEnrichment(ridx);
-            }
-          } catch(err) {
-            inlineConfirm.disabled = false;
-            inlineConfirm.textContent = 'Create & Link';
-            if (form) {
-              var errEl = document.createElement('div');
-              errEl.style.cssText = 'color:#991b1b;font-size:0.78rem;margin-top:6px';
-              errEl.textContent = 'Error: ' + err.message;
-              form.appendChild(errEl);
-            }
-          }
-        })();
-        return;
-      }
-    });
-  }
-
-  async function deRunSearch(idx, query) {
-    var resultsEl = document.getElementById('de-search-results-' + idx);
-    if (!resultsEl) return;
-    if (!query || query.length < 1) { resultsEl.innerHTML = ''; return; }
-    resultsEl.innerHTML = '<div style="padding:6px;font-size:0.78rem;color:var(--muted)">Searching...</div>';
-    try {
-      // name_search: args=[query], kwargs={args:[domain], operator:'ilike', limit:N}
-      // This is the exact same call Odoo's own contact autocomplete uses
-      var results = await window.odooExecute(
-        window.odooUid,
-        'res.partner',
-        'name_search',
-        [query],
-        { domain: [['active', '=', true]], operator: 'ilike', limit: 15 }
-      );
-      if (!results || !results.length) {
-        resultsEl.innerHTML = '<div style="padding:6px;font-size:0.78rem;color:var(--muted)">No matches found</div>';
-        return;
-      }
-      // results = [[id, display_name], ...] — display_name includes parent like "Company, Contact"
-      // Fetch extra fields for the sub-label
-      var ids = results.map(function(r) { return r[0]; });
-      var displayNames = {};
-      results.forEach(function(r) { displayNames[r[0]] = r[1]; });
-
-      var partners = await window.odooExecute(window.odooUid, 'res.partner', 'search_read',
-        [[['id', 'in', ids]]],
-        { fields: ['id', 'name', 'email', 'is_company', 'parent_id'], limit: 15 }
-      );
-      // Preserve name_search ranking order
-      var orderMap = {};
-      results.forEach(function(r, i) { orderMap[r[0]] = i; });
-      partners.sort(function(a, b) { return (orderMap[a.id] || 0) - (orderMap[b.id] || 0); });
-
-      var html = '<div style="font-size:0.76rem;color:var(--muted);padding:5px 10px;border-bottom:1px solid var(--border)">Select one or more — then confirm</div>';
-      partners.forEach(function(p) {
-        var label = displayNames[p.id] || p.name;
-        var sub = p.email ? esc(p.email) : '';
-        html += '<label class="de-sr-row" style="display:flex;align-items:center;gap:8px;padding:7px 10px;cursor:pointer;border-bottom:1px solid var(--border);font-size:0.82rem">' +
-          '<input type="checkbox" class="de-sr-cb" data-pid="' + p.id + '" data-pname="' + esc(p.name) + '" data-ridx="' + idx + '"' +
-          ' style="flex-shrink:0;accent-color:var(--accent);cursor:pointer">' +
-          '<span style="flex:1;min-width:0">' + esc(label) +
-          (p.is_company ? ' <span style="font-size:0.7rem;background:#d1fae5;color:#065f46;padding:1px 5px;border-radius:3px;margin-left:4px">co</span>' : '') +
-          '</span>' +
-          (sub ? '<span style="color:var(--muted);font-size:0.74rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0">' + sub + '</span>' : '') +
-          '</label>';
-      });
-      html += '<div style="padding:7px 10px;display:flex;gap:6px">' +
-        '<button class="de-sr-confirm" data-ridx="' + idx + '"' +
-        ' style="flex:1;padding:6px;background:var(--accent);color:var(--bg);border:none;border-radius:5px;cursor:pointer;font-size:0.8rem;font-weight:600">Confirm selection</button>' +
-        '<button class="de-sr-cancel" data-ridx="' + idx + '"' +
-        ' style="padding:6px 10px;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:5px;cursor:pointer;font-size:0.8rem">Clear</button>' +
-        '</div>';
-      resultsEl.innerHTML = html;
-    } catch(e) {
-      resultsEl.innerHTML = '<div style="padding:6px;font-size:0.78rem;color:#991b1b">Search error: ' + esc(e.message) + '</div>';
-    }
-  }
-
-  window.dePickMatch = function (idx, partnerId, partnerName, skipReload) {
-    var m = S.matches[idx];
-    if (!m) return;
-    if (!partnerId) {
-      m.partner_id = null; m.partner_name = null; m.match_type = 'new'; m.confidence = 0;
-    } else {
-      m.partner_id = partnerId; m.partner_name = partnerName; m.match_type = 'exact'; m.confidence = 1;
-    }
-    var card = document.getElementById('de-card-' + idx);
-    if (card) {
-      var badge = card.querySelector('.de-badge');
-      if (badge) { badge.className = 'de-badge ' + (partnerId ? 'de-badge-exact' : 'de-badge-new'); badge.textContent = partnerId ? 'exact 100%' : 'new'; }
-      var sub = card.querySelector('.de-partner-sub');
-      if (sub) sub.textContent = partnerId ? 'Odoo: ' + partnerName : '';
-    }
-    // After a search pick, reload enrichment so structure panel appears
-    if (!skipReload && partnerId) {
-      var enrichEl = document.getElementById('de-enrich-' + idx);
-      if (enrichEl) {
-        enrichEl.removeAttribute('data-loaded');
-        var body = document.getElementById('de-body-' + idx);
-        if (body && body.classList.contains('open')) {
-          enrichEl.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;font-style:italic">Loading details for ' + esc(partnerName) + '...</div>';
-          deLoadEnrichment(idx);
-        }
-      }
-    }
-  };
-
-  async function deGenerateCoaching(idx, m, contacts, messages, opps) {
-    var el = document.getElementById('de-coaching-' + idx);
-    if (!el) return;
-    var groqKey = document.getElementById('gemini-key') && document.getElementById('gemini-key').value.trim();
-    if (!groqKey) { el.textContent = 'Add Groq API key in Settings to enable AI coaching.'; return; }
-    var model = (document.getElementById('gemini-model') && document.getElementById('gemini-model').value) || 'llama-3.3-70b-versatile';
-    var notesText = messages.slice(0, 5).map(function (msg) {
-      return msg.date.substring(0, 10) + ': ' + msg.body.replace(/<[^>]+>/g, '').substring(0, 200);
-    }).join('\n');
-    var prompt = 'You are a sales coach advising a rep on how to grow and develop their relationship with this customer.\n' +
-      'Your goal is to help the rep deliver more value TO this customer, not extract value FROM them.\n' +
-      'Based on the customer data below, suggest a concise (2-3 sentence) strategy the rep should use on this call.\n' +
-      'Focus on: what new value exists for this customer, how to strengthen the relationship, what problems the rep could help solve.\n\n' +
-      'Customer: ' + m.original_name + '\n' +
-      'Spend this period: $' + m.amount.toLocaleString() + '\n' +
-      'Contacts on record: ' + contacts.length + '\n' +
-      'Open opportunities: ' + opps.length + '\n' +
-      'Recent notes:\n' + (notesText || 'No recent notes') + '\n\n' +
-      'Write from the rep\'s perspective - what they should DO and SAY to help this customer. Be direct and specific. No bullet points.';
-    try {
-      var r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + groqKey },
-        body: JSON.stringify({ model: model, max_tokens: 200, temperature: 0.7, messages: [{ role: 'user', content: prompt }] }),
-        signal: AbortSignal.timeout(20000)
-      });
-      var data = await r.json();
-      var tip = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
-      if (tip) {
-        el.textContent = tip.trim();
-        el.style.fontStyle = 'normal';
-        el.style.color = 'var(--text)';
-        var noteEl = document.getElementById('de-note-' + idx);
-        if (noteEl && !noteEl.value) {
-          noteEl.value = tip.trim();
-          if (!S.assignments[idx]) S.assignments[idx] = {};
-          S.assignments[idx].note = tip.trim();
-        }
-      }
-    } catch (e) { el.textContent = 'Coaching unavailable: ' + e.message; }
-  }
-
-  // ── Create activities ──────────────────────────────────────────────────────
-  window.deCreateActivities = async function () {
-    var toCreate = Array.from(S.checked).filter(function (idx) {
-      return S.matches[idx] && S.matches[idx].partner_id && S.assignments[idx] && S.assignments[idx].rep_id;
-    });
-    if (!toCreate.length) {
-      deErr('Select rows and assign a rep + date before creating activities.');
-      return;
-    }
-    deGoTo('creating');
-    var statusEl = document.getElementById('de-creating-status');
-    var created = [], failed = [];
-    try {
-      if (statusEl) statusEl.textContent = 'Looking up model ID...';
-      var modelIds = await window.odooExecute(window.odooUid, 'ir.model', 'search', [[['model', '=', 'res.partner']]]);
-      if (!modelIds || !modelIds.length) throw new Error('Could not find res.partner model ID');
-      var partnerModelId = modelIds[0];
-      var actTypes = S.activityTypes.length ? S.activityTypes :
-        await window.odooExecute(window.odooUid, 'mail.activity.type', 'search_read', [[]], { fields: ['id', 'name'], limit: 50 });
-      var callType = actTypes.find(function (t) { return t.name.toLowerCase().includes('call'); });
-      var actTypeId = callType ? callType.id : (actTypes[0] ? actTypes[0].id : false);
-      for (var i = 0; i < toCreate.length; i++) {
-        var idx = toCreate[i];
-        var m = S.matches[idx];
-        var asgn = S.assignments[idx] || {};
-        if (statusEl) statusEl.textContent = 'Creating ' + (i + 1) + ' of ' + toCreate.length + ' — ' + m.original_name;
-        try {
-          var deadline = asgn.date || new Date(Date.now() + 86400000).toISOString().split('T')[0];
-          var vals = {
-            res_model_id: partnerModelId,
-            res_id: m.partner_id,
-            user_id: parseInt(asgn.rep_id),
-            date_deadline: deadline,
-            summary: 'Re-engagement: ' + m.original_name,
-            note: asgn.note || ''
-          };
-          if (actTypeId) vals.activity_type_id = actTypeId;
-          var actId = await window.odooExecute(window.odooUid, 'mail.activity', 'create', [vals]);
-          created.push({ idx: idx, activity_id: actId, name: m.original_name, rep: asgn.rep_name, date: deadline });
-        } catch (e) {
-          failed.push({ name: m.original_name, error: e.message });
-        }
-      }
-    } catch (e) {
-      var doneEl = document.getElementById('de-done-txt');
-      if (doneEl) doneEl.textContent = 'Error: ' + e.message;
-      deGoTo('done');
-      return;
-    }
-    S.createdActivities = created;
-    var doneEl = document.getElementById('de-done-txt');
-    if (doneEl) doneEl.textContent = created.length + ' activit' + (created.length === 1 ? 'y' : 'ies') + ' created' +
-      (failed.length ? ' - ' + failed.length + ' failed: ' + failed.map(function (f) { return f.name; }).join(', ') : '') + '.';
-    deGoTo('done');
-  };
-
-  // ── Export ─────────────────────────────────────────────────────────────────
-  window.deExportExcel = function () {
-    if (typeof xlsxDownload !== 'function') { deErr('Export not available'); return; }
-    var rows = S.matches.map(function (m, i) {
-      var asgn = S.assignments[i] || {};
-      return [m.original_name, m.amount || 0, m.match_type, m.partner_name || '', m.partner_id || '',
-        Math.round((m.confidence || 0) * 100) + '%', asgn.rep_name || '', asgn.date || '', asgn.note || ''];
-    });
-    xlsxDownload(rows, ['Company', 'Amount', 'Match', 'Odoo Partner', 'Odoo ID', 'Confidence', 'Rep', 'Date', 'Note'],
-      'data-explorer-' + new Date().toISOString().split('T')[0] + '.xlsx');
-  };
-
-  window.dePrintReport = function () {
-    var existing = document.querySelector('.de-print-report');
-    if (existing) existing.remove();
-    var report = document.createElement('div');
-    report.className = 'de-print-report';
-    report.style.display = 'none';
-    var rows = S.matches.filter(function (m) { return S.checked.has(S.matches.indexOf(m)); });
-    if (!rows.length) rows = S.matches;
-    var tableRows = rows.map(function (m) {
-      var i = S.matches.indexOf(m);
-      var asgn = S.assignments[i] || {};
-      return '<tr><td>' + esc(m.original_name) + '</td><td>' + (m.amount ? '$' + m.amount.toLocaleString() : '') +
-        '</td><td>' + m.match_type + '</td><td>' + esc(m.partner_name || 'New') + '</td><td>' + esc(asgn.rep_name || '') +
-        '</td><td>' + esc(asgn.date || '') + '</td><td style="max-width:200px;word-break:break-word">' + esc((asgn.note || '').substring(0, 100)) + '</td></tr>';
-    }).join('');
-    report.innerHTML = '<h1 style="font-size:18px;margin-bottom:4px">Data Explorer - Activity Report</h1>' +
-      '<p style="font-size:11px;color:#666;margin-bottom:16px">Generated: ' + new Date().toLocaleDateString() + '</p>' +
-      '<table class="de-print-table"><thead><tr><th>Company</th><th>Amount</th><th>Match</th><th>Odoo Partner</th><th>Rep</th><th>Date</th><th>Note</th></tr></thead>' +
-      '<tbody>' + tableRows + '</tbody></table>';
-    document.body.appendChild(report);
-    window.print();
-  };
-
-  // ── Helpers ────────────────────────────────────────────────────────────────
-  function deErr(msg) {
-    var el = document.getElementById('de-err-banner');
-    var txt = document.getElementById('de-err-txt');
-    if (txt) txt.textContent = msg;
-    if (el) el.style.display = 'flex';
-  }
-
-  function esc(s) {
-    return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-  }
-
-}());
-</script>
 </body></html>
