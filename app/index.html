@@ -3066,7 +3066,10 @@ Support Team"></textarea>
           </div>
         </div>
         <div id="de-preview-phase" style="display:none">
-          <a onclick="deGoTo('upload')" style="cursor:pointer;color:var(--primary);font-size:0.83rem;display:inline-block;margin-bottom:14px">&#8592; Upload Different File</a>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+            <a onclick="deGoTo('upload')" style="cursor:pointer;color:var(--primary);font-size:0.83rem">&#8592; Upload Different File</a>
+            <button class="btn btn-ghost" onclick="deConfirmReset()" style="padding:4px 12px;font-size:0.8rem;border-color:#f87171;color:#f87171">&#8635; New list</button>
+          </div>
           <div id="de-file-banner" style="background:var(--accent);color:var(--bg);padding:9px 13px;border-radius:7px;font-size:0.83rem;font-weight:500;margin-bottom:16px"></div>
           <div style="font-weight:600;font-size:0.88rem;margin-bottom:8px">Data Preview (first 10 rows)</div>
           <div style="overflow-x:auto;border:1px solid var(--border);border-radius:8px;margin-bottom:16px"><table id="de-preview-tbl" style="width:100%;border-collapse:collapse;font-size:0.79rem"></table></div>
@@ -3076,7 +3079,10 @@ Support Team"></textarea>
           </div>
         </div>
         <div id="de-columns-phase" style="display:none">
-          <a onclick="deGoTo('preview')" style="cursor:pointer;color:var(--primary);font-size:0.83rem;display:inline-block;margin-bottom:14px">&#8592; Back to Preview</a>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+            <a onclick="deGoTo('preview')" style="cursor:pointer;color:var(--primary);font-size:0.83rem">&#8592; Back to Preview</a>
+            <button class="btn btn-ghost" onclick="deConfirmReset()" style="padding:4px 12px;font-size:0.8rem;border-color:#f87171;color:#f87171">&#8635; New list</button>
+          </div>
           <div style="font-weight:600;font-size:0.88rem;margin-bottom:4px">Select Columns to Use</div>
           <div id="de-col-count" style="font-size:0.82rem;color:var(--muted);margin-bottom:14px">Click a column card to select it.</div>
           <div id="de-col-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;margin-bottom:16px"></div>
@@ -3103,11 +3109,12 @@ Support Team"></textarea>
               <option value="">Assign rep to all checked...</option>
             </select>
             <input type="date" id="de-bulk-date" style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-size:0.82rem;font-family:'DM Sans',sans-serif;outline:none">
-            <button class="btn btn-primary" onclick="deBulkAssign()" style="padding:6px 14px;font-size:0.82rem;white-space:nowrap">Apply to checked</button>
+            <button class="btn btn-primary" onclick="deBulkAssign()" style="padding:6px 14px;font-size:0.82rem;white-space:nowrap">&#10003; Apply to checked</button>
             <div style="flex:1"></div>
-            <button class="btn btn-ghost" onclick="deCreateActivities()" id="de-create-btn" style="padding:6px 14px;font-size:0.82rem;white-space:nowrap" disabled>Create activities</button>
+            <button class="btn btn-ghost" onclick="deScheduleChecked()" id="de-create-btn" style="padding:6px 14px;font-size:0.82rem;white-space:nowrap;border-color:var(--accent);color:var(--accent)" disabled>&#128197; Schedule checked</button>
             <button class="btn btn-ghost" onclick="deExportExcel()" style="padding:6px 14px;font-size:0.82rem;white-space:nowrap">&#8203;Export XLSX</button>
             <button class="btn btn-ghost" onclick="dePrintReport()" style="padding:6px 14px;font-size:0.82rem;white-space:nowrap">&#8203;Print report</button>
+            <button class="btn btn-ghost" onclick="deConfirmReset()" style="padding:6px 14px;font-size:0.82rem;white-space:nowrap;border-color:#f87171;color:#f87171" title="Load a different file">&#8635; New list</button>
           </div>
 
           <!-- Filter pills -->
@@ -3116,6 +3123,7 @@ Support Team"></textarea>
             <button class="de-filter-pill" data-filter="exact" onclick="deFilter('exact')" style="padding:4px 12px;border-radius:20px;font-size:0.78rem;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer">Exact</button>
             <button class="de-filter-pill" data-filter="partial" onclick="deFilter('partial')" style="padding:4px 12px;border-radius:20px;font-size:0.78rem;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer">Partial</button>
             <button class="de-filter-pill" data-filter="new" onclick="deFilter('new')" style="padding:4px 12px;border-radius:20px;font-size:0.78rem;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer">New</button>
+            <button class="de-filter-pill" data-filter="scheduled" onclick="deFilter('scheduled')" style="padding:4px 12px;border-radius:20px;font-size:0.78rem;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer">&#10003; Scheduled</button>
           </div>
 
           <!-- Results table -->
@@ -23630,6 +23638,13 @@ window.persTab = function(tab) {
 .de-badge-exact   { background: #d1fae5; color: #065f46; }
 .de-badge-partial { background: #fef3c7; color: #92400e; }
 .de-badge-new     { background: #f3e8ff; color: #5b21b6; }
+.de-badge-scheduled { background: #c7d2fe; color: #3730a3; }
+.de-row-card.de-scheduled { opacity: 0.65; border-color: #818cf8 !important; }
+.de-row-card.de-scheduled .de-row-header { background: rgba(99,102,241,0.06); }
+.de-sched-pill { display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:12px;font-size:0.72rem;font-weight:700;background:#c7d2fe;color:#3730a3;flex-shrink:0; }
+.de-card-sched-btn { padding:4px 11px;font-size:0.77rem;border-radius:6px;border:1px solid var(--accent);background:transparent;color:var(--accent);cursor:pointer;white-space:nowrap;flex-shrink:0;font-family:inherit; }
+.de-card-sched-btn:hover { background:var(--accent);color:var(--bg); }
+.de-card-sched-btn:disabled { opacity:0.38;cursor:not-allowed; }
 @media print {
   #sidebar, #topbar, #de-upload-phase, #de-preview-phase, #de-columns-phase,
   #de-matching-phase, #de-creating-phase, .de-row-body, .btn, .de-filter-pill,
@@ -23650,6 +23665,7 @@ window.persTab = function(tab) {
     reps: [],
     assignments: {},
     checked: new Set(),
+    scheduled: new Set(),
     filter: 'all',
     activityTypes: [],
     createdActivities: []
@@ -23667,6 +23683,7 @@ window.persTab = function(tab) {
     if (phase === 'upload') {
       S.rows = []; S.cols = []; S.sel = new Set();
       S.matches = []; S.assignments = {}; S.checked = new Set();
+      S.scheduled = new Set();
       S.createdActivities = [];
       var old = document.getElementById('de-file-input');
       if (old) {
@@ -23719,6 +23736,7 @@ window.persTab = function(tab) {
       S.sel = new Set();
       S.assignments = {};
       S.checked = new Set();
+      S.scheduled = new Set();
       var banner = document.getElementById('de-file-banner');
       if (banner) banner.textContent = file.name + '  x  ' + rows.length + ' rows  x  ' + S.cols.length + ' columns  x  Sheet: ' + firstSheet;
       deTbl('de-preview-tbl', S.cols, rows.slice(0, 10));
@@ -23930,6 +23948,7 @@ window.persTab = function(tab) {
       S.matches = matches;
       S.assignments = {};
       S.checked = new Set();
+      S.scheduled = new Set();
       deGoTo('results');
     } catch (e) {
       console.error('deStartMatching error:', e);
@@ -23956,26 +23975,35 @@ window.persTab = function(tab) {
   function deRenderResults() {
     var list = document.getElementById('de-results-list');
     if (!list) return;
-    var filtered = S.matches.filter(function (m) {
-      return S.filter === 'all' || m.match_type === S.filter;
+    var filtered = S.matches.filter(function (m, i) {
+      if (S.filter === 'scheduled') return S.scheduled.has(i);
+      if (S.filter === 'all') return true;
+      return m.match_type === S.filter;
     });
     list.innerHTML = '';
     filtered.forEach(function (m) {
       var realIdx = S.matches.indexOf(m);
       var isChecked = S.checked.has(realIdx);
+      var isSched = S.scheduled.has(realIdx);
       var asgn = S.assignments[realIdx] || {};
-      var badgeClass = 'de-badge-' + m.match_type;
-      var confPct = m.match_type === 'new' ? '' : Math.round(m.confidence * 100) + '%';
+      var badgeClass = isSched ? 'de-badge-scheduled' : ('de-badge-' + m.match_type);
+      var badgeLabel = isSched ? '&#10003; scheduled' : (m.match_type + (m.match_type !== 'new' ? ' ' + Math.round(m.confidence * 100) + '%' : ''));
       var repOptions = '<option value="">Select rep...</option>' +
         S.reps.map(function (r) {
           return '<option value="' + r.id + '"' + (asgn.rep_id == r.id ? ' selected' : '') + '>' + esc(r.name) + '</option>';
         }).join('');
       var card = document.createElement('div');
-      card.className = 'de-row-card';
+      card.className = 'de-row-card' + (isSched ? ' de-scheduled' : '');
       card.id = 'de-card-' + realIdx;
+      var schedBtnHtml = isSched
+        ? '<span class="de-sched-pill">&#10003; Sent</span>'
+        : '<button class="de-card-sched-btn" data-schedidx="' + realIdx + '"' +
+          (!asgn.rep_id ? ' disabled title="Assign a rep first"' : '') +
+          '>&#128197; Schedule</button>';
       card.innerHTML =
         '<div class="de-row-header" data-rowidx="' + realIdx + '">' +
           '<input type="checkbox"' + (isChecked ? ' checked' : '') +
+            (isSched ? ' disabled' : '') +
             ' class="de-row-check" data-rowidx="' + realIdx + '"' +
             ' style="flex-shrink:0;cursor:pointer;accent-color:var(--accent)">' +
           '<div style="flex:1;min-width:0">' +
@@ -23984,25 +24012,34 @@ window.persTab = function(tab) {
               ? '<div class="de-partner-sub" style="font-size:0.75rem;color:var(--muted)">Odoo: ' + esc(m.partner_name) + '</div>' : '<div class="de-partner-sub"></div>') +
           '</div>' +
           '<span style="font-size:0.78rem;color:var(--muted);white-space:nowrap;flex-shrink:0">' + (m.amount ? '$' + m.amount.toLocaleString() : '') + '</span>' +
-          '<span class="de-badge ' + badgeClass + '">' + m.match_type + (confPct ? ' ' + confPct : '') + '</span>' +
-          '<select class="de-rep-sel" data-rowidx="' + realIdx + '"' +
+          '<span class="de-badge ' + badgeClass + '">' + badgeLabel + '</span>' +
+          (isSched ? '' :
+            '<select class="de-rep-sel" data-rowidx="' + realIdx + '"' +
             ' style="background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:4px 8px;color:var(--text);font-size:0.78rem;font-family:inherit,sans-serif;outline:none;max-width:140px;flex-shrink:0">' +
             repOptions + '</select>' +
-          '<input type="date" value="' + (asgn.date || '') + '"' +
+            '<input type="date" value="' + (asgn.date || '') + '"' +
             ' class="de-date-inp" data-rowidx="' + realIdx + '"' +
-            ' style="background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:4px 8px;color:var(--text);font-size:0.78rem;font-family:inherit,sans-serif;outline:none;width:130px;flex-shrink:0">' +
+            ' style="background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:4px 8px;color:var(--text);font-size:0.78rem;font-family:inherit,sans-serif;outline:none;width:130px;flex-shrink:0">') +
+          schedBtnHtml +
           '<span style="color:var(--muted);font-size:0.8rem;flex-shrink:0" class="de-expand-arrow">&#9660;</span>' +
         '</div>' +
         '<div class="de-row-body" id="de-body-' + realIdx + '">' +
+          (isSched ? '<div style="color:#3730a3;font-size:0.82rem;font-weight:600;margin-bottom:4px">&#10003; Scheduled to ' + esc(asgn.rep_name || '') + (asgn.date ? ' &mdash; ' + asgn.date : '') + '</div>' : '') +
           '<div id="de-enrich-' + realIdx + '" style="color:var(--muted);font-size:0.82rem;font-style:italic">Click row header to load details...</div>' +
         '</div>';
       list.appendChild(card);
     });
 
-    // Event delegation on the list — handles row expand, checkbox, rep, date
+    // Event delegation on the list — handles row expand, checkbox, rep, date, per-card schedule
     list.onclick = function (e) {
       var check = e.target.closest('.de-row-check');
       if (check) { e.stopPropagation(); deCheckRow(parseInt(check.getAttribute('data-rowidx'))); return; }
+      var schedBtn = e.target.closest('.de-card-sched-btn');
+      if (schedBtn) {
+        e.stopPropagation();
+        deScheduleSingle(parseInt(schedBtn.getAttribute('data-schedidx')));
+        return;
+      }
       var repSel = e.target.closest('.de-rep-sel');
       if (repSel) { e.stopPropagation(); return; }
       var dateInp = e.target.closest('.de-date-inp');
@@ -24024,6 +24061,12 @@ window.persTab = function(tab) {
         if (!S.assignments[ridx]) S.assignments[ridx] = {};
         S.assignments[ridx].rep_id = repSel.value;
         S.assignments[ridx].rep_name = repSel.options[repSel.selectedIndex].text;
+        // Enable/disable per-card schedule button reactively
+        var card = document.getElementById('de-card-' + ridx);
+        if (card) {
+          var btn = card.querySelector('.de-card-sched-btn');
+          if (btn) { btn.disabled = !repSel.value; btn.title = repSel.value ? '' : 'Assign a rep first'; }
+        }
         return;
       }
       var dateInp = e.target.closest('.de-date-inp');
@@ -24037,6 +24080,7 @@ window.persTab = function(tab) {
   }
 
   function deCheckRow(idx) {
+    if (S.scheduled.has(idx)) return; // can't re-check a scheduled row
     if (S.checked.has(idx)) { S.checked.delete(idx); } else { S.checked.add(idx); }
     var cb = document.querySelector('.de-row-check[data-rowidx="' + idx + '"]');
     if (cb) cb.checked = S.checked.has(idx);
@@ -24047,7 +24091,8 @@ window.persTab = function(tab) {
 
   function deUpdateCheckedCount() {
     var el = document.getElementById('de-checked-count');
-    if (el) el.textContent = S.checked.size + ' selected';
+    var schedCount = S.scheduled.size;
+    if (el) el.textContent = S.checked.size + ' selected' + (schedCount ? ' · ' + schedCount + ' scheduled' : '');
   }
 
   window.deBulkAssign = function () {
@@ -24056,12 +24101,115 @@ window.persTab = function(tab) {
     var repId   = repSel ? repSel.value : '';
     var repName = repSel ? repSel.options[repSel.selectedIndex].text : '';
     var date    = dateEl ? dateEl.value : '';
+    if (!repId && !date) { deErr('Select a rep and/or date to apply to checked rows.'); return; }
     S.checked.forEach(function (idx) {
       if (!S.assignments[idx]) S.assignments[idx] = {};
       if (repId)  { S.assignments[idx].rep_id = repId; S.assignments[idx].rep_name = repName; }
       if (date)   { S.assignments[idx].date = date; }
     });
     deRenderResults();
+  };
+
+  // ── Schedule a single card to Odoo ────────────────────────────────────────
+  window.deScheduleSingle = async function (idx) {
+    if (S.scheduled.has(idx)) { deErr('This contact was already scheduled in this session.'); return; }
+    var m = S.matches[idx];
+    var asgn = S.assignments[idx] || {};
+    if (!m || !m.partner_id) { deErr('No Odoo partner linked for this row. Expand the card to link one.'); return; }
+    if (!asgn.rep_id) { deErr('Assign a rep to this row before scheduling.'); return; }
+    var btn = document.querySelector('.de-card-sched-btn[data-schedidx="' + idx + '"]');
+    if (btn) { btn.disabled = true; btn.textContent = 'Scheduling...'; }
+    try {
+      var modelIds = await window.odooExecute(window.odooUid, 'ir.model', 'search', [[['model', '=', 'res.partner']]]);
+      if (!modelIds || !modelIds.length) throw new Error('Could not find res.partner model ID');
+      var partnerModelId = modelIds[0];
+      var actTypes = S.activityTypes.length ? S.activityTypes :
+        await window.odooExecute(window.odooUid, 'mail.activity.type', 'search_read', [[]], { fields: ['id', 'name'], limit: 50 });
+      S.activityTypes = actTypes;
+      var callType = actTypes.find(function (t) { return t.name.toLowerCase().includes('call'); });
+      var actTypeId = callType ? callType.id : (actTypes[0] ? actTypes[0].id : false);
+      var deadline = asgn.date || new Date(Date.now() + 86400000).toISOString().split('T')[0];
+      var vals = {
+        res_model_id: partnerModelId,
+        res_id: m.partner_id,
+        user_id: parseInt(asgn.rep_id),
+        date_deadline: deadline,
+        summary: 'Re-engagement: ' + m.original_name,
+        note: asgn.note || ''
+      };
+      if (actTypeId) vals.activity_type_id = actTypeId;
+      var actId = await window.odooExecute(window.odooUid, 'mail.activity', 'create', [vals]);
+      S.scheduled.add(idx);
+      S.checked.delete(idx);
+      S.assignments[idx].activity_id = actId;
+      if (!S.createdActivities) S.createdActivities = [];
+      S.createdActivities.push({ idx: idx, activity_id: actId, name: m.original_name, rep: asgn.rep_name, date: deadline });
+      deRenderResults();
+      deUpdateCheckedCount();
+    } catch (e) {
+      if (btn) { btn.disabled = false; btn.textContent = '\u{1F4C5} Schedule'; }
+      deErr('Failed to schedule ' + (m.original_name || '') + ': ' + e.message);
+    }
+  };
+
+  // ── Schedule all checked rows that have a rep assigned ───────────────────
+  window.deScheduleChecked = async function () {
+    var toSend = Array.from(S.checked).filter(function (idx) {
+      return S.matches[idx] && S.matches[idx].partner_id && S.assignments[idx] && S.assignments[idx].rep_id && !S.scheduled.has(idx);
+    });
+    if (!toSend.length) {
+      deErr('Check rows with a rep assigned and an Odoo partner linked that haven\'t been scheduled yet.');
+      return;
+    }
+    var btn = document.getElementById('de-create-btn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Scheduling...'; }
+    var ok = 0, failNames = [];
+    try {
+      var modelIds = await window.odooExecute(window.odooUid, 'ir.model', 'search', [[['model', '=', 'res.partner']]]);
+      if (!modelIds || !modelIds.length) throw new Error('Could not find res.partner model ID');
+      var partnerModelId = modelIds[0];
+      var actTypes = S.activityTypes.length ? S.activityTypes :
+        await window.odooExecute(window.odooUid, 'mail.activity.type', 'search_read', [[]], { fields: ['id', 'name'], limit: 50 });
+      S.activityTypes = actTypes;
+      var callType = actTypes.find(function (t) { return t.name.toLowerCase().includes('call'); });
+      var actTypeId = callType ? callType.id : (actTypes[0] ? actTypes[0].id : false);
+      for (var i = 0; i < toSend.length; i++) {
+        var idx = toSend[i];
+        var m = S.matches[idx];
+        var asgn = S.assignments[idx] || {};
+        try {
+          var deadline = asgn.date || new Date(Date.now() + 86400000).toISOString().split('T')[0];
+          var vals = {
+            res_model_id: partnerModelId,
+            res_id: m.partner_id,
+            user_id: parseInt(asgn.rep_id),
+            date_deadline: deadline,
+            summary: 'Re-engagement: ' + m.original_name,
+            note: asgn.note || ''
+          };
+          if (actTypeId) vals.activity_type_id = actTypeId;
+          var actId = await window.odooExecute(window.odooUid, 'mail.activity', 'create', [vals]);
+          S.scheduled.add(idx);
+          S.checked.delete(idx);
+          S.assignments[idx].activity_id = actId;
+          if (!S.createdActivities) S.createdActivities = [];
+          S.createdActivities.push({ idx: idx, activity_id: actId, name: m.original_name, rep: asgn.rep_name, date: deadline });
+          ok++;
+        } catch (e) {
+          failNames.push(m.original_name);
+        }
+      }
+    } catch (e) {
+      if (btn) { btn.disabled = false; btn.textContent = '\u{1F4C5} Schedule checked'; }
+      deErr('Batch scheduling error: ' + e.message);
+      return;
+    }
+    deRenderResults();
+    deUpdateCheckedCount();
+    if (btn) { btn.disabled = S.checked.size === 0; btn.textContent = '\u{1F4C5} Schedule checked'; }
+    if (failNames.length) {
+      deErr(ok + ' scheduled. ' + failNames.length + ' failed: ' + failNames.join(', '));
+    }
   };
 
   // ── Enrichment ─────────────────────────────────────────────────────────────
@@ -24734,70 +24882,30 @@ window.persTab = function(tab) {
   }
 
   // ── Create activities ──────────────────────────────────────────────────────
-  window.deCreateActivities = async function () {
-    var toCreate = Array.from(S.checked).filter(function (idx) {
-      return S.matches[idx] && S.matches[idx].partner_id && S.assignments[idx] && S.assignments[idx].rep_id;
-    });
-    if (!toCreate.length) {
-      deErr('Select rows and assign a rep + date before creating activities.');
-      return;
+  window.deCreateActivities = window.deScheduleChecked; // legacy alias
+
+  window.deConfirmReset = function () {
+    if (S.scheduled.size > 0) {
+      if (!confirm('You have ' + S.scheduled.size + ' scheduled item' + (S.scheduled.size === 1 ? '' : 's') + ' this session. Load a new list anyway? (Odoo activities are already saved.)')) return;
+    } else if (S.matches.length > 0) {
+      if (!confirm('Load a new list? Current results will be cleared.')) return;
     }
-    deGoTo('creating');
-    var statusEl = document.getElementById('de-creating-status');
-    var created = [], failed = [];
-    try {
-      if (statusEl) statusEl.textContent = 'Looking up model ID...';
-      var modelIds = await window.odooExecute(window.odooUid, 'ir.model', 'search', [[['model', '=', 'res.partner']]]);
-      if (!modelIds || !modelIds.length) throw new Error('Could not find res.partner model ID');
-      var partnerModelId = modelIds[0];
-      var actTypes = S.activityTypes.length ? S.activityTypes :
-        await window.odooExecute(window.odooUid, 'mail.activity.type', 'search_read', [[]], { fields: ['id', 'name'], limit: 50 });
-      var callType = actTypes.find(function (t) { return t.name.toLowerCase().includes('call'); });
-      var actTypeId = callType ? callType.id : (actTypes[0] ? actTypes[0].id : false);
-      for (var i = 0; i < toCreate.length; i++) {
-        var idx = toCreate[i];
-        var m = S.matches[idx];
-        var asgn = S.assignments[idx] || {};
-        if (statusEl) statusEl.textContent = 'Creating ' + (i + 1) + ' of ' + toCreate.length + ' — ' + m.original_name;
-        try {
-          var deadline = asgn.date || new Date(Date.now() + 86400000).toISOString().split('T')[0];
-          var vals = {
-            res_model_id: partnerModelId,
-            res_id: m.partner_id,
-            user_id: parseInt(asgn.rep_id),
-            date_deadline: deadline,
-            summary: 'Re-engagement: ' + m.original_name,
-            note: asgn.note || ''
-          };
-          if (actTypeId) vals.activity_type_id = actTypeId;
-          var actId = await window.odooExecute(window.odooUid, 'mail.activity', 'create', [vals]);
-          created.push({ idx: idx, activity_id: actId, name: m.original_name, rep: asgn.rep_name, date: deadline });
-        } catch (e) {
-          failed.push({ name: m.original_name, error: e.message });
-        }
-      }
-    } catch (e) {
-      var doneEl = document.getElementById('de-done-txt');
-      if (doneEl) doneEl.textContent = 'Error: ' + e.message;
-      deGoTo('done');
-      return;
-    }
-    S.createdActivities = created;
-    var doneEl = document.getElementById('de-done-txt');
-    if (doneEl) doneEl.textContent = created.length + ' activit' + (created.length === 1 ? 'y' : 'ies') + ' created' +
-      (failed.length ? ' - ' + failed.length + ' failed: ' + failed.map(function (f) { return f.name; }).join(', ') : '') + '.';
-    deGoTo('done');
+    // Reset the file input so the same file can be re-selected
+    var fi = document.getElementById('de-file-input');
+    if (fi) fi.value = '';
+    deGoTo('upload');
   };
 
-  // ── Export ─────────────────────────────────────────────────────────────────
+    // ── Export ─────────────────────────────────────────────────────────────────
   window.deExportExcel = function () {
     if (typeof xlsxDownload !== 'function') { deErr('Export not available'); return; }
     var rows = S.matches.map(function (m, i) {
       var asgn = S.assignments[i] || {};
+      var status = S.scheduled.has(i) ? 'Scheduled' : (asgn.rep_id ? 'Assigned' : 'Pending');
       return [m.original_name, m.amount || 0, m.match_type, m.partner_name || '', m.partner_id || '',
-        Math.round((m.confidence || 0) * 100) + '%', asgn.rep_name || '', asgn.date || '', asgn.note || ''];
+        Math.round((m.confidence || 0) * 100) + '%', asgn.rep_name || '', asgn.date || '', asgn.note || '', status];
     });
-    xlsxDownload(rows, ['Company', 'Amount', 'Match', 'Odoo Partner', 'Odoo ID', 'Confidence', 'Rep', 'Date', 'Note'],
+    xlsxDownload(rows, ['Company', 'Amount', 'Match', 'Odoo Partner', 'Odoo ID', 'Confidence', 'Rep', 'Date', 'Note', 'Status'],
       'data-explorer-' + new Date().toISOString().split('T')[0] + '.xlsx');
   };
 
