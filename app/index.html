@@ -3104,6 +3104,7 @@ Support Team"></textarea>
 
           <!-- Bulk actions bar -->
           <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:0.82rem;color:var(--muted);white-space:nowrap" title="Select / deselect all visible rows"><input type="checkbox" id="de-select-all" onchange="deToggleSelectAll(this.checked)" style="accent-color:var(--accent);cursor:pointer;width:15px;height:15px"> All</label>
             <span id="de-checked-count" style="font-size:0.82rem;color:var(--muted);min-width:80px">0 selected</span>
             <select id="de-bulk-rep" style="flex:1;min-width:140px;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-size:0.82rem;font-family:'DM Sans',sans-serif;outline:none">
               <option value="">Assign rep to all checked...</option>
@@ -3112,6 +3113,7 @@ Support Team"></textarea>
             <button class="btn btn-primary" onclick="deBulkAssign()" style="padding:6px 14px;font-size:0.82rem;white-space:nowrap">&#10003; Apply to checked</button>
             <div style="flex:1"></div>
             <button class="btn btn-ghost" onclick="deScheduleChecked()" id="de-create-btn" style="padding:6px 14px;font-size:0.82rem;white-space:nowrap;border-color:var(--accent);color:var(--accent)" disabled>&#128197; Schedule checked</button>
+            <button class="btn btn-ghost" onclick="deBulkCreateParents()" id="de-bulk-create-btn" style="padding:6px 14px;font-size:0.82rem;white-space:nowrap;border-color:#f59e0b;color:#f59e0b;display:none" title="Create parent company and link all contacts for every checked Needs Parent row">&#9888; Create &amp; Link checked</button>
             <button class="btn btn-ghost" onclick="deExportExcel()" style="padding:6px 14px;font-size:0.82rem;white-space:nowrap">&#8203;Export XLSX</button>
             <button class="btn btn-ghost" onclick="dePrintReport()" style="padding:6px 14px;font-size:0.82rem;white-space:nowrap">&#8203;Print report</button>
             <button class="btn btn-ghost" onclick="deConfirmReset()" style="padding:6px 14px;font-size:0.82rem;white-space:nowrap;border-color:#f87171;color:#f87171" title="Load a different file">&#8635; New list</button>
@@ -3122,6 +3124,7 @@ Support Team"></textarea>
             <button class="de-filter-pill active" data-filter="all" onclick="deFilter('all')" style="padding:4px 12px;border-radius:20px;font-size:0.78rem;border:1px solid var(--accent);background:var(--accent);color:var(--bg);cursor:pointer">All</button>
             <button class="de-filter-pill" data-filter="exact" onclick="deFilter('exact')" style="padding:4px 12px;border-radius:20px;font-size:0.78rem;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer">Exact</button>
             <button class="de-filter-pill" data-filter="partial" onclick="deFilter('partial')" style="padding:4px 12px;border-radius:20px;font-size:0.78rem;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer">Partial</button>
+            <button class="de-filter-pill" data-filter="needs_parent" onclick="deFilter('needs_parent')" style="padding:4px 12px;border-radius:20px;font-size:0.78rem;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer">&#9888; Needs Parent</button>
             <button class="de-filter-pill" data-filter="new" onclick="deFilter('new')" style="padding:4px 12px;border-radius:20px;font-size:0.78rem;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer">New</button>
             <button class="de-filter-pill" data-filter="scheduled" onclick="deFilter('scheduled')" style="padding:4px 12px;border-radius:20px;font-size:0.78rem;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer">&#10003; Scheduled</button>
           </div>
@@ -23638,6 +23641,7 @@ window.persTab = function(tab) {
 .de-badge-exact   { background: #d1fae5; color: #065f46; }
 .de-badge-partial { background: #fef3c7; color: #92400e; }
 .de-badge-new     { background: #f3e8ff; color: #5b21b6; }
+.de-badge-needs-parent { background: #fef3c7; color: #92400e; }
 .de-badge-scheduled { background: #c7d2fe; color: #3730a3; }
 .de-row-card.de-scheduled { opacity: 0.65; border-color: #818cf8 !important; }
 .de-row-card.de-scheduled .de-row-header { background: rgba(99,102,241,0.06); }
@@ -23834,6 +23838,11 @@ window.persTab = function(tab) {
       var cl = c.toLowerCase();
       return cl.includes('amount') || cl.includes('revenue') || cl.includes('spend');
     });
+    // Detect email column in the uploaded spreadsheet for domain-first matching
+    var emailCol = cols.find(function (c) {
+      var cl = c.toLowerCase();
+      return cl.includes('email') || cl.includes('e-mail') || cl === 'mail';
+    }) || null;
     try {
       if (statusEl) statusEl.textContent = 'Fetching partners from Odoo...';
       // Fetch ALL active partners with name + email for matching
@@ -23862,89 +23871,198 @@ window.persTab = function(tab) {
           reps.map(function (r) { return '<option value="' + r.id + '">' + esc(r.name) + '</option>'; }).join('');
       }
 
-      // Pre-process partners: extract email domain, prefer company records
-      // Group by name+domain so we surface the best representative record per company
+      // Pre-process partners: extract FULL email domain and build domain→company index.
+      var freeDomains = { 'gmail.com':1,'yahoo.com':1,'hotmail.com':1,'outlook.com':1,
+        'aol.com':1,'icloud.com':1,'me.com':1,'live.com':1,'msn.com':1,
+        'protonmail.com':1,'ymail.com':1,'mail.com':1 };
+      var safeEmailDomain = function(emailStr) {
+        if (!emailStr) return '';
+        var s = String(emailStr).toLowerCase().trim();
+        var at = s.lastIndexOf('@');
+        if (at < 0) return '';
+        var dom = s.substring(at + 1);
+        // strip anything that isn't alphanum, dot, or hyphen
+        dom = dom.replace(/[^a-z0-9.-]/g, '');
+        return dom;
+      };
       var partnerIndex = {};
       partners.forEach(function (p) {
-        var domain = '';
-        var emailStr = p.email ? String(p.email) : '';
-        if (emailStr) {
-          var at = emailStr.indexOf('@');
-          if (at > -1) domain = emailStr.substring(at + 1).toLowerCase().split('.')[0]; // e.g. "casio" from "casio.com"
-        }
-        p._domain = domain;
-        // Index by id for dedup
+        p._domain = safeEmailDomain(p.email);
         if (!partnerIndex[p.id]) partnerIndex[p.id] = p;
       });
       var partnerList = Object.values(partnerIndex);
+      if (statusEl) statusEl.textContent = 'Building domain index (' + partnerList.length + ' partners)...';
 
-      if (statusEl) statusEl.textContent = 'Matching ' + S.rows.length + ' companies...';
-      var matches = [];
-      S.rows.forEach(function (row) {
-        var name = String(row[nameCol] || '').trim();
-        var amount = amtCol ? parseFloat(row[amtCol]) || 0 : 0;
-        if (!name) return;
-
-        // Simplified name for comparison: lowercase, strip common suffixes
-        var simpleName = String(name || '').toLowerCase()
-          .replace(/(inc|llc|ltd|corp|co|company|group|global|international|intl|north america|south america|na|usa|us)/g, '')
-          .replace(/[^a-z0-9]/g, ' ')
-          .replace(/\s+/g, ' ')
-          .trim();
-
-        var candidates = [];
-        partnerList.forEach(function (p) {
-          var pSimple = String(p.name || '').toLowerCase()
-            .replace(/(inc|llc|ltd|corp|co|company|group|global|international|intl|north america|south america|na|usa|us)/g, '')
-            .replace(/[^a-z0-9]/g, ' ')
-            .replace(/\s+/g, ' ')
-            .trim();
-
-          // Name similarity on simplified names
-          var nameSim = similarity(simpleName, pSimple);
-
-          // Domain match bonus — if email domain contains the company name root
-          var domainBonus = 0;
-          if (p._domain && p._domain.length > 2) {
-            if (simpleName.includes(p._domain) || p._domain.includes(simpleName.split(' ')[0])) {
-              domainBonus = 0.5;
-            }
+      // domain → best company record (resolved from contacts up to parent when possible)
+      var domainToCompany = {};
+      partnerList.forEach(function (p) {
+        var dom = p._domain;
+        if (!dom || dom.length < 4 || freeDomains[dom]) return;
+        var resolvedId   = p.id;
+        var resolvedName = p.name;
+        var isComp       = p.is_company ? true : false;
+        try {
+          if (!isComp && p.parent_id && Array.isArray(p.parent_id) && p.parent_id[0]) {
+            var par = partnerIndex[p.parent_id[0]];
+            if (par) { resolvedId = par.id; resolvedName = par.name; isComp = par.is_company ? true : false; }
           }
-
-          // Also check if one name CONTAINS the other (handles "Casio" vs "Casio America")
-          var containsBonus = 0;
-          if (simpleName && pSimple) {
-            if (pSimple.startsWith(simpleName) || simpleName.startsWith(pSimple)) {
-              containsBonus = 0.2;
-            }
-          }
-
-          var score = Math.min(1, nameSim + domainBonus + containsBonus);
-          if (score > 0.25) {
-            candidates.push({ id: p.id, name: p.name, score: score, is_company: p.is_company });
-          }
-        });
-
-        candidates.sort(function (a, b) {
-          // Prefer company records, then score
-          if (b.is_company !== a.is_company) return b.is_company ? 1 : -1;
-          return b.score - a.score;
-        });
-
-        var top = candidates.slice(0, 5);
-        var best = top[0] || null;
-        var bestScore = best ? best.score : 0;
-        var match_type = bestScore >= 0.85 ? 'exact' : bestScore >= 0.4 ? 'partial' : 'new';
-        matches.push({
-          original_name: name,
-          amount: amount,
-          partner_id: best ? best.id : null,
-          partner_name: best ? best.name : null,
-          confidence: Math.min(bestScore, 1),
-          match_type: match_type,
-          candidates: top
-        });
+        } catch(e2) { /* ignore resolution errors */ }
+        var existing = domainToCompany[dom];
+        if (!existing || (!existing.is_company && isComp)) {
+          domainToCompany[dom] = { id: resolvedId, name: resolvedName, is_company: isComp };
+        }
       });
+      console.log('[DE] domain index built:', Object.keys(domainToCompany).length, 'domains');
+
+      // ── Name cleaning helper ─────────────────────────────────────────────────
+      function stripPersonHint(raw) {
+        // "DigitalGlobe (Becky)" → "DigitalGlobe"
+        // "Red Hat, Inc. (Fissel)" → "Red Hat, Inc."
+        return String(raw || '').replace(/\s*\([^)]*\)\s*/g, ' ').replace(/\s+/g, ' ').trim();
+      }
+
+      // ── Per-row matching via Odoo name_search (same as manual search) ─────────
+      // Batch into groups of 10 to avoid flooding the API
+      if (statusEl) statusEl.textContent = 'Matching ' + S.rows.length + ' rows via Odoo search...';
+
+      // Build the list of search names (cleaned)
+      var rowMeta = S.rows.map(function(row) {
+        var name   = String(row[nameCol] || '').trim();
+        var amount = amtCol ? parseFloat(row[amtCol]) || 0 : 0;
+        var searchName = stripPersonHint(name);  // strip "(person)" hint before searching
+        var rowDomain  = emailCol ? safeEmailDomain(row[emailCol]) : '';
+        return { name: name, searchName: searchName, amount: amount, rowDomain: rowDomain };
+      }).filter(function(r){ return r.name; });
+
+      var matches = [];
+      var BATCH = 8;  // parallel name_search calls per tick
+
+      for (var i = 0; i < rowMeta.length; i += BATCH) {
+        if (statusEl) statusEl.textContent = 'Matching ' + i + ' / ' + rowMeta.length + '...';
+        var batch = rowMeta.slice(i, i + BATCH);
+
+        // Fire all searches in parallel
+        var batchResults = await Promise.all(batch.map(async function(r) {
+          console.log('[DE] searching:', r.searchName);
+          // ── PASS 1: domain index hit ───────────────────────────────────────────
+          if (r.rowDomain && domainToCompany[r.rowDomain]) {
+            var dh = domainToCompany[r.rowDomain];
+            return {
+              original_name: r.name, amount: r.amount,
+              partner_id: dh.id, partner_name: dh.name,
+              confidence: 0.95, match_type: 'exact', match_method: 'domain',
+              candidates: [{ id: dh.id, name: dh.name, score: 0.95, is_company: dh.is_company }]
+            };
+          }
+
+          // ── PASS 2: Odoo name_search — same engine as the manual search box ───
+          try {
+            // Search for any partner (company or contact) matching the cleaned name
+            var results = await window.odooExecute(window.odooUid, 'res.partner', 'name_search',
+              [r.searchName],
+              { domain: [['active', '=', true]], operator: 'ilike', limit: 8 }
+            );
+            if (!results || results.length === 0) {
+              // Retry with just the first meaningful word — catches "Acushnet Golf" → "Acushnet"
+              var firstWord = r.searchName.replace(/[^a-zA-Z0-9]/g, ' ').trim().split(/\s+/)[0];
+              if (firstWord && firstWord.length > 3) {
+                try {
+                  results = await window.odooExecute(window.odooUid, 'res.partner', 'name_search',
+                    [firstWord],
+                    { domain: [['active', '=', true]], operator: 'ilike', limit: 8 });
+                } catch(e2) { results = []; }
+              }
+              if (!results || results.length === 0) {
+                return { original_name: r.name, amount: r.amount, partner_id: null, partner_name: null,
+                  confidence: 0, match_type: 'new', match_method: 'name_search', candidates: [] };
+              }
+            }
+
+            // Fetch full details for these results (need is_company + parent_id)
+            var ids = results.map(function(r2){ return r2[0]; });
+            var details = await window.odooExecute(window.odooUid, 'res.partner', 'read',
+              [ids], { fields: ['id', 'name', 'email', 'is_company', 'parent_id'] }
+            );
+
+            // Sort: companies first, then by name_search rank
+            details.sort(function(a, b) {
+              if (a.is_company !== b.is_company) return a.is_company ? -1 : 1;
+              return ids.indexOf(a.id) - ids.indexOf(b.id);
+            });
+
+            // Find best candidate
+            var company  = details.find(function(p){ return p.is_company; });
+            var contacts = details.filter(function(p){ return !p.is_company; });
+            var bareOrphans = contacts.filter(function(p){ return !p.parent_id || !p.parent_id[0]; });
+            var withParent  = contacts.filter(function(p){ return p.parent_id && p.parent_id[0]; });
+
+            // Case 1: company record found directly
+            if (company) {
+              return {
+                original_name: r.name, amount: r.amount,
+                partner_id: company.id, partner_name: company.name,
+                confidence: 0.9, match_type: 'exact', match_method: 'name_search',
+                candidates: details.map(function(p){ return { id: p.id, name: p.name, score: 0.9, is_company: p.is_company }; })
+              };
+            }
+
+            // Case 2: contacts found with a parent — resolve to parent
+            if (withParent.length > 0) {
+              var par = { id: withParent[0].parent_id[0], name: withParent[0].parent_id[1] };
+              return {
+                original_name: r.name, amount: r.amount,
+                partner_id: par.id, partner_name: par.name,
+                confidence: 0.85, match_type: 'exact', match_method: 'contact_parent',
+                candidates: [{ id: par.id, name: par.name, score: 0.85, is_company: true }]
+              };
+            }
+
+            // Case 3: bare contacts found, no parent — flag for parent creation
+            if (bareOrphans.length > 0) {
+              var suggested = stripPersonHint(r.name);
+              return {
+                original_name: r.name, amount: r.amount,
+                partner_id: null, partner_name: null,
+                confidence: 0.85, match_type: 'needs_parent', match_method: 'name_search',
+                suggested_name: suggested,
+                orphan_contacts: bareOrphans.map(function(p){ return { id: p.id, name: p.name, email: p.email || '' }; }),
+                candidates: bareOrphans.map(function(p){ return { id: p.id, name: p.name, score: 0.85, is_company: false }; })
+              };
+            }
+
+            // Fallback — return top result as partial
+            var top = details[0];
+            return {
+              original_name: r.name, amount: r.amount,
+              partner_id: top.id, partner_name: top.name,
+              confidence: 0.4, match_type: 'partial', match_method: 'name_search',
+              candidates: details.map(function(p){ return { id: p.id, name: p.name, score: 0.4, is_company: p.is_company }; })
+            };
+
+          } catch(searchErr) {
+            // Log full error details — don't silently swallow
+            console.error('[DE] search error for "' + r.searchName + '":', searchErr.message, searchErr);
+            // Return new but log enough to diagnose — do NOT re-throw so one bad row doesn't kill the batch
+            return { original_name: r.name, amount: r.amount, partner_id: null, partner_name: null,
+              confidence: 0, match_type: 'new', match_method: 'error',
+              _error: searchErr.message, candidates: [] };
+          }
+        }));
+
+        batchResults.forEach(function(m){ matches.push(m); });
+      }
+
+      var errorRows = matches.filter(function(m){return m.match_method==='error';});
+      console.log('[DE] matching done:', matches.length,
+        'exact:', matches.filter(function(m){return m.match_type==='exact';}).length,
+        'needs_parent:', matches.filter(function(m){return m.match_type==='needs_parent';}).length,
+        'partial:', matches.filter(function(m){return m.match_type==='partial';}).length,
+        'new:', matches.filter(function(m){return m.match_type==='new';}).length,
+        'errors:', errorRows.length
+      );
+      if (errorRows.length > 0) {
+        console.error('[DE] Rows that errored during search:', errorRows.map(function(m){ return m.original_name + ': ' + m._error; }));
+      }
       S.matches = matches;
       S.assignments = {};
       S.checked = new Set();
@@ -23952,11 +24070,12 @@ window.persTab = function(tab) {
       deGoTo('results');
     } catch (e) {
       console.error('deStartMatching error:', e);
+      console.error('Stack:', e.stack);
+      // Show the error inline without auto-redirecting — user can see what went wrong
       if (statusEl) statusEl.textContent = 'Error: ' + e.message;
-      setTimeout(function() {
-        deErr('Matching failed: ' + e.message);
-        deGoTo('columns');
-      }, 1500);
+      var errMsg = 'Matching error: ' + e.message + '\n\nCheck the browser console (F12) for details.';
+      alert(errMsg);
+      deGoTo('columns');
     }
   }
 
@@ -23986,8 +24105,8 @@ window.persTab = function(tab) {
       var isChecked = S.checked.has(realIdx);
       var isSched = S.scheduled.has(realIdx);
       var asgn = S.assignments[realIdx] || {};
-      var badgeClass = isSched ? 'de-badge-scheduled' : ('de-badge-' + m.match_type);
-      var badgeLabel = isSched ? '&#10003; scheduled' : (m.match_type + (m.match_type !== 'new' ? ' ' + Math.round(m.confidence * 100) + '%' : ''));
+      var badgeClass = isSched ? 'de-badge-scheduled' : (m.match_type === 'needs_parent' ? 'de-badge-needs-parent' : ('de-badge-' + m.match_type));
+      var badgeLabel = isSched ? '&#10003; scheduled' : (m.match_type === 'needs_parent' ? '&#9888; needs parent' : (m.match_type + (m.match_type !== 'new' ? ' ' + Math.round(m.confidence * 100) + '%' : '')));
       var repOptions = '<option value="">Select rep...</option>' +
         S.reps.map(function (r) {
           return '<option value="' + r.id + '"' + (asgn.rep_id == r.id ? ' selected' : '') + '>' + esc(r.name) + '</option>';
@@ -24093,7 +24212,83 @@ window.persTab = function(tab) {
     var el = document.getElementById('de-checked-count');
     var schedCount = S.scheduled.size;
     if (el) el.textContent = S.checked.size + ' selected' + (schedCount ? ' · ' + schedCount + ' scheduled' : '');
+    // Show "Create & Link" button only when needs_parent rows are among the checked
+    var npChecked = Array.from(S.checked).some(function(i){ return S.matches[i] && S.matches[i].match_type === 'needs_parent'; });
+    var bulkCreateBtn = document.getElementById('de-bulk-create-btn');
+    if (bulkCreateBtn) bulkCreateBtn.style.display = (S.checked.size > 0 && npChecked) ? '' : 'none';
+    // Sync the select-all checkbox: checked if all visible rows are selected
+    var allCb = document.getElementById('de-select-all');
+    if (allCb) {
+      var visibleIndices = S.matches.map(function(m, i){ return i; }).filter(function(i){
+        var m = S.matches[i];
+        if (!m) return false;
+        if (S.filter === 'scheduled') return S.scheduled.has(i);
+        if (S.filter === 'all') return true;
+        return m.match_type === S.filter;
+      });
+      var allChecked = visibleIndices.length > 0 && visibleIndices.every(function(i){ return S.checked.has(i); });
+      var someChecked = visibleIndices.some(function(i){ return S.checked.has(i); });
+      allCb.checked = allChecked;
+      allCb.indeterminate = !allChecked && someChecked;
+    }
   }
+
+  window.deToggleSelectAll = function(checked) {
+    var visibleIndices = S.matches.map(function(m, i){ return i; }).filter(function(i){
+      var m = S.matches[i];
+      if (!m) return false;
+      if (S.filter === 'scheduled') return S.scheduled.has(i);
+      if (S.filter === 'all') return true;
+      return m.match_type === S.filter;
+    });
+    visibleIndices.forEach(function(i) {
+      if (checked) S.checked.add(i); else S.checked.delete(i);
+      // Sync each visible card's checkbox in the DOM
+      var cb = document.querySelector('.de-row-check[data-rowidx="' + i + '"]');
+      if (cb) cb.checked = checked;
+    });
+    deUpdateCheckedCount();
+  };
+
+  window.deBulkCreateParents = async function() {
+    var npRows = Array.from(S.checked).filter(function(i){ return S.matches[i] && S.matches[i].match_type === 'needs_parent'; });
+    if (!npRows.length) { deErr('No "Needs Parent" rows are checked.'); return; }
+    var btn = document.getElementById('de-bulk-create-btn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Creating...'; }
+    var done = 0, failed = 0;
+    for (var k = 0; k < npRows.length; k++) {
+      var idx = npRows[k];
+      var m   = S.matches[idx];
+      var coName = (m.suggested_name || m.original_name).replace(/\s*\([^)]*\)\s*/g, ' ').replace(/\s+/g, ' ').trim();
+      try {
+        // Create the parent company
+        var newCoId = await window.odooExecute(window.odooUid, 'res.partner', 'create', [{ name: coName, is_company: true, active: true }]);
+        // Link all orphan contacts
+        var contactIds = (m.orphan_contacts || []).map(function(c){ return c.id; });
+        if (contactIds.length) {
+          await window.odooExecute(window.odooUid, 'res.partner', 'write', [contactIds, { parent_id: newCoId }]);
+        }
+        // Update the match in place so the card reflects the new company
+        m.partner_id   = newCoId;
+        m.partner_name = coName;
+        m.match_type   = 'exact';
+        m.confidence   = 1.0;
+        m.match_method = 'bulk_created';
+        done++;
+      } catch(err) {
+        console.error('[DE] bulk create failed for', coName, err);
+        failed++;
+      }
+    }
+    // Re-render the list to reflect updated match types
+    deRenderResults();
+    if (btn) { btn.disabled = false; btn.textContent = '⚠ Create & Link checked'; }
+    if (failed === 0) {
+      deErr('Created ' + done + ' parent compan' + (done === 1 ? 'y' : 'ies') + ' and linked contacts.');
+    } else {
+      deErr('Created ' + done + ', failed ' + failed + '. Check console for errors.');
+    }
+  };
 
   window.deBulkAssign = function () {
     var repSel  = document.getElementById('de-bulk-rep');
@@ -24219,6 +24414,32 @@ window.persTab = function(tab) {
     el.setAttribute('data-loaded', '1');
     var m = S.matches[idx];
     el.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;font-style:italic">Loading...</div>';
+
+    // ── Fast path: contacts already found in fetch phase, just need a parent ──
+    if (m.match_type === 'needs_parent' && m.orphan_contacts && m.orphan_contacts.length > 0) {
+      var coName = m.suggested_name || m.original_name.replace(/\s*\([^)]*\)\s*/g, ' ').trim();
+      var html = '<div style="margin-bottom:14px;padding:12px 14px;background:var(--surface2);border:1px solid #fde68a;border-radius:7px">';
+      html += '<div style="font-size:0.78rem;font-weight:600;color:#92400e;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px">&#9888; Contacts Found — No Parent Company</div>';
+      html += '<div style="font-size:0.82rem;margin-bottom:10px">Found ' + m.orphan_contacts.length + ' contact' + (m.orphan_contacts.length > 1 ? 's' : '') + ' in Odoo matching <strong>' + esc(coName) + '</strong> with no parent company. Create one and link them:</div>';
+      html += '<input id="de-newco-name-' + idx + '" type="text" value="' + esc(coName) + '"' +
+        ' style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:5px;padding:7px 10px;color:var(--text);font-size:0.82rem;margin-bottom:8px;box-sizing:border-box;font-family:inherit,sans-serif;outline:none"' +
+        ' placeholder="Parent company name...">';
+      html += '<div style="font-size:0.78rem;color:var(--muted);margin-bottom:6px">Contacts to link:</div>';
+      m.orphan_contacts.forEach(function(c) {
+        html += '<label style="display:flex;align-items:center;gap:8px;margin-bottom:4px;cursor:pointer;font-size:0.82rem">' +
+          '<input type="checkbox" checked class="de-orphan-cb" data-cid="' + c.id + '" data-idx="' + idx + '" style="accent-color:var(--accent);cursor:pointer">' +
+          esc(c.name) + (c.email ? ' <span style="color:var(--muted);font-size:0.76rem">— ' + esc(c.email) + '</span>' : '') +
+          '</label>';
+      });
+      html += '<button class="de-create-co-btn" data-idx="' + idx + '"' +
+        ' style="margin-top:10px;width:100%;padding:8px;background:var(--accent);color:var(--bg);border:none;border-radius:6px;cursor:pointer;font-size:0.82rem;font-weight:600">&#43; Create Company &amp; Link Contacts</button>';
+      html += '</div>';
+      html += deSearchBox(idx);
+      el.innerHTML = html;
+      deWireStructure(idx);
+      return;
+    }
+
     try {
       // Fetch ALL records matching this company name (persons + companies)
       // so we can detect structure issues regardless of whether we have a partner_id
@@ -24601,6 +24822,38 @@ window.persTab = function(tab) {
       deSearchTimer = setTimeout(function () { deRunSearch(idx, query); }, 300);
     });
     dePanel.addEventListener('click', function (e) {
+      // "Create Company & Link" for a single bare contact (Case C)
+      var soloBtn = e.target.closest('.de-sr-create-solo');
+      if (soloBtn) {
+        var ridx  = parseInt(soloBtn.getAttribute('data-ridx'));
+        var cid   = parseInt(soloBtn.getAttribute('data-cid'));
+        var cname = soloBtn.getAttribute('data-cname');
+        var nameEl = document.getElementById('de-inline-coname-' + ridx);
+        var coName = nameEl ? nameEl.value.trim() : (S.matches[ridx] ? S.matches[ridx].original_name : cname);
+        if (!coName) { soloBtn.textContent = 'Enter a name first'; setTimeout(function(){ soloBtn.textContent = 'Create Company & Link Contact'; }, 1500); return; }
+        soloBtn.textContent = 'Creating...';
+        soloBtn.disabled = true;
+        (async function() {
+          try {
+            var newCoId = await window.odooExecute(window.odooUid, 'res.partner', 'create', [{
+              name: coName, is_company: true, active: true
+            }]);
+            await window.odooExecute(window.odooUid, 'res.partner', 'write', [[cid], { parent_id: newCoId }]);
+            dePickMatch(ridx, newCoId, coName);
+            var inp = document.getElementById('de-search-input-' + ridx);
+            if (inp) inp.value = coName;
+            var resEl = document.getElementById('de-search-results-' + ridx);
+            if (resEl) resEl.innerHTML = '<div style="padding:8px 10px;font-size:0.82rem;color:#065f46;background:#d1fae5;border-radius:5px">&#10003; Company created and contact linked</div>';
+          } catch(err) {
+            soloBtn.disabled = false;
+            soloBtn.textContent = 'Create Company & Link Contact';
+            var resEl2 = document.getElementById('de-search-results-' + ridx);
+            if (resEl2) resEl2.innerHTML += '<div style="padding:6px 8px;font-size:0.8rem;color:#991b1b;background:#fee2e2;border-radius:5px;margin-top:6px">Error: ' + esc(err.message) + '</div>';
+          }
+        })();
+        return;
+      }
+
       // Cancel / clear button
       var cancelBtn = e.target.closest('.de-sr-cancel');
       if (cancelBtn) {
@@ -24624,15 +24877,52 @@ window.persTab = function(tab) {
           return;
         }
 
-        // If only one checked — use as the match target directly
+        // If only one checked — resolve appropriately based on record type
         if (checked.length === 1) {
           var cb = checked[0];
-          var pid   = parseInt(cb.getAttribute('data-pid'));
-          var pname = cb.getAttribute('data-pname');
-          dePickMatch(ridx, pid, pname);
-          if (res) res.innerHTML = '';
-          var inp = document.getElementById('de-search-input-' + ridx);
-          if (inp) inp.value = pname;
+          var pid        = parseInt(cb.getAttribute('data-pid'));
+          var pname      = cb.getAttribute('data-pname');
+          var isCompany  = cb.getAttribute('data-iscompany') === '1';
+          var parentId   = parseInt(cb.getAttribute('data-parentid')) || 0;
+          var parentName = cb.getAttribute('data-parentname') || '';
+
+          // Case A: it's a company record — use directly
+          if (isCompany) {
+            dePickMatch(ridx, pid, pname);
+            if (res) res.innerHTML = '';
+            var inp = document.getElementById('de-search-input-' + ridx);
+            if (inp) inp.value = pname;
+            return;
+          }
+
+          // Case B: it's a contact WITH a parent company — auto-resolve to parent
+          if (!isCompany && parentId && parentName) {
+            dePickMatch(ridx, parentId, parentName);
+            if (res) res.innerHTML = '';
+            var inp2 = document.getElementById('de-search-input-' + ridx);
+            if (inp2) inp2.value = parentName;
+            return;
+          }
+
+          // Case C: it's a bare contact with NO parent — show inline create-parent prompt
+          // so the user can create a company and link this contact before scheduling
+          if (res) {
+            res.innerHTML =
+              '<div style="padding:10px 12px;font-size:0.82rem">' +
+                '<div style="padding:6px 8px;background:#fef3c7;border-radius:5px;color:#92400e;margin-bottom:10px">' +
+                  '<strong>' + esc(pname) + '</strong> is a contact with no parent company in Odoo.' +
+                '</div>' +
+                '<div style="font-size:0.8rem;font-weight:600;margin-bottom:6px">Company name to create or link:</div>' +
+                '<input id="de-inline-coname-' + ridx + '" type="text" value="' + esc(S.matches[ridx] ? S.matches[ridx].original_name : pname) + '"' +
+                  ' style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:5px;padding:7px 10px;color:var(--text);font-size:0.82rem;margin-bottom:8px;box-sizing:border-box;font-family:inherit,sans-serif;outline:none">' +
+                '<div style="display:flex;gap:6px">' +
+                  '<button class="de-sr-create-solo" data-ridx="' + ridx + '" data-cid="' + pid + '" data-cname="' + esc(pname) + '"' +
+                    ' style="flex:1;padding:7px;background:var(--accent);color:var(--bg);border:none;border-radius:5px;cursor:pointer;font-size:0.82rem;font-weight:600">Create Company &amp; Link Contact</button>' +
+                  '<button class="de-sr-cancel" data-ridx="' + ridx + '"' +
+                    ' style="padding:7px 12px;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:5px;cursor:pointer;font-size:0.82rem">Back</button>' +
+                '</div>' +
+              '</div>';
+          }
           return;
         }
 
@@ -24780,22 +25070,43 @@ window.persTab = function(tab) {
         [[['id', 'in', ids]]],
         { fields: ['id', 'name', 'email', 'is_company', 'parent_id'], limit: 15 }
       );
-      // Preserve name_search ranking order
+      // Sort: companies first, then by name_search rank
       var orderMap = {};
       results.forEach(function(r, i) { orderMap[r[0]] = i; });
-      partners.sort(function(a, b) { return (orderMap[a.id] || 0) - (orderMap[b.id] || 0); });
+      partners.sort(function(a, b) {
+        if (a.is_company !== b.is_company) return a.is_company ? -1 : 1;
+        return (orderMap[a.id] || 0) - (orderMap[b.id] || 0);
+      });
 
-      var html = '<div style="font-size:0.76rem;color:var(--muted);padding:5px 10px;border-bottom:1px solid var(--border)">Select one or more — then confirm</div>';
+      var companiesFound = partners.filter(function(p) { return p.is_company; }).length;
+      var hint = companiesFound > 0
+        ? 'Select company record — or select contacts to consolidate'
+        : 'No company records found — select contacts to consolidate under a new parent';
+      var html = '<div style="font-size:0.76rem;color:var(--muted);padding:5px 10px;border-bottom:1px solid var(--border)">' + hint + '</div>';
       partners.forEach(function(p) {
-        var label = displayNames[p.id] || p.name;
-        var sub = p.email ? esc(p.email) : '';
-        html += '<label class="de-sr-row" style="display:flex;align-items:center;gap:8px;padding:7px 10px;cursor:pointer;border-bottom:1px solid var(--border);font-size:0.82rem">' +
-          '<input type="checkbox" class="de-sr-cb" data-pid="' + p.id + '" data-pname="' + esc(p.name) + '" data-ridx="' + idx + '"' +
+        // Use Odoo's display_name which includes parent: "DigitalGlobe, Becky Schneider"
+        var displayLabel = displayNames[p.id] || p.name;
+        var parentLabel = (!p.is_company && p.parent_id && p.parent_id[1]) ? p.parent_id[1] : '';
+        // Sub-line: email first, fall back to explicit parent label if displayName doesn't already show it
+        var sub = p.email ? esc(p.email) : (parentLabel && displayLabel.indexOf(parentLabel) === -1 ? 'under: ' + esc(parentLabel) : '');
+        var rowBg = p.is_company ? 'background:rgba(201,162,39,0.07);' : '';
+        html += '<label class="de-sr-row" style="display:flex;align-items:center;gap:8px;padding:7px 10px;cursor:pointer;border-bottom:1px solid var(--border);font-size:0.82rem;' + rowBg + '">' +
+          '<input type="checkbox" class="de-sr-cb"' +
+          ' data-pid="' + p.id + '"' +
+          ' data-pname="' + esc(p.name) + '"' +
+          ' data-iscompany="' + (p.is_company ? '1' : '0') + '"' +
+          ' data-parentid="' + (p.parent_id && p.parent_id[0] ? p.parent_id[0] : '') + '"' +
+          ' data-parentname="' + (p.parent_id && p.parent_id[1] ? esc(p.parent_id[1]) : '') + '"' +
+          ' data-ridx="' + idx + '"' +
           ' style="flex-shrink:0;accent-color:var(--accent);cursor:pointer">' +
-          '<span style="flex:1;min-width:0">' + esc(label) +
-          (p.is_company ? ' <span style="font-size:0.7rem;background:#d1fae5;color:#065f46;padding:1px 5px;border-radius:3px;margin-left:4px">co</span>' : '') +
+          '<span style="flex:1;min-width:0;overflow:hidden">' +
+            '<span style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(displayLabel) +
+              (p.is_company
+                ? ' <span style="font-size:0.68rem;background:#d1fae5;color:#065f46;padding:1px 5px;border-radius:3px;margin-left:3px">company</span>'
+                : ' <span style="font-size:0.68rem;background:#f3e8ff;color:#5b21b6;padding:1px 5px;border-radius:3px;margin-left:3px">contact</span>') +
+            '</span>' +
+            (sub ? '<span style="display:block;font-size:0.73rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + sub + '</span>' : '') +
           '</span>' +
-          (sub ? '<span style="color:var(--muted);font-size:0.74rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0">' + sub + '</span>' : '') +
           '</label>';
       });
       html += '<div style="padding:7px 10px;display:flex;gap:6px">' +
