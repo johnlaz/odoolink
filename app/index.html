@@ -3,7 +3,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <meta name="oel-version" content="v13.0">
+  <meta name="oel-version" content="v13.4">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="mobile-web-app-capable" content="yes">
@@ -831,24 +831,8 @@
       <span class="sb-badge" id="badge-activities"></span>
     </div>
 
-    <div class="sb-item" id="nav-quotes" onclick="navTo('quotes')" title="Quotes">
-      <div class="sb-item-icon">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-          <rect x="1" y="1" width="12" height="12" rx="1.5" stroke="currentColor" stroke-width="1.2"></rect>
-          <path d="M4 5h6M4 7.5h4M4 10h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"></path>
-        </svg>
-      </div>
-      <span class="sb-item-label">Quotes</span>
-    </div>
-
-    <div class="sb-item" id="nav-smartbuilder" onclick="navTo('smartbuilder')" title="Smart Builder — AI-powered quote builder from raw requests">
-      <div class="sb-item-icon">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-          <path d="M7 1l1.2 3.6L12 6l-3.8 1.2L7 11l-1.2-3.8L2 6l3.8-1.4z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
-        </svg>
-      </div>
-      <span class="sb-item-label">Smart Builder</span>
-    </div>
+    <div class="sb-divider"></div>
+    <div class="sb-section-label">QUOTING</div>
 
     <div class="sb-item" id="nav-quotedesk" onclick="navTo('quotedesk')" title="Request Desk — manual quote request handler">
       <div class="sb-item-icon">
@@ -862,15 +846,23 @@
       <span class="sb-item-label">Request Desk</span>
     </div>
 
-    <div class="sb-item" id="nav-projects" onclick="navTo('projects')" title="Projects &amp; Tasks">
+    <div class="sb-item" id="nav-smartbuilder" onclick="navTo('smartbuilder')" title="Smart Builder — AI-powered quote builder from raw requests">
       <div class="sb-item-icon">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-          <rect x="1.5" y="3.5" width="11" height="9" rx="1.5" stroke="currentColor" stroke-width="1.2"/>
-          <path d="M4.5 1.5v4M9.5 1.5v4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-          <path d="M4 8l1.5 1.5L10 7" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M7 1l1.2 3.6L12 6l-3.8 1.2L7 11l-1.2-3.8L2 6l3.8-1.4z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
         </svg>
       </div>
-      <span class="sb-item-label">Projects</span>
+      <span class="sb-item-label">Smart Builder</span>
+    </div>
+
+    <div class="sb-item" id="nav-quotes" onclick="navTo('quotes')" title="Quotes">
+      <div class="sb-item-icon">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <rect x="1" y="1" width="12" height="12" rx="1.5" stroke="currentColor" stroke-width="1.2"></rect>
+          <path d="M4 5h6M4 7.5h4M4 10h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"></path>
+        </svg>
+      </div>
+      <span class="sb-item-label">Quotes</span>
     </div>
 
     <div class="sb-item" id="nav-templates" onclick="navTo('templates')" title="Email Templates">
@@ -884,7 +876,47 @@
     </div>
 
     <div class="sb-divider"></div>
-    <div class="sb-section-label">MORE</div>
+    <div class="sb-section-label">PIPELINE</div>
+
+    <div class="sb-item" id="nav-prospect" onclick="navTo('prospect')" title="Prospecting">
+      <div class="sb-item-icon">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.2"></circle>
+          <path d="M9.5 9.5l3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"></path>
+        </svg>
+      </div>
+      <span class="sb-item-label">Prospecting</span>
+    </div>
+
+    <div class="sb-item" id="nav-catchup" onclick="navTo('catchup')" title="Dormant Contacts">
+      <div class="sb-item-icon">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M7 1a6 6 0 100 12A6 6 0 007 1z" stroke="currentColor" stroke-width="1.2"></path>
+          <path d="M7 4v3l2 2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"></path>
+        </svg>
+      </div>
+      <span class="sb-item-label">Dormant Contacts</span>
+      <span class="sb-badge" id="badge-catchup"></span>
+    </div>
+
+    <div class="sb-item" id="nav-vendor" onclick="navTo('vendor')" title="Vendor Outreach">
+      <div class="sb-item-icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1l1.5 3 3.5.5-2.5 2.4.6 3.5L7 8.9l-3.1 1.5.6-3.5L2 4.5l3.5-.5z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"></path></svg></div>
+      <span class="sb-item-label">Vendor Outreach</span>
+    </div>
+
+    <div class="sb-divider"></div>
+    <div class="sb-section-label">WORK &amp; COMMS</div>
+
+    <div class="sb-item" id="nav-projects" onclick="navTo('projects')" title="Projects &amp; Tasks">
+      <div class="sb-item-icon">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <rect x="1.5" y="3.5" width="11" height="9" rx="1.5" stroke="currentColor" stroke-width="1.2"/>
+          <path d="M4.5 1.5v4M9.5 1.5v4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+          <path d="M4 8l1.5 1.5L10 7" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <span class="sb-item-label">Projects</span>
+    </div>
 
     <div class="sb-item" id="nav-discuss" onclick="navTo('discuss')" title="Discuss">
       <div class="sb-item-icon">
@@ -906,6 +938,9 @@
       <span class="sb-item-label">Support</span>
     </div>
 
+    <div class="sb-divider"></div>
+    <div class="sb-section-label">UTILITIES</div>
+
     <div class="sb-item" id="nav-bounces" onclick="navTo('bounces')" title="Bounce Manager — handle undeliverable emails">
       <div class="sb-item-icon">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -922,34 +957,13 @@
       <span class="sb-item-label">Data Explorer</span>
     </div>
 
-    <div class="sb-item" id="nav-catchup" onclick="navTo('catchup')" title="Dormant Contacts">
-      <div class="sb-item-icon">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-          <path d="M7 1a6 6 0 100 12A6 6 0 007 1z" stroke="currentColor" stroke-width="1.2"></path>
-          <path d="M7 4v3l2 2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"></path>
-        </svg>
-      </div>
-      <span class="sb-item-label">Dormant Contacts</span>
-      <span class="sb-badge" id="badge-catchup"></span>
-    </div>
-
-    <div class="sb-item" id="nav-vendor" onclick="navTo('vendor')" title="Vendor Outreach">
-      <div class="sb-item-icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1l1.5 3 3.5.5-2.5 2.4.6 3.5L7 8.9l-3.1 1.5.6-3.5L2 4.5l3.5-.5z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"></path></svg></div>
-      <span class="sb-item-label">Vendor Outreach</span>
-    </div>
     <div class="sb-item" id="nav-docs" onclick="navTo('docs')" title="Documents">
       <div class="sb-item-icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 1h6l3 3v9H3V1z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"></path><path d="M9 1v3h3M5 6h4M5 8.5h4M5 11h2" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"></path></svg></div>
       <span class="sb-item-label">Documents</span>
     </div>
-    <div class="sb-item" id="nav-prospect" onclick="navTo('prospect')" title="Prospecting">
-      <div class="sb-item-icon">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-          <circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.2"></circle>
-          <path d="M9.5 9.5l3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"></path>
-        </svg>
-      </div>
-      <span class="sb-item-label">Prospecting</span>
-    </div>
+
+    <div class="sb-divider"></div>
+    <div class="sb-section-label">REPORTS</div>
 
     <div class="sb-item" id="nav-reports" onclick="navTo('reports')" title="Reports">
       <div class="sb-item-icon">
@@ -1011,6 +1025,14 @@
         <button class="src-pill" id="src-turbify" onclick="toggleInboxPanel('turbify')">Turbify</button>
         <button class="src-pill" id="src-gmail" onclick="toggleInboxPanel('gmail')">Gmail</button>
       </div>
+    </div>
+    <div class="topbar-search-wrap" style="position:relative;flex:1;max-width:420px;margin:0 4px;min-width:120px">
+      <input type="text" id="oel-nav-search" placeholder="What do you need to do?"
+        oninput="oelNavSearchInput()"
+        onfocus="oelNavSearchInput()"
+        onkeydown="if(event.key==='Enter'){event.preventDefault();oelSearchAI();}else if(event.key==='Escape'){this.blur();var b=document.getElementById('oel-nav-results');if(b)b.style.display='none';}"
+        style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.82rem;outline:none">
+      <div id="oel-nav-results" style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--surface);border:1px solid var(--border);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.4);z-index:500;padding:6px;max-height:360px;overflow-y:auto"></div>
     </div>
     <div class="topbar-right">
       <div class="tb-status-cluster">
@@ -1677,6 +1699,10 @@
         <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="2"></circle><path d="M6.5 1.5v1M6.5 10v1M1.5 6.5h1M10 6.5h1M3 3l.7.7M9.3 9.3l.7.7M3 10l.7-.7M9.3 3.7l.7-.7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"></path></svg>
         Settings
       </button>
+      <button class="btn btn-primary hidden" id="btn-proceed-draft-top" onclick="goToStep3()" style="gap:6px">
+        Draft emails
+        <svg width="14" height="14" viewBox="0 0 14 14"><path d="M3 7h8M7 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+      </button>
     </div>
     <div class="status-box" id="connect-log"></div>
     <div id="step2-actions" class="btn-row hidden">
@@ -1692,6 +1718,14 @@
   <div class="card" id="step-3">
     <div class="card-title">Drafting emails with Groq</div>
     <div class="card-subtitle" id="draft-subtitle">Processing your activities…</div>
+
+    <div id="draft-trigger-row" class="btn-row" style="margin-bottom:16px">
+      <button class="btn btn-ghost" onclick="actTab('connect')">← Back to Connect</button>
+      <button class="btn btn-primary" onclick="goToStep3()" style="gap:6px">
+        Start drafting
+        <svg width="14" height="14" viewBox="0 0 14 14"><path d="M3 7h8M7 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+      </button>
+    </div>
 
     <div class="progress-bar-wrap">
       <div class="progress-bar-fill" id="draft-progress" style="width:0%"></div>
@@ -2697,9 +2731,9 @@ Support Team"></textarea>
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
           <div>
             <div style="font-family:'DM Serif Display',serif;font-size:1.3rem;color:var(--text)">OEL Command</div>
-            <div style="font-size:0.75rem;color:var(--muted);margin-top:2px">Quick Reference Guide · v10.0</div>
+            <div style="font-size:0.75rem;color:var(--muted);margin-top:2px">Quick Reference Guide · v13.4</div>
           </div>
-          <span style="font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace">v10.0</span>
+          <span style="font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace">v13.4</span>
         </div>
 
         <!-- Setup -->
@@ -2713,7 +2747,7 @@ Support Team"></textarea>
             </div>
             <p style="margin:0 0 6px">Double-click <strong style="color:var(--text)">start.bat</strong> to launch both and open the app.</p>
             <p style="margin:0 0 6px"><strong style="color:var(--text)">Settings tab:</strong> Enter Odoo URL, database, username, API key, and Groq API key. Use Export/Import credentials to back up and restore all settings, templates, and specs.</p>
-            <p style="margin:0"><strong style="color:var(--text)">Groq model:</strong> llama-3.3-70b-versatile by default. Change in Settings if hitting rate limits.</p>
+            <p style="margin:0"><strong style="color:var(--text)">Groq model:</strong> qwen/qwen3.6-27b by default. Change in Settings if hitting rate limits.</p>
           </div>
         </div>
 
@@ -2825,16 +2859,16 @@ Support Team"></textarea>
         <div class="card" style="margin-bottom:14px">
           <div class="card-title">🔧 Troubleshooting</div>
           <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
-            <p style="margin:0 0 4px"><strong style="color:var(--text)">App not updating after deploy:</strong> Hard refresh Ctrl+Shift+R. Service worker cache key = oel-v10.0.</p>
+            <p style="margin:0 0 4px"><strong style="color:var(--text)">App not updating after deploy:</strong> Hard refresh Ctrl+Shift+R. Service worker cache key = oel-v13.4.</p>
             <p style="margin:0 0 4px"><strong style="color:var(--text)">Odoo calls failing:</strong> Confirm server.py is running on port 7842. Check status lights in Settings. All domains must be flat arrays for Odoo 19 — no nested | operators.</p>
             <p style="margin:0 0 4px"><strong style="color:var(--text)">IMAP not working:</strong> Confirm imap_server.py is running on port 7843. Gmail requires an App Password. Turbify uses standard IMAP credentials.</p>
-            <p style="margin:0 0 4px"><strong style="color:var(--text)">AI drafts failing:</strong> Check Groq API key in Settings. Verify model name — default is llama-3.3-70b-versatile.</p>
+            <p style="margin:0 0 4px"><strong style="color:var(--text)">AI drafts failing:</strong> Check Groq API key in Settings. Verify model name — default is qwen/qwen3.6-27b.</p>
             <p style="margin:0"><strong style="color:var(--text)">Credentials lost:</strong> Use Export Credentials to save a JSON backup. Import on any device.</p>
           </div>
         </div>
 
         <div style="text-align:center;font-size:0.72rem;color:var(--muted);padding:12px 0">
-          OEL Command v13.0 · Built by Lazzaro · Powered by Groq AI + Odoo 19
+          OEL Command v13.4 · Built by Lazzaro · Powered by Groq AI + Odoo 19
         </div>
 
       </div>
@@ -2944,7 +2978,7 @@ Support Team"></textarea>
           <div class="card-title" style="font-family:'DM Serif Display',serif;font-size:1.2rem;margin-bottom:6px">Dashboard</div>
           <div class="card-subtitle" style="margin-bottom:16px">Pipeline, opportunities, and team performance from Odoo.</div>
           <div style="display:inline-flex;align-items:center;gap:6px;margin-bottom:8px">
-            <span style="font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace;box-shadow:0 0 8px rgba(201,168,76,0.35),0 0 20px rgba(201,168,76,0.12);animation:versionGlow 3s ease-in-out infinite alternate">OEL Command v13.0</span>
+            <span style="font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace;box-shadow:0 0 8px rgba(201,168,76,0.35),0 0 20px rgba(201,168,76,0.12);animation:versionGlow 3s ease-in-out infinite alternate">OEL Command v13.4</span>
             <span style="font-size:0.68rem;color:var(--muted)">Built by Lazzaro</span>
           </div>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px">
@@ -3041,6 +3075,46 @@ Support Team"></textarea>
               </div>
             </div>
             <div id="laz-acct-dd" style="margin-top:6px"></div>
+          </div>
+
+          <!-- ── SALES REPORTING ─────────────────────────────────── -->
+          <div style="margin-top:18px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+              <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);font-weight:500">Sales Reporting</div>
+              <button class="btn btn-ghost" onclick="srLoad()" title="Reload sales orders from Odoo" style="padding:5px 12px;font-size:0.78rem">Refresh</button>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
+              <select id="sr-rep" onchange="srLoad()" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.82rem;outline:none;cursor:pointer">
+                <option value="">All reps</option>
+              </select>
+              <select id="sr-type" onchange="srLoad()" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.82rem;outline:none;cursor:pointer">
+                <option value="">All order types</option>
+                <option value="rental">Rental</option>
+                <option value="sale">Sales</option>
+              </select>
+              <select id="sr-stage" onchange="srLoad()" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.82rem;outline:none;cursor:pointer">
+                <option value="">All stages</option>
+                <option value="pending">Pending</option>
+                <option value="confirmed">Confirmed</option>
+                <option value="cancel">Cancelled</option>
+              </select>
+              <input type="month" id="sr-month" onchange="srLoad()" title="Filter by delivery month" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.82rem;outline:none;cursor:pointer">
+              <select id="sr-delivery-field" onchange="srDeliveryFieldChanged()" title="Which Odoo field to treat as the delivery date — auto-detected, override if it's picking the wrong one" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;color:var(--muted);font-family:'DM Mono',monospace;font-size:0.74rem;outline:none;cursor:pointer;max-width:200px">
+                <option value="">Detecting delivery field…</option>
+              </select>
+              <label style="display:flex;align-items:center;gap:5px;font-size:0.78rem;color:var(--muted);cursor:pointer;margin-left:4px" title="Confirmed orders only, products only (services excluded), grouped by the month they deliver — not the month they were created">
+                <input type="checkbox" id="sr-commission-mode" onchange="srToggleCommissionMode()" style="accent-color:var(--accent)">
+                Commission estimate
+              </label>
+            </div>
+            <div id="sr-commission-hint" style="display:none;font-size:0.74rem;color:var(--muted);margin:-4px 0 10px;padding:6px 10px;background:var(--surface2);border-radius:6px">
+              Showing <strong style="color:var(--text)">confirmed</strong> orders only, filtered by <strong style="color:var(--text)">delivery date</strong> (not order date). "Products Only" excludes service-type line items — an approximation, not an exact commission figure.
+            </div>
+            <div id="sr-field-warning" style="display:none;font-size:0.74rem;color:var(--warning);margin:-4px 0 10px;padding:6px 10px;background:rgba(255,180,60,0.1);border:1px solid rgba(255,180,60,0.3);border-radius:6px"></div>
+            <div id="sr-summary" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px"></div>
+            <div id="sr-results" style="overflow-x:auto;border:1px solid var(--border);border-radius:8px">
+              <div style="padding:16px;text-align:center;color:var(--muted);font-size:0.82rem">Connect to Odoo, then open this tab to load sales orders.</div>
+            </div>
           </div>
 
         </div>
@@ -3301,7 +3375,10 @@ Support Team"></textarea>
         <div class="card" style="margin-bottom:14px">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
             <div style="font-size:0.88rem;font-weight:500">Quote request email</div>
-            <button class="btn btn-ghost" onclick="voGenerateTemplate()" title="Generate a professional quote request email using AI" style="padding:5px 12px;font-size:0.76rem">✦ AI draft</button>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-ghost" onclick="voMailtoGeneral()" title="Open your default mail app — uses the selected vendor's email if one is selected, otherwise you enter it in your mail client" style="padding:5px 12px;font-size:0.76rem">✉ Open in Mail</button>
+              <button class="btn btn-ghost" onclick="voGenerateTemplate()" title="Generate a professional quote request email using AI" style="padding:5px 12px;font-size:0.76rem">✦ AI draft</button>
+            </div>
           </div>
           <div class="field" style="margin-bottom:8px"><label>Subject</label><input type="text" id="vo-subject" value="Quote Request - Equipment Rental"></div>
           <div class="field"><label>Message body</label>
@@ -3474,11 +3551,11 @@ Thank you</textarea>
       <div class="field">
         <label>Model</label>
         <select id="gemini-model" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:11px 14px;color:var(--text);font-family:'DM Mono',monospace;font-size:0.85rem;outline:none;cursor:pointer;appearance:none;">
-          <option value="llama-3.3-70b-versatile">llama-3.3-70b-versatile — Free ✓ (recommended, best quality)</option>
-          <option value="llama-3.1-8b-instant">llama-3.1-8b-instant — Free ✓ (faster, higher limits)</option>
-          <option value="mixtral-8x7b-32768">mixtral-8x7b-32768 — Free ✓ (large context window)</option>
+          <option value="qwen/qwen3.6-27b">qwen/qwen3.6-27b — Free ✓ (recommended, best quality)</option>
+          <option value="openai/gpt-oss-120b">openai/gpt-oss-120b — Free ✓ (strong general-purpose alt)</option>
+          <option value="openai/gpt-oss-20b">openai/gpt-oss-20b — Free ✓ (faster, higher limits)</option>
         </select>
-        <div class="field-hint">All models are free. LLaMA 3.3 70B gives the best email quality.</div>
+        <div class="field-hint">All models are free. qwen/qwen3.6-27b gives the best email quality.</div>
       </div>
     </div>
 
@@ -4255,6 +4332,28 @@ Thank you</textarea>
     </div>
   </div>
 
+  <!-- Add Note Modal (Odoo chatter note, from top-nav search) -->
+  <div id="oel-note-modal" class="modal-overlay hidden">
+    <div class="modal" style="max-width:480px">
+      <div class="modal-header">
+        <div class="modal-header-text">
+          <div class="record">📝 Add Note</div>
+          <div class="contact">Logs to <strong id="oel-note-contact-name" style="color:var(--accent)">—</strong>'s record in Odoo</div>
+        </div>
+        <button class="modal-close" onclick="oelCloseNoteModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <textarea id="oel-note-text" rows="5" placeholder="What do you want to log about this contact?" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.85rem;line-height:1.6;outline:none;resize:vertical"></textarea>
+        <div id="oel-note-status" style="font-size:0.78rem;margin-top:8px;min-height:1.2em"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="oelCloseNoteModal()">Cancel</button>
+        <div style="flex:1"></div>
+        <button class="btn btn-primary" id="oel-note-save-btn" onclick="oelSubmitNoteModal()">Log to Odoo</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Personal Daily Briefing Modal -->
   <div id="pers-briefing-modal" class="modal-overlay hidden">
     <div class="modal" style="max-width:660px">
@@ -4908,7 +5007,7 @@ async function persToggleNeedsReply(on) {
   if (!emails.length) { if (statusEl) statusEl.textContent = 'Scan first'; return; }
 
   // Batch classify in groups of 5
-  const model = document.getElementById('gemini-model')?.value || 'llama-3.3-70b-versatile';
+  const model = document.getElementById('gemini-model')?.value || 'qwen/qwen3.6-27b';
   _persNeedsReplyCache.clear();
   const batchSize = 5;
   for (let i = 0; i < emails.length; i += batchSize) {
@@ -4919,7 +5018,7 @@ async function persToggleNeedsReply(on) {
       const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
         method:'POST',
         headers:{'Content-Type':'application/json','Authorization':`Bearer ${groqKey}`},
-        body: JSON.stringify({ model, max_tokens:100, temperature:0,
+        body: JSON.stringify({ model, reasoning_effort:'none', reasoning_format:'hidden', max_tokens:100, temperature:0,
           messages:[{role:'user',content:prompt}]
         }), signal: AbortSignal.timeout(15000)
       });
@@ -5576,9 +5675,9 @@ async function actLogNote(idx) {
   if (badge) { badge.textContent = 'logging…'; badge.style.background = 'rgba(201,168,76,0.15)'; }
 
   try {
-    const noteText = '<p><strong>Draft email prepared:</strong></p>'
-      + '<p><strong>Subject:</strong> ' + escHtml(em.subject) + '</p>'
-      + '<p>' + escHtml(em.body).replace(/\n/g,'<br>') + '</p>';
+    const noteText = '<strong>Draft email prepared:</strong><br>'
+      + '<strong>Subject:</strong> ' + escHtml(em.subject) + '<br>'
+      + escHtml(em.body).replace(/\n/g,'<br>');
 
     await odooExecute(odooUid, em.res_model, 'message_post', [[em.res_id]], {
       body:           noteText,
@@ -5596,6 +5695,29 @@ async function actLogNote(idx) {
 }
 
 function goToStep4() { navTo('activities'); actTab('send'); renderEmailList(); }
+
+// ── Keep the top-row "Draft emails" button in sync with the original bottom one ──
+(function syncTopDraftButton() {
+  function sync() {
+    const src = document.getElementById('btn-proceed-draft');
+    const top = document.getElementById('btn-proceed-draft-top');
+    if (!src || !top) return;
+    const parentHidden = document.getElementById('step2-actions')?.classList.contains('hidden');
+    top.classList.toggle('hidden', !!parentHidden);
+    top.disabled = src.disabled;
+    // Mirror label (e.g. "No activities due") but keep the arrow icon
+    const label = src.childNodes[0] && src.childNodes[0].nodeType === 3 ? src.childNodes[0].textContent.trim() : 'Draft emails';
+    if (top.childNodes[0] && top.childNodes[0].nodeType === 3) top.childNodes[0].textContent = label + ' ';
+  }
+  document.addEventListener('DOMContentLoaded', function() {
+    const src = document.getElementById('btn-proceed-draft');
+    const wrap = document.getElementById('step2-actions');
+    if (!src || !wrap) return;
+    new MutationObserver(sync).observe(wrap, { attributes: true, attributeFilter: ['class'] });
+    new MutationObserver(sync).observe(src, { attributes: true, childList: true, characterData: true, subtree: true });
+    sync();
+  });
+})();
 
 // ─── Odoo XML-RPC (multi-proxy fallback + local server) ──
 let connectionMode = 'proxy'; // 'proxy' or 'local'
@@ -5944,6 +6066,8 @@ async function draftAllEmails() {
   const log = document.getElementById('draft-log');
   log.innerHTML = '';
   document.getElementById('step3-actions').classList.add('hidden');
+  const triggerRow = document.getElementById('draft-trigger-row');
+  if (triggerRow) triggerRow.classList.add('hidden');
 
   const subtitle = document.getElementById('draft-subtitle');
   const progress = document.getElementById('draft-progress');
@@ -6128,7 +6252,7 @@ function stripHtml(html) {
 async function draftEmail(ctx) {
   const key = document.getElementById('gemini-key')?.value?.trim();
   if (!key) throw new Error('No Groq API key entered. Please add your key in step 1.');
-  const model = document.getElementById('gemini-model')?.value || 'llama-3.3-70b-versatile';
+  const model = document.getElementById('gemini-model')?.value || 'qwen/qwen3.6-27b';
 
   const history = (ctx.history || '').trim() || 'No previous messages found.';
   const notes = (ctx.activity_notes || '').trim() || 'None';
@@ -6184,7 +6308,7 @@ BODY:
       },
       body: JSON.stringify({
         model,
-        max_tokens: 1024,
+        reasoning_effort:'none', reasoning_format:'hidden', max_tokens: 1024,
         temperature: 0.7,
         messages: [{ role: 'user', content: prompt }]
       })
@@ -6667,6 +6791,23 @@ function exportCredentials() {
     theme:        localStorage.getItem('oelTheme') || 'lime',
     connMode:     localStorage.getItem('odoo_conn_mode') || 'proxy',
     docLibrary:   JSON.parse(localStorage.getItem('oel_doc_library') || '[]'),
+    compactMode:  localStorage.getItem('oelCompact') === '1',
+    customAccent: localStorage.getItem('oelCustomAccent') || '',
+    sidebarOrder: (() => { try { return JSON.parse(localStorage.getItem('oel_sidebar_order')||'[]'); } catch(e){ return []; } })(),
+
+    // ── Quote Manager / Quote Builder templates ───
+    qmTemplates: (typeof _qmTemplates !== 'undefined') ? _qmTemplates : [],
+    qbTemplates: (() => { try { return JSON.parse(localStorage.getItem('oel_qb_local_templates')||'[]'); } catch(e){ return []; } })(),
+
+    // ── Catch Up templates & saved searches ────────
+    cuTemplates: (() => { try { return JSON.parse(localStorage.getItem('oel_cu_templates')||'[]'); } catch(e){ return []; } })(),
+    cuSearches:  (() => { try { return JSON.parse(localStorage.getItem('oel_cu_searches')||'[]'); } catch(e){ return []; } })(),
+
+    // ── Vendor Outreach tracker ────────────────────
+    voTracker: (typeof _voTracker !== 'undefined') ? _voTracker : [],
+
+    // ── Project to-dos ──────────────────────────────
+    projTodos: (typeof _projTodos !== 'undefined') ? _projTodos : [],
   };
 
   if (!data.url && !data.odooKey) {
@@ -6821,7 +6962,91 @@ function importCredentials(eventOrElement) {
       // ── Sidebar order ─────────────────────────────
       if (Array.isArray(data.sidebarOrder) && data.sidebarOrder.length) {
         localStorage.setItem('oel_sidebar_order', JSON.stringify(data.sidebarOrder));
-              imported.push('sidebar layout');
+        if (typeof applySidebarOrder === 'function') applySidebarOrder();
+        imported.push('sidebar layout');
+      }
+
+      // ── Compact mode & custom accent ───────────────
+      if (typeof data.compactMode === 'boolean') {
+        localStorage.setItem('oelCompact', data.compactMode ? '1' : '0');
+        if (typeof _oelCompact !== 'undefined') { _oelCompact = data.compactMode; }
+        if (typeof oelApplyCompact === 'function') oelApplyCompact();
+        imported.push('compact mode');
+      }
+      if (data.customAccent && typeof lazApplyCustomColor === 'function') {
+        lazApplyCustomColor(data.customAccent);
+        imported.push('custom accent color');
+      }
+
+      // ── Quote Manager templates ────────────────────
+      if (Array.isArray(data.qmTemplates) && data.qmTemplates.length && typeof _qmTemplates !== 'undefined') {
+        try {
+          const ids = new Set(_qmTemplates.map(function(t){return t.name;}));
+          let added = 0;
+          data.qmTemplates.forEach(function(t){ if(!ids.has(t.name)){ _qmTemplates.push(t); added++; } });
+          if (added) { localStorage.setItem('oel_qm_templates', JSON.stringify(_qmTemplates)); imported.push(added+' quote manager templates'); }
+        } catch(e) {}
+      }
+
+      // ── Quote Builder templates ────────────────────
+      if (Array.isArray(data.qbTemplates) && data.qbTemplates.length) {
+        try {
+          let ex = JSON.parse(localStorage.getItem('oel_qb_local_templates')||'[]');
+          const ids = new Set(ex.map(function(t){return t.id;}));
+          let added = 0;
+          data.qbTemplates.forEach(function(t){ if(!ids.has(t.id)){ ex.push(t); added++; } });
+          if (added) { localStorage.setItem('oel_qb_local_templates', JSON.stringify(ex)); imported.push(added+' quote builder templates'); }
+        } catch(e) {}
+      }
+
+      // ── Catch Up templates & searches ──────────────
+      if (Array.isArray(data.cuTemplates) && data.cuTemplates.length) {
+        try {
+          let ex = JSON.parse(localStorage.getItem('oel_cu_templates')||'[]');
+          const ids = new Set(ex.map(function(t){return t.id;}));
+          let added = 0;
+          data.cuTemplates.forEach(function(t){ if(!ids.has(t.id)){ ex.push(t); added++; } });
+          if (added) { localStorage.setItem('oel_cu_templates', JSON.stringify(ex)); imported.push(added+' catchup templates'); }
+        } catch(e) {}
+      }
+      if (Array.isArray(data.cuSearches) && data.cuSearches.length) {
+        try {
+          let ex = JSON.parse(localStorage.getItem('oel_cu_searches')||'[]');
+          const ids = new Set(ex.map(function(s){return s.id;}));
+          let added = 0;
+          data.cuSearches.forEach(function(s){ if(!ids.has(s.id)){ ex.push(s); added++; } });
+          if (added) { localStorage.setItem('oel_cu_searches', JSON.stringify(ex)); imported.push(added+' catchup searches'); }
+        } catch(e) {}
+      }
+
+      // ── Vendor Outreach tracker ─────────────────────
+      if (Array.isArray(data.voTracker) && data.voTracker.length) {
+        try {
+          let ex = JSON.parse(localStorage.getItem('oel_vo_tracker')||'[]');
+          const ids = new Set(ex.map(function(v){return v.id;}));
+          let added = 0;
+          data.voTracker.forEach(function(v){ if(!ids.has(v.id)){ ex.push(v); added++; } });
+          if (added) {
+            localStorage.setItem('oel_vo_tracker', JSON.stringify(ex));
+            if (typeof _voTracker !== 'undefined') _voTracker = ex;
+            imported.push(added+' vendor tracker records');
+          }
+        } catch(e) {}
+      }
+
+      // ── Project to-dos ───────────────────────────────
+      if (Array.isArray(data.projTodos) && data.projTodos.length) {
+        try {
+          let ex = JSON.parse(localStorage.getItem('oel_todos')||'[]');
+          const ids = new Set(ex.map(function(t){return t.id;}));
+          let added = 0;
+          data.projTodos.forEach(function(t){ if(!ids.has(t.id)){ ex.push(t); added++; } });
+          if (added) {
+            localStorage.setItem('oel_todos', JSON.stringify(ex));
+            if (typeof _projTodos !== 'undefined') _projTodos = ex;
+            imported.push(added+' project to-dos');
+          }
+        } catch(e) {}
       }
 
       // ── Save core creds ───────────────────────────
@@ -7012,8 +7237,8 @@ async function voPasteExtract() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + groqKey },
       body: JSON.stringify({
-        model: document.getElementById('gemini-model')?.value || 'llama-3.3-70b-versatile',
-        max_tokens: 1500, temperature: 0.1,
+        model: document.getElementById('gemini-model')?.value || 'qwen/qwen3.6-27b',
+        reasoning_effort:'none', reasoning_format:'hidden', max_tokens: 1500, temperature: 0.1,
         messages: [{ role: 'user', content: prompt }]
       }),
       signal: AbortSignal.timeout(25000)
@@ -7091,6 +7316,7 @@ function voRenderVendors() {
       html += '</div>';
       html += '<div style="display:flex;gap:6px;flex-shrink:0;align-items:center">';
       html += '<button onclick="voSaveToOdoo('+i+')" style="background:var(--accent-dim);border:1px solid rgba(201,168,76,0.5);border-radius:5px;padding:4px 10px;font-size:0.76rem;color:var(--accent);cursor:pointer;font-weight:500" title="Add to Odoo purchase/vendors">⬆ Push to Odoo</button>';
+      html += '<button onclick="voMailtoOne('+i+')" style="background:none;border:1px solid var(--border);border-radius:5px;padding:3px 9px;font-size:0.72rem;color:var(--muted);cursor:pointer" title="'+(v.email?'Open in your default mail app':'Open your default mail app — enter the address yourself')+'" onmouseover="this.style.color=\'var(--accent)\'" onmouseout="this.style.color=\'var(--muted)\'">✉ Mail</button>';
       if (v.email) html += '<button onclick="voSendOne('+i+')" style="background:none;border:1px solid var(--border);border-radius:5px;padding:3px 9px;font-size:0.72rem;color:var(--muted);cursor:pointer" onmouseover="this.style.color=\'var(--accent)\'" onmouseout="this.style.color=\'var(--muted)\'">Send</button>';
       html += '</div></div></div>';
     });
@@ -7117,6 +7343,7 @@ function voRenderVendors() {
       if (v.comment) html += '<div style="font-size:0.72rem;color:var(--muted);margin-top:3px">'+escHtml(v.comment.slice(0,80))+'</div>';
       html += '</div>';
       html += '<div style="display:flex;gap:6px;flex-shrink:0">';
+      html += '<button onclick="voMailtoOne('+i+')" style="background:none;border:1px solid var(--border);border-radius:5px;padding:3px 9px;font-size:0.72rem;color:var(--muted);cursor:pointer" title="'+(v.email?'Open in your default mail app':'Open your default mail app — enter the address yourself')+'" onmouseover="this.style.color=\'var(--accent)\'" onmouseout="this.style.color=\'var(--muted)\'">✉ Mail</button>';
       if (v.email) html += '<button onclick="voSendOne('+i+')" style="background:none;border:1px solid var(--border);border-radius:5px;padding:3px 9px;font-size:0.72rem;color:var(--muted);cursor:pointer" onmouseover="this.style.color=\'var(--accent)\'" onmouseout="this.style.color=\'var(--muted)\'">Send</button>';
       html += '<button onclick="voLogToOdoo('+i+')" style="background:none;border:1px solid var(--border);border-radius:5px;padding:3px 9px;font-size:0.72rem;color:var(--muted);cursor:pointer" title="Post note to Odoo chatter" onmouseover="this.style.color=\'var(--accent)\'" onmouseout="this.style.color=\'var(--muted)\'">Log</button>';
       html += '</div></div>';
@@ -7148,6 +7375,29 @@ function voSelectAll() {
   voRenderVendors();
   var b = document.getElementById('vo-blast-btn');
   if (b) b.style.display = 'inline-flex';
+}
+
+function voMailto(email) {
+  var subject = document.getElementById('vo-subject')?.value || '';
+  var body    = document.getElementById('vo-body')?.value || '';
+  var qs = [];
+  if (subject) qs.push('subject=' + encodeURIComponent(subject));
+  if (body)    qs.push('body=' + encodeURIComponent(body));
+  var url = 'mailto:' + (email || '') + (qs.length ? '?' + qs.join('&') : '');
+  window.location.href = url;
+}
+
+function voMailtoOne(i) {
+  var v = _voVendors[i];
+  if (!v) return;
+  voMailto(v.email || '');
+  voRecordSent(v);
+}
+
+function voMailtoGeneral() {
+  var selected = _voVendors.filter(function(v) { return v._selected; });
+  var email = (selected.length === 1) ? (selected[0].email || '') : '';
+  voMailto(email);
 }
 
 async function voSendOne(i) {
@@ -7218,7 +7468,7 @@ async function voLogToOdoo(i) {
   if (!v.id || String(v.id).startsWith('ai_')) { alert('Log only works for Odoo contacts'); return; }
   var note = 'OEL Vendor Outreach: Quote request sent.' + (v._rate ? ' Rate: ' + v._rate : ' Awaiting response.');
   try {
-    await odooExecute(odooUid, 'res.partner', 'message_post', [v.id], { body:'<p>'+escHtml(note)+'</p>', message_type:'comment', subtype_xmlid:'mail.mt_note' });
+    await odooExecute(odooUid, 'res.partner', 'message_post', [v.id], { body: escHtml(note), message_type:'comment', subtype_xmlid:'mail.mt_note' });
     var s = document.getElementById('vo-status');
     if (s) { s.style.color='var(--success)'; s.textContent='Logged to Odoo'; setTimeout(function(){s.textContent='';s.style.color='var(--muted)';},2500); }
   } catch(e) { alert('Log error: ' + e.message); }
@@ -7234,7 +7484,7 @@ async function voGenerateTemplate() {
   var btn   = document.querySelector('[onclick="voGenerateTemplate()"]');
   if (btn) { btn.textContent='...'; btn.disabled=true; }
   try {
-    var r = await fetch('https://api.groq.com/openai/v1/chat/completions', { method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+groqKey}, body:JSON.stringify({ model:document.getElementById('gemini-model')?.value||'llama-3.3-70b-versatile', max_tokens:300, temperature:0.5, messages:[{role:'user',content:'Write a professional equipment rental quote request email body for '+equip+' in '+loc+'. Include pricing request, availability, daily and weekly rates, delivery. Under 120 words. No subject line.'}] }), signal:AbortSignal.timeout(20000) });
+    var r = await fetch('https://api.groq.com/openai/v1/chat/completions', { method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+groqKey}, body:JSON.stringify({ model:document.getElementById('gemini-model')?.value||'qwen/qwen3.6-27b', reasoning_effort:'none', reasoning_format:'hidden', max_tokens:300, temperature:0.5, messages:[{role:'user',content:'Write a professional equipment rental quote request email body for '+equip+' in '+loc+'. Include pricing request, availability, daily and weekly rates, delivery. Under 120 words. No subject line.'}] }), signal:AbortSignal.timeout(20000) });
     var d = await r.json();
     var text = d.choices?.[0]?.message?.content?.trim()||'';
     if (text) { var b = document.getElementById('vo-body'); if (b) b.value=text; }
@@ -7680,6 +7930,676 @@ async function lazAcctReport(type) {
     alert('Report error: ' + e.message);
   }
 }
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ── SALES REPORTING (rental & sales orders, by rep / stage / delivery month) ─
+// ═══════════════════════════════════════════════════════════════════════════
+let _srOrders   = [];
+let _srSortKey  = '_deliveryDate';
+let _srSortDir  = 'desc';
+
+function srFmt(n) { return '$' + (n||0).toLocaleString('en-US', {maximumFractionDigits:0}); }
+
+function srStageLabel(state) {
+  if (state === 'draft' || state === 'sent') return 'Pending';
+  if (state === 'sale'  || state === 'done') return 'Confirmed';
+  if (state === 'cancel') return 'Cancelled';
+  return state || '—';
+}
+
+function srStageColor(state) {
+  if (state === 'draft' || state === 'sent') return 'var(--muted)';
+  if (state === 'sale'  || state === 'done') return 'var(--success)';
+  if (state === 'cancel') return 'var(--danger)';
+  return 'var(--muted)';
+}
+
+async function srPopulateReps() {
+  const sel = document.getElementById('sr-rep');
+  if (!sel || !odooUid) return;
+  let users = odooUsers;
+  if (!users || !users.length) {
+    try {
+      const res = await odooExecute(odooUid, 'res.users', 'search_read',
+        [[['active','=',true],['share','=',false]]], { fields: ['id','name'], limit: 100 });
+      users = (res||[]).sort(function(a,b){ return a.name.localeCompare(b.name); });
+      odooUsers = users;
+    } catch(e) { users = []; }
+  }
+  const current = sel.value;
+  sel.innerHTML = '<option value="">All reps</option>' +
+    (users||[]).map(function(u){ return '<option value="'+u.id+'">'+escHtml(u.name)+'</option>'; }).join('');
+  if (current) sel.value = current;
+}
+
+// ── Delivery date field: auto-detect from the live schema, overridable ──────
+let _srDeliveryField    = null;
+let _srDateFieldOptions = [];
+
+async function srDetectDeliveryField() {
+  const sel = document.getElementById('sr-delivery-field');
+  if (!odooUid) return;
+  try {
+    const fields = await odooExecute(odooUid, 'sale.order', 'fields_get', [], { attributes: ['string','type'] });
+    const dateFields = Object.keys(fields||{}).filter(function(k) {
+      const f = fields[k];
+      return f && (f.type === 'date' || f.type === 'datetime');
+    }).map(function(k){ return { name: k, label: (fields[k].string || k) }; })
+      .sort(function(a,b) {
+        if (a.name === 'date_order') return -1;
+        if (b.name === 'date_order') return 1;
+        return a.label.localeCompare(b.label);
+      });
+    _srDateFieldOptions = dateFields;
+
+    const saved = localStorage.getItem('oel_sr_delivery_field');
+    let pick = (saved && dateFields.some(function(d){ return d.name === saved; })) ? saved : null;
+    if (!pick) {
+      const priority = ['date_order','commitment_date','rental_start_date','x_studio_delivery_date','expected_date'];
+      pick = priority.find(function(p){ return dateFields.some(function(d){ return d.name === p; }); })
+           || (dateFields[0] && dateFields[0].name) || 'date_order';
+    }
+    _srDeliveryField = pick;
+
+    if (sel) {
+      sel.innerHTML = dateFields.map(function(d) {
+        return '<option value="'+d.name+'"'+(d.name===pick?' selected':'')+'>'+escHtml(d.label)+' ('+d.name+')</option>';
+      }).join('');
+    }
+  } catch(e) {
+    _srDeliveryField = _srDeliveryField || 'date_order';
+    console.warn('Delivery field detection failed:', e.message);
+  }
+}
+
+function srDeliveryFieldChanged() {
+  const sel = document.getElementById('sr-delivery-field');
+  if (!sel || !sel.value) return;
+  _srDeliveryField = sel.value;
+  localStorage.setItem('oel_sr_delivery_field', _srDeliveryField);
+  srLoad();
+}
+
+function srToggleCommissionMode() {
+  const on        = document.getElementById('sr-commission-mode')?.checked;
+  const stageSel  = document.getElementById('sr-stage');
+  const monthEl   = document.getElementById('sr-month');
+  const hint      = document.getElementById('sr-commission-hint');
+  if (stageSel) { stageSel.disabled = !!on; if (on) stageSel.value = 'confirmed'; }
+  if (hint) hint.style.display = on ? 'block' : 'none';
+  if (on && monthEl && !monthEl.value) {
+    const d = new Date();
+    monthEl.value = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+  }
+  srLoad();
+}
+
+function srSetSort(key) {
+  if (_srSortKey === key) { _srSortDir = _srSortDir === 'asc' ? 'desc' : 'asc'; }
+  else { _srSortKey = key; _srSortDir = 'asc'; }
+  srRenderList();
+}
+
+async function srLoad() {
+  const resultsEl = document.getElementById('sr-results');
+  const summaryEl = document.getElementById('sr-summary');
+  const warnEl    = document.getElementById('sr-field-warning');
+  if (warnEl) { warnEl.style.display = 'none'; warnEl.innerHTML = ''; }
+  if (!odooUid) {
+    if (resultsEl) resultsEl.innerHTML = '<div style="padding:16px;text-align:center;color:var(--muted);font-size:0.82rem">Connect to Odoo first</div>';
+    if (summaryEl) summaryEl.innerHTML = '';
+    return;
+  }
+  if (!_srDeliveryField) await srDetectDeliveryField();
+  if (resultsEl) resultsEl.innerHTML = '<div style="padding:16px;text-align:center;color:var(--muted);font-size:0.82rem"><div class="dot spin" style="display:inline-block;margin-right:6px"></div>Loading…</div>';
+
+  const commissionMode = document.getElementById('sr-commission-mode')?.checked;
+  const repId = document.getElementById('sr-rep')?.value || '';
+  const type  = document.getElementById('sr-type')?.value || '';
+  const stage = commissionMode ? 'confirmed' : (document.getElementById('sr-stage')?.value || '');
+  const month = document.getElementById('sr-month')?.value || '';
+
+  // NOTE: we deliberately do NOT filter by the delivery date field server-side.
+  // Odoo excludes records with an empty date field from >=/< domain comparisons,
+  // which silently drops orders that never had the field filled in — that's what
+  // caused inaccurate filtering before. Instead we fetch broadly and filter client-side,
+  // so we can also tell you how many orders are missing the field entirely.
+  const domain = [];
+  if (repId) domain.push(['user_id','=', parseInt(repId)]);
+  if (type === 'rental') domain.push(['is_rental_order','=', true]);
+  if (type === 'sale')   domain.push(['is_rental_order','=', false]);
+  if (stage === 'pending')        domain.push(['state','in', ['draft','sent']]);
+  else if (stage === 'confirmed') domain.push(['state','in', ['sale','done']]);
+  else if (stage === 'cancel')    domain.push(['state','=', 'cancel']);
+
+  const fieldList = ['name','partner_id','user_id','state','is_rental_order','amount_total','date_order'];
+  if (_srDeliveryField && fieldList.indexOf(_srDeliveryField) === -1) fieldList.push(_srDeliveryField);
+
+  try {
+    const orders = await odooExecute(odooUid, 'sale.order', 'search_read', [domain], {
+      fields: fieldList, limit: 1000, order: 'date_order desc'
+    });
+    const allFetched = orders || [];
+
+    // Normalize: expose the resolved field under a consistent key for rendering
+    allFetched.forEach(function(o) { o._deliveryDate = o[_srDeliveryField] || false; });
+
+    const withDate = allFetched.filter(function(o){ return !!o._deliveryDate; });
+
+    let filtered = allFetched;
+    if (month) {
+      const parts = month.split('-');
+      const y = parseInt(parts[0]), m = parseInt(parts[1]);
+      const startStr = y + '-' + String(m).padStart(2,'0') + '-01';
+      const nextY = (m === 12) ? y+1 : y;
+      const nextM = (m === 12) ? 1 : m+1;
+      const endStr = nextY + '-' + String(nextM).padStart(2,'0') + '-01';
+      filtered = withDate.filter(function(o) {
+        const d = String(o._deliveryDate).slice(0,10);
+        return d >= startStr && d < endStr;
+      });
+    }
+    _srOrders = filtered;
+
+    // Diagnostics — surface what's actually happening with the delivery field
+    if (warnEl) {
+      if (!allFetched.length) {
+        // nothing to diagnose, empty state handles it
+      } else if (!withDate.length) {
+        warnEl.style.display = 'block';
+        warnEl.innerHTML = 'None of the ' + allFetched.length + ' matching orders have "' + escHtml(_srDeliveryField) + '" set. '
+          + 'Try a different field in the dropdown above — or this Odoo instance may be tracking delivery dates on the linked delivery (stock.picking) record instead of the order itself, which this report doesn\'t pull from yet.';
+      } else if (month && !filtered.length) {
+        warnEl.style.display = 'block';
+        warnEl.innerHTML = allFetched.length + ' orders matched your other filters, ' + withDate.length + ' have "' + escHtml(_srDeliveryField) + '" set, but none fall in the selected month.';
+      } else if (withDate.length < allFetched.length) {
+        warnEl.style.display = 'block';
+        warnEl.innerHTML = withDate.length + ' of ' + allFetched.length + ' matching orders have "' + escHtml(_srDeliveryField) + '" set — the rest are excluded from month filtering until that field is filled in on those orders.';
+      }
+    }
+
+    if (commissionMode) { await srRenderCommission(); }
+    else { srRenderList(); }
+  } catch(e) {
+    if (resultsEl) resultsEl.innerHTML = '<div style="padding:16px;text-align:center;color:var(--danger);font-size:0.82rem">Error: ' + escHtml(e.message) + '</div>';
+    if (summaryEl) summaryEl.innerHTML = '';
+  }
+}
+
+function srRenderList() {
+  const resultsEl = document.getElementById('sr-results');
+  const summaryEl = document.getElementById('sr-summary');
+  if (!resultsEl) return;
+
+  const rows = _srOrders.slice();
+  const key = _srSortKey, dir = _srSortDir;
+  rows.sort(function(a,b) {
+    let av, bv;
+    if (key === 'rep')          { av = (a.user_id&&a.user_id[1])||''; bv = (b.user_id&&b.user_id[1])||''; }
+    else if (key === 'partner') { av = (a.partner_id&&a.partner_id[1])||''; bv = (b.partner_id&&b.partner_id[1])||''; }
+    else if (key === 'stage')   { av = srStageLabel(a.state); bv = srStageLabel(b.state); }
+    else if (key === 'type')    { av = a.is_rental_order?'Rental':'Sales'; bv = b.is_rental_order?'Rental':'Sales'; }
+    else if (key === 'amount')  { av = a.amount_total||0; bv = b.amount_total||0; }
+    else                        { av = a._deliveryDate||''; bv = b._deliveryDate||''; }
+    if (av < bv) return dir === 'asc' ? -1 : 1;
+    if (av > bv) return dir === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+  const totalAmt = _srOrders.reduce(function(s,o){ return s + (o.amount_total||0); }, 0);
+  if (summaryEl) {
+    summaryEl.innerHTML =
+      '<div class="laz-stat-card"><div class="laz-stat-label">Orders</div><div class="laz-stat-value">' + _srOrders.length + '</div><div class="laz-stat-sub">matching filters</div></div>' +
+      '<div class="laz-stat-card"><div class="laz-stat-label">Total Value</div><div class="laz-stat-value accent">' + srFmt(totalAmt) + '</div><div class="laz-stat-sub">order totals</div></div>' +
+      '<div class="laz-stat-card"><div class="laz-stat-label">Avg Order</div><div class="laz-stat-value">' + srFmt(_srOrders.length?totalAmt/_srOrders.length:0) + '</div><div class="laz-stat-sub">per order</div></div>';
+  }
+
+  if (!rows.length) { resultsEl.innerHTML = '<div style="padding:16px;text-align:center;color:var(--muted);font-size:0.82rem">No orders match these filters</div>'; return; }
+
+  function arrow(k) { return _srSortKey === k ? (_srSortDir === 'asc' ? ' ▲' : ' ▼') : ''; }
+  function th(label, k, align) {
+    return '<th onclick="srSetSort(\''+k+'\')" style="padding:6px 8px;font-size:0.7rem;color:var(--muted);font-weight:500;text-align:'+(align||'left')+';cursor:pointer;white-space:nowrap;user-select:none">' + label + arrow(k) + '</th>';
+  }
+
+  const body = rows.map(function(o) {
+    const partner = (o.partner_id && o.partner_id[1]) ? escHtml(o.partner_id[1]) : '—';
+    const rep     = (o.user_id && o.user_id[1]) ? escHtml(o.user_id[1]) : '—';
+    const type    = o.is_rental_order ? 'Rental' : 'Sales';
+    const stage   = srStageLabel(o.state);
+    const color   = srStageColor(o.state);
+    const date    = o._deliveryDate ? String(o._deliveryDate).slice(0,10) : '—';
+    return '<tr><td style="padding:5px 8px;font-size:0.78rem;color:var(--text)">' + escHtml(o.name||'') + '</td>'
+         + '<td style="padding:5px 8px;font-size:0.78rem;color:var(--muted)">' + partner + '</td>'
+         + '<td style="padding:5px 8px;font-size:0.78rem;color:var(--muted)">' + rep + '</td>'
+         + '<td style="padding:5px 8px;font-size:0.78rem;color:var(--muted)">' + type + '</td>'
+         + '<td style="padding:5px 8px;font-size:0.78rem;color:' + color + '">' + stage + '</td>'
+         + '<td style="padding:5px 8px;font-size:0.78rem;color:var(--muted)">' + date + '</td>'
+         + '<td style="padding:5px 8px;font-size:0.78rem;color:var(--accent);font-family:monospace;text-align:right">' + srFmt(o.amount_total) + '</td></tr>';
+  }).join('');
+
+  resultsEl.innerHTML = '<table style="width:100%;border-collapse:collapse">'
+    + '<thead><tr style="border-bottom:1px solid var(--border)">'
+    + th('Order','name') + th('Customer','partner') + th('Rep','rep') + th('Type','type') + th('Stage','stage') + th('Delivery Date','_deliveryDate') + th('Total','amount','right')
+    + '</tr></thead><tbody>' + body + '</tbody></table>';
+}
+
+async function srRenderCommission() {
+  const resultsEl = document.getElementById('sr-results');
+  const summaryEl = document.getElementById('sr-summary');
+  if (!resultsEl) return;
+
+  if (!_srOrders.length) {
+    if (summaryEl) summaryEl.innerHTML = '';
+    resultsEl.innerHTML = '<div style="padding:16px;text-align:center;color:var(--muted);font-size:0.82rem">No confirmed orders deliver in this month with these filters</div>';
+    return;
+  }
+
+  const orderIds = _srOrders.map(function(o){ return o.id; });
+
+  try {
+    const lines = await odooExecute(odooUid, 'sale.order.line', 'search_read',
+      [[['order_id','in', orderIds], ['display_type','=', false]]],
+      { fields: ['order_id','product_id','price_subtotal'], limit: 5000 }
+    );
+
+    const productIds = Array.from(new Set((lines||[]).filter(function(l){ return l.product_id; }).map(function(l){ return l.product_id[0]; })));
+    const serviceIds = {};
+    if (productIds.length) {
+      const products = await odooExecute(odooUid, 'product.product', 'search_read',
+        [[['id','in', productIds]]], { fields: ['id','type'], limit: productIds.length }
+      );
+      (products||[]).forEach(function(p){ if (p.type === 'service') serviceIds[p.id] = true; });
+    }
+
+    const productTotalByOrder = {};
+    (lines||[]).forEach(function(l) {
+      const oid = Array.isArray(l.order_id) ? l.order_id[0] : l.order_id;
+      const isService = l.product_id && serviceIds[l.product_id[0]];
+      if (!isService) productTotalByOrder[oid] = (productTotalByOrder[oid]||0) + (l.price_subtotal||0);
+    });
+
+    let grandProductTotal = 0, grandOrderTotal = 0;
+    const rows = _srOrders.map(function(o) {
+      const pTotal = productTotalByOrder[o.id] || 0;
+      grandProductTotal += pTotal;
+      grandOrderTotal   += (o.amount_total||0);
+      return { o: o, productTotal: pTotal };
+    });
+
+    if (summaryEl) {
+      summaryEl.innerHTML =
+        '<div class="laz-stat-card"><div class="laz-stat-label">Confirmed Orders</div><div class="laz-stat-value">' + _srOrders.length + '</div><div class="laz-stat-sub">delivering this month</div></div>' +
+        '<div class="laz-stat-card"><div class="laz-stat-label">Order Total</div><div class="laz-stat-value">' + srFmt(grandOrderTotal) + '</div><div class="laz-stat-sub">incl. services</div></div>' +
+        '<div class="laz-stat-card"><div class="laz-stat-label">Approx. Commission Base</div><div class="laz-stat-value accent">' + srFmt(grandProductTotal) + '</div><div class="laz-stat-sub">products only</div></div>';
+    }
+
+    const body = rows.map(function(r) {
+      const o = r.o;
+      const partner = (o.partner_id && o.partner_id[1]) ? escHtml(o.partner_id[1]) : '—';
+      const rep     = (o.user_id && o.user_id[1]) ? escHtml(o.user_id[1]) : '—';
+      const date    = o._deliveryDate ? String(o._deliveryDate).slice(0,10) : '—';
+      return '<tr><td style="padding:5px 8px;font-size:0.78rem;color:var(--text)">' + escHtml(o.name||'') + '</td>'
+           + '<td style="padding:5px 8px;font-size:0.78rem;color:var(--muted)">' + partner + '</td>'
+           + '<td style="padding:5px 8px;font-size:0.78rem;color:var(--muted)">' + rep + '</td>'
+           + '<td style="padding:5px 8px;font-size:0.78rem;color:var(--muted)">' + date + '</td>'
+           + '<td style="padding:5px 8px;font-size:0.78rem;color:var(--muted);font-family:monospace;text-align:right">' + srFmt(o.amount_total) + '</td>'
+           + '<td style="padding:5px 8px;font-size:0.78rem;color:var(--accent);font-family:monospace;text-align:right">' + srFmt(r.productTotal) + '</td></tr>';
+    }).join('');
+
+    resultsEl.innerHTML = '<table style="width:100%;border-collapse:collapse">'
+      + '<thead><tr style="border-bottom:1px solid var(--border)">'
+      + '<th style="padding:6px 8px;font-size:0.7rem;color:var(--muted);font-weight:500;text-align:left">Order</th>'
+      + '<th style="padding:6px 8px;font-size:0.7rem;color:var(--muted);font-weight:500;text-align:left">Customer</th>'
+      + '<th style="padding:6px 8px;font-size:0.7rem;color:var(--muted);font-weight:500;text-align:left">Rep</th>'
+      + '<th style="padding:6px 8px;font-size:0.7rem;color:var(--muted);font-weight:500;text-align:left">Delivery Date</th>'
+      + '<th style="padding:6px 8px;font-size:0.7rem;color:var(--muted);font-weight:500;text-align:right">Order Total</th>'
+      + '<th style="padding:6px 8px;font-size:0.7rem;color:var(--muted);font-weight:500;text-align:right">Products Only</th>'
+      + '</tr></thead><tbody>' + body + '</tbody></table>';
+
+  } catch(e) {
+    resultsEl.innerHTML = '<div style="padding:16px;text-align:center;color:var(--danger);font-size:0.82rem">Error: ' + escHtml(e.message) + '</div>';
+    if (summaryEl) summaryEl.innerHTML = '';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ── TOP-NAV AI SEARCH — "what do you need to do?" ────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════
+const OEL_SEARCH_INDEX = [
+  { id:'inbox',        label:'Inbox',             keywords:'email unified inbox turbify imap gmail odoo messages read reply check mail' },
+  { id:'leads',        label:'Lead Capture',      keywords:'scan parse leads turbify push odoo crm new lead capture inbox to crm' },
+  { id:'activities',   label:'Activities',        keywords:'due activities follow up draft email odoo activity ai draft review send tracker overdue tasks reminders' },
+  { id:'quotedesk',    label:'Request Desk',      keywords:'manual quote request paste raw text build quote by hand request desk type in a quote' },
+  { id:'smartbuilder', label:'Smart Builder',     keywords:'ai quote builder paste raw request extract auto build quote smart quickly quote a voicemail or email' },
+  { id:'quotes',       label:'Quotes',            keywords:'rental quotation builder create rental order odoo quote build a rental order' },
+  { id:'templates',    label:'Templates',         keywords:'saved email templates reusable canned responses' },
+  { id:'prospect',     label:'Prospecting',       keywords:'find new prospects target criteria industry niche cold outreach new business find new customers' },
+  { id:'catchup',      label:'Dormant Contacts',  keywords:'dormant stale deals no activity re-engage stalled opportunities open deals no movement follow up old deals' },
+  { id:'vendor',       label:'Vendor Outreach',   keywords:'find subcontractors vendors blast quote request track responses rent from vendor mailto email a vendor about pricing' },
+  { id:'projects',     label:'Projects',          keywords:'projects tasks todo brainstorm project management to-do list' },
+  { id:'discuss',      label:'Discuss',           keywords:'message colleague quick message log note odoo discuss chat with a coworker' },
+  { id:'support',      label:'Support',           keywords:'remote support launch remote tools session invite client help desk fix a client issue' },
+  { id:'bounces',      label:'Bounce Manager',    keywords:'undeliverable bounced email list clear reschedule activities bad email address' },
+  { id:'dataexplorer', label:'Data Explorer',     keywords:'upload quickbooks export customer list sync review data import spreadsheet' },
+  { id:'docs',         label:'Documents',         keywords:'w9 coi contract document library files attach paperwork' },
+  { id:'reports',      label:'Reports',           keywords:'dashboard pipeline sales report commission rep stage revenue accounting aged ar top customers overdue invoices sales reporting' },
+  { id:'help',         label:'Help',              keywords:'help guide troubleshooting quick reference setup how does this work' },
+];
+
+function oelTrackNavVisit(section) {
+  try {
+    const freq = JSON.parse(localStorage.getItem('oel_nav_freq') || '{}');
+    freq[section] = (freq[section]||0) + 1;
+    localStorage.setItem('oel_nav_freq', JSON.stringify(freq));
+  } catch(e) {}
+}
+
+function oelNavFreq() {
+  try { return JSON.parse(localStorage.getItem('oel_nav_freq') || '{}'); } catch(e) { return {}; }
+}
+
+function oelSearchLocal(query) {
+  const q = query.toLowerCase().trim();
+  if (!q) return [];
+  const qWords = q.split(/\s+/).filter(Boolean);
+  const freq = oelNavFreq();
+  return OEL_SEARCH_INDEX.map(function(item) {
+    const hayLabel = item.label.toLowerCase();
+    const hay = hayLabel + ' ' + item.keywords.toLowerCase();
+    let score = 0;
+    qWords.forEach(function(w) {
+      if (hay.indexOf(w) !== -1) score += (hayLabel.indexOf(w) !== -1 ? 3 : 1);
+    });
+    if (hay.indexOf(q) !== -1) score += 5;
+    // Small frequency nudge — only matters as a tie-breaker between real keyword matches,
+    // never enough to surface a section with zero keyword relevance.
+    if (score > 0 && freq[item.id]) score += Math.min(1, Math.log(freq[item.id]+1) / 10);
+    return { item: item, score: score };
+  }).filter(function(r){ return r.score > 0; })
+    .sort(function(a,b){ return b.score - a.score; })
+    .slice(0, 5)
+    .map(function(r){ return r.item; });
+}
+
+function oelNavSearchGo(id) {
+  navTo(id);
+  const input = document.getElementById('oel-nav-search');
+  const box   = document.getElementById('oel-nav-results');
+  if (input) { input.value = ''; input.blur(); }
+  if (box) { box.innerHTML = ''; box.style.display = 'none'; }
+}
+
+function oelNavSearchShowFrequent() {
+  const box = document.getElementById('oel-nav-results');
+  if (!box) return;
+  const freq = oelNavFreq();
+  const top = Object.keys(freq).sort(function(a,b){ return freq[b]-freq[a]; }).slice(0,4)
+    .map(function(id){ return OEL_SEARCH_INDEX.find(function(s){ return s.id===id; }); })
+    .filter(Boolean);
+  if (!top.length) { box.style.display = 'none'; return; }
+  box.style.display = 'block';
+  box.innerHTML = '<div style="padding:4px 10px 6px;font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em">Frequently used</div>'
+    + top.map(function(m) {
+        return '<div onclick="oelNavSearchGo(\'' + m.id + '\')" style="padding:8px 10px;font-size:0.82rem;color:var(--text);cursor:pointer;border-radius:6px" onmouseover="this.style.background=\'var(--surface2)\'" onmouseout="this.style.background=\'none\'">' + escHtml(m.label) + '</div>';
+      }).join('');
+}
+
+// ── Live Odoo record search (contacts, orders) ────────────────────────────
+let _oelLastRecords = { contacts: [], orders: [] };
+
+async function oelSearchRecords(query) {
+  if (!odooUid || !query || query.trim().length < 3) return { contacts: [], orders: [] };
+  try {
+    const [contacts, orders] = await Promise.all([
+      odooExecute(odooUid, 'res.partner', 'search_read',
+        [[['name','ilike', query]]], { fields: ['id','name','email','phone'], limit: 4 }),
+      odooExecute(odooUid, 'sale.order', 'search_read',
+        [[['name','ilike', query]]], { fields: ['id','name','partner_id','amount_total','state'], limit: 4 })
+    ]);
+    const c = contacts||[];
+    if (c.length) await oelEnrichContacts(c);
+    return { contacts: c, orders: orders||[] };
+  } catch(e) { return { contacts: [], orders: [] }; }
+}
+
+// One batched pair of queries covering all shown contacts — not one query per contact.
+async function oelEnrichContacts(contacts) {
+  const ids = contacts.map(function(c){ return c.id; });
+  try {
+    const [openOrders, activities] = await Promise.all([
+      odooExecute(odooUid, 'sale.order', 'search_read',
+        [[['partner_id','in', ids], ['state','in', ['sale','done']]]],
+        { fields: ['partner_id'], limit: 200 }),
+      odooExecute(odooUid, 'mail.activity', 'search_read',
+        [[['res_model','=','res.partner'], ['res_id','in', ids]]],
+        { fields: ['res_id','summary','date_deadline'], limit: 200, order: 'date_deadline desc' })
+    ]);
+    const orderCountByPartner = {};
+    (openOrders||[]).forEach(function(o) {
+      const pid = Array.isArray(o.partner_id) ? o.partner_id[0] : o.partner_id;
+      orderCountByPartner[pid] = (orderCountByPartner[pid]||0) + 1;
+    });
+    const lastActivityByPartner = {};
+    (activities||[]).forEach(function(a) {
+      if (!lastActivityByPartner[a.res_id]) lastActivityByPartner[a.res_id] = a; // first hit = most recent, list is date_deadline desc
+    });
+    contacts.forEach(function(c) {
+      c._openOrders   = orderCountByPartner[c.id] || 0;
+      c._lastActivity = lastActivityByPartner[c.id] || null;
+    });
+  } catch(e) { /* enrichment is best-effort — missing info just won't show */ }
+}
+
+function oelCloseNavSearch() {
+  const input = document.getElementById('oel-nav-search');
+  const box   = document.getElementById('oel-nav-results');
+  if (input) input.value = '';
+  if (box) { box.innerHTML = ''; box.style.display = 'none'; }
+}
+
+function oelComposeToContact(idx) {
+  const c = _oelLastRecords.contacts[idx];
+  if (!c) return;
+  if (!c.email) { alert('No email on file for ' + c.name); return; }
+  if (typeof openQuickCompose === 'function') openQuickCompose({ to: c.email, subject: '', body: '' });
+  oelCloseNavSearch();
+}
+
+let _oelNoteContactIdx = null;
+
+function oelAddNoteToContact(idx) {
+  const c = _oelLastRecords.contacts[idx];
+  if (!c || !odooUid) return;
+  _oelNoteContactIdx = idx;
+  const nameEl   = document.getElementById('oel-note-contact-name');
+  const textEl   = document.getElementById('oel-note-text');
+  const statusEl = document.getElementById('oel-note-status');
+  const saveBtn  = document.getElementById('oel-note-save-btn');
+  if (nameEl) nameEl.textContent = c.name;
+  if (textEl) textEl.value = '';
+  if (statusEl) { statusEl.textContent = ''; statusEl.style.color = 'var(--muted)'; }
+  if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Log to Odoo'; }
+  const searchBox = document.getElementById('oel-nav-results');
+  if (searchBox) searchBox.style.display = 'none';
+  document.getElementById('oel-note-modal')?.classList.remove('hidden');
+  setTimeout(function(){ textEl?.focus(); }, 50);
+}
+
+function oelCloseNoteModal() {
+  document.getElementById('oel-note-modal')?.classList.add('hidden');
+  _oelNoteContactIdx = null;
+}
+
+async function oelSubmitNoteModal() {
+  const c = _oelLastRecords.contacts[_oelNoteContactIdx];
+  const textEl   = document.getElementById('oel-note-text');
+  const statusEl = document.getElementById('oel-note-status');
+  const saveBtn  = document.getElementById('oel-note-save-btn');
+  const text = textEl?.value?.trim() || '';
+  if (!c || !odooUid) { oelCloseNoteModal(); return; }
+  if (!text) { if (statusEl) { statusEl.style.color = 'var(--danger)'; statusEl.textContent = 'Write something first.'; } return; }
+
+  if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Logging…'; }
+  if (statusEl) { statusEl.style.color = 'var(--muted)'; statusEl.innerHTML = '<div class="dot spin" style="display:inline-block;margin-right:5px"></div> Posting to Odoo…'; }
+
+  try {
+    await odooExecute(odooUid, 'res.partner', 'message_post', [c.id], {
+      body: escHtml(text), message_type: 'comment', subtype_xmlid: 'mail.mt_note'
+    });
+    if (statusEl) { statusEl.style.color = 'var(--success)'; statusEl.textContent = '✓ Logged to ' + c.name + '\'s record in Odoo'; }
+    if (saveBtn) saveBtn.textContent = 'Logged ✓';
+    setTimeout(function() { oelCloseNoteModal(); oelCloseNavSearch(); }, 900);
+  } catch(e) {
+    if (statusEl) { statusEl.style.color = 'var(--danger)'; statusEl.textContent = 'Error: ' + e.message; }
+    if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Log to Odoo'; }
+  }
+}
+
+async function oelScheduleActivityForContact(idx) {
+  const c = _oelLastRecords.contacts[idx];
+  if (!c || !odooUid) return;
+  const summary = prompt('Activity for ' + c.name + ':', 'Follow up with ' + c.name);
+  if (!summary || !summary.trim()) return;
+  try {
+    if (typeof loadActivityTypes === 'function') await loadActivityTypes();
+    if (!_activityTypes || !_activityTypes.length) throw new Error('No activity types found in Odoo');
+    const deadline = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+    await odooExecute(odooUid, 'mail.activity', 'create', [{
+      res_model: 'res.partner', res_id: c.id, activity_type_id: _activityTypes[0].id,
+      summary: summary.trim(), date_deadline: deadline, user_id: odooUid
+    }]);
+    oelCloseNavSearch();
+  } catch(e) { alert('Error scheduling activity: ' + e.message); }
+}
+
+function oelCreateQuoteForContact(idx) {
+  const c = _oelLastRecords.contacts[idx];
+  if (!c) return;
+  oelCloseNavSearch();
+  navTo('quotes');
+  setTimeout(function() {
+    if (typeof qbPickContact === 'function') qbPickContact(c.id, c.name, c.email||'', c.phone||'');
+  }, 250);
+}
+
+function oelOpenOrderInOdoo(idx) {
+  const o = _oelLastRecords.orders[idx];
+  if (!o || !odooConfig || !odooConfig.url) return;
+  const base = odooConfig.url.replace(/\/+$/, '');
+  window.open(base + '/web#id=' + o.id + '&model=sale.order&view_type=form', '_blank');
+}
+
+function oelRenderRecordResults(records) {
+  const box = document.getElementById('oel-nav-results');
+  if (!box) return;
+  _oelLastRecords = records;
+  if (!records.contacts.length && !records.orders.length) return;
+  let html = '<div style="padding:4px 10px 6px;font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;border-top:1px solid var(--border);margin-top:4px;padding-top:8px">Records</div>';
+  records.contacts.forEach(function(c, i) {
+    const infoParts = [];
+    if (c._openOrders) infoParts.push(c._openOrders + ' open order' + (c._openOrders!==1?'s':''));
+    if (c._lastActivity) infoParts.push('Last activity: ' + escHtml(c._lastActivity.summary||'(no summary)') + (c._lastActivity.date_deadline ? ' — ' + c._lastActivity.date_deadline : ''));
+    html += '<div style="padding:7px 10px;border-radius:6px">'
+      + '<div style="font-size:0.8rem;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">👤 ' + escHtml(c.name) + (c.email ? ' <span style="color:var(--muted);font-size:0.72rem">'+escHtml(c.email)+'</span>' : '') + '</span></div>'
+      + (infoParts.length ? '<div style="font-size:0.7rem;color:var(--muted);margin-top:2px">' + infoParts.join(' · ') + '</div>' : '')
+      + '<div style="display:flex;gap:5px;margin-top:5px;flex-wrap:wrap">'
+      + (c.email ? '<button class="btn btn-ghost" onclick="oelComposeToContact('+i+')" style="padding:3px 8px;font-size:0.68rem">✉ Compose</button>' : '')
+      + '<button class="btn btn-ghost" onclick="oelAddNoteToContact('+i+')" style="padding:3px 8px;font-size:0.68rem">📝 Note</button>'
+      + '<button class="btn btn-ghost" onclick="oelScheduleActivityForContact('+i+')" style="padding:3px 8px;font-size:0.68rem">📅 Activity</button>'
+      + '<button class="btn btn-ghost" onclick="oelCreateQuoteForContact('+i+')" style="padding:3px 8px;font-size:0.68rem">🧾 Quote</button>'
+      + '</div></div>';
+  });
+  records.orders.forEach(function(o, i) {
+    const partner = (o.partner_id && o.partner_id[1]) ? escHtml(o.partner_id[1]) : '';
+    html += '<div style="padding:7px 10px;font-size:0.8rem;color:var(--text);border-radius:6px;display:flex;align-items:center;justify-content:space-between;gap:8px">'
+      + '<span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">📄 ' + escHtml(o.name) + (partner ? ' <span style="color:var(--muted);font-size:0.72rem">'+partner+'</span>' : '') + ' <span style="color:var(--muted);font-size:0.7rem">'+escHtml(srStageLabel(o.state))+'</span></span>'
+      + '<button class="btn btn-ghost" onclick="oelOpenOrderInOdoo('+i+')" style="padding:3px 9px;font-size:0.7rem;flex-shrink:0">Open ↗</button>'
+      + '</div>';
+  });
+  box.insertAdjacentHTML('beforeend', html);
+}
+
+function oelNavSearchInput() {
+  clearTimeout(window._oelNavSearchTimer);
+  clearTimeout(window._oelNavRecordTimer);
+  const q   = document.getElementById('oel-nav-search')?.value || '';
+  const box = document.getElementById('oel-nav-results');
+  if (!box) return;
+  if (!q.trim()) { oelNavSearchShowFrequent(); return; }
+  window._oelNavSearchTimer = setTimeout(function() {
+    const matches = oelSearchLocal(q);
+    box.style.display = 'block';
+    const askAiRow = '<button class="btn btn-ghost" onclick="oelSearchAI()" style="width:100%;margin-top:4px;padding:7px;font-size:0.76rem;border-color:var(--accent);color:var(--accent)">✦ Ask AI for a better match</button>';
+    if (!matches.length) {
+      box.innerHTML = '<div style="padding:8px 10px;font-size:0.78rem;color:var(--muted)">No quick match for "' + escHtml(q) + '"</div>' + askAiRow;
+    } else {
+      box.innerHTML = matches.map(function(m) {
+        return '<div onclick="oelNavSearchGo(\'' + m.id + '\')" style="padding:8px 10px;font-size:0.82rem;color:var(--text);cursor:pointer;border-radius:6px;display:flex;align-items:center;justify-content:space-between" onmouseover="this.style.background=\'var(--surface2)\'" onmouseout="this.style.background=\'none\'">'
+          + '<span>' + escHtml(m.label) + '</span><span style="color:var(--muted);font-size:0.72rem">Go →</span></div>';
+      }).join('') + askAiRow;
+    }
+  }, 150);
+  window._oelNavRecordTimer = setTimeout(function() {
+    oelSearchRecords(q).then(oelRenderRecordResults);
+  }, 400);
+}
+
+async function oelSearchAI() {
+  const q   = document.getElementById('oel-nav-search')?.value || '';
+  const box = document.getElementById('oel-nav-results');
+  if (!box || !q.trim()) return;
+  box.style.display = 'block';
+  const groqKey = document.getElementById('gemini-key')?.value?.trim();
+  if (!groqKey) { box.innerHTML = '<div style="padding:10px;font-size:0.78rem;color:var(--muted)">Add a Groq API key in Settings to use AI search.</div>'; return; }
+  box.innerHTML = '<div style="padding:10px;font-size:0.78rem;color:var(--muted)"><div class="dot spin" style="display:inline-block;margin-right:6px"></div>Thinking…</div>';
+  const list = OEL_SEARCH_INDEX.map(function(s){ return s.id + ': ' + s.label + ' — ' + s.keywords; }).join('\n');
+  const prompt = 'A user of a sales/rental-ops tool typed this into a "what do you need to do" search bar: "' + q + '"\n\n'
+    + 'Available sections:\n' + list + '\n\n'
+    + 'Reply with ONLY compact JSON, no markdown fences, no explanation outside the JSON: {"section":"<id>","reason":"<one short sentence, under 15 words, plain language, no jargon>"}. Pick the single best-matching section id from the list above.';
+  try {
+    const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST', headers: { 'Content-Type':'application/json', 'Authorization':'Bearer '+groqKey },
+      body: JSON.stringify({ model: document.getElementById('gemini-model')?.value || 'qwen/qwen3.6-27b', reasoning_effort:'none', reasoning_format:'hidden', max_tokens: 100, temperature: 0, messages: [{ role:'user', content: prompt }] }),
+      signal: AbortSignal.timeout(15000)
+    });
+    const d = await r.json();
+    let text = d.choices?.[0]?.message?.content?.trim() || '';
+    text = text.replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(text);
+    const match = OEL_SEARCH_INDEX.find(function(s){ return s.id === parsed.section; });
+    if (!match) { box.innerHTML = '<div style="padding:10px;font-size:0.78rem;color:var(--muted)">No confident match — try rephrasing.</div>'; return; }
+
+    box.innerHTML = '<div style="padding:9px 10px;background:var(--accent-dim);border:1px solid rgba(201,168,76,0.4);border-radius:8px;display:flex;align-items:center;justify-content:space-between;gap:10px">'
+      + '<div style="min-width:0"><div style="font-size:0.66rem;color:var(--accent);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:2px">✦ AI suggests</div>'
+      + '<div style="font-size:0.85rem;color:var(--text);font-weight:500">' + escHtml(match.label) + '</div>'
+      + '<div style="font-size:0.74rem;color:var(--muted);margin-top:2px">' + escHtml(parsed.reason||'') + '</div></div>'
+      + '<button class="btn btn-primary" onclick="oelNavSearchGo(\'' + match.id + '\')" style="padding:6px 14px;font-size:0.78rem;flex-shrink:0">Go →</button>'
+      + '</div>';
+
+    // Command action — if the query reads as "contact/email someone" and we have exactly
+    // one confident contact match from the live record search, offer to compose directly.
+    const outreachVerbs = /\b(email|message|contact|reach out|call|text|follow up with)\b/i;
+    if (outreachVerbs.test(q) && _oelLastRecords.contacts.length === 1 && _oelLastRecords.contacts[0].email) {
+      const c = _oelLastRecords.contacts[0];
+      box.insertAdjacentHTML('beforeend',
+        '<div style="padding:9px 10px;margin-top:6px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;justify-content:space-between;gap:10px">'
+        + '<div style="min-width:0"><div style="font-size:0.66rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:2px">Found a matching contact</div>'
+        + '<div style="font-size:0.82rem;color:var(--text)">' + escHtml(c.name) + '</div></div>'
+        + '<button class="btn btn-ghost" onclick="oelComposeToContact(0)" style="padding:6px 14px;font-size:0.78rem;flex-shrink:0">✉ Compose</button>'
+        + '</div>');
+    }
+  } catch(e) {
+    box.innerHTML = '<div style="padding:10px;font-size:0.78rem;color:var(--danger)">AI search error: ' + escHtml(e.message) + '</div>';
+  }
+}
+
+document.addEventListener('click', function(e) {
+  const wrap = document.querySelector('.topbar-search-wrap');
+  const box  = document.getElementById('oel-nav-results');
+  if (!wrap || !box) return;
+  const path = e.composedPath ? e.composedPath() : [e.target];
+  if (path.indexOf(wrap) === -1) box.style.display = 'none';
+});
 
 // ═══════════════════════════════════════════════════════════════════════════
 // ── PRINT QUOTE ─────────────────────────────────────────────────────────────
@@ -8140,7 +9060,7 @@ async function bounceLogNote(idx) {
   if (btn) { btn.disabled = true; btn.textContent = 'Logging…'; }
   try {
     await odooExecute(odooUid, 'res.partner', 'message_post', [[entry.partner.id]], {
-      body: '<p>' + escHtml(note) + '</p><p><small>Bounced email: ' + escHtml(entry.email) + '</small></p>',
+      body: escHtml(note) + '<br><small>Bounced email: ' + escHtml(entry.email) + '</small>',
       message_type: 'comment',
       subtype_xmlid: 'mail.mt_note',
     });
@@ -8333,7 +9253,7 @@ async function lazAICompose() {
   const btn     = document.getElementById('ai-tmpl-btn');
   const status  = document.getElementById('ai-tmpl-status');
   const groqKey = document.getElementById('gemini-key')?.value?.trim();
-  const model   = document.getElementById('gemini-model')?.value || 'llama-3.3-70b-versatile';
+  const model   = document.getElementById('gemini-model')?.value || 'qwen/qwen3.6-27b';
 
   if (!purpose) { alert('Describe what the template is for first'); return; }
   if (!groqKey) { alert('Groq API key required — enter it in Settings'); return; }
@@ -8357,7 +9277,7 @@ async function lazAICompose() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + groqKey },
       body: JSON.stringify({
-        model, max_tokens: 600, temperature: 0.4,
+        model, reasoning_effort:'none', reasoning_format:'hidden', max_tokens: 600, temperature: 0.4,
         messages: [{ role: 'user', content: prompt }]
       }),
       signal: AbortSignal.timeout(20000)
@@ -8522,12 +9442,12 @@ function qdSetStatus(msg, color) {
 
 async function qdCallGroq(prompt) {
   const groqKey = document.getElementById('gemini-key')?.value?.trim();
-  const model   = document.getElementById('gemini-model')?.value || 'llama-3.3-70b-versatile';
+  const model   = document.getElementById('gemini-model')?.value || 'qwen/qwen3.6-27b';
   if (!groqKey) throw new Error('Groq API key required — enter it in Settings');
   const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + groqKey },
-    body: JSON.stringify({ model, max_tokens: 600, temperature: 0,
+    body: JSON.stringify({ model, reasoning_effort:'none', reasoning_format:'hidden', max_tokens: 600, temperature: 0,
       messages: [{ role: 'user', content: prompt }] }),
     signal: AbortSignal.timeout(25000)
   });
@@ -8631,7 +9551,7 @@ async function qdDraftResponse() {
     (notes || raw) + '\nOutput the subject line only, no quotes.';
 
   const groqKey = document.getElementById('gemini-key')?.value?.trim();
-  const model   = document.getElementById('gemini-model')?.value || 'llama-3.3-70b-versatile';
+  const model   = document.getElementById('gemini-model')?.value || 'qwen/qwen3.6-27b';
   if (!groqKey) throw new Error('Groq API key required');
 
   // Two calls in parallel — body uses system prompt, subject is simple
@@ -8639,7 +9559,7 @@ async function qdDraftResponse() {
     fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + groqKey },
-      body: JSON.stringify({ model, max_tokens: 800, temperature: 0.5,
+      body: JSON.stringify({ model, reasoning_effort:'none', reasoning_format:'hidden', max_tokens: 800, temperature: 0.5,
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user',   content: userContent }
@@ -8846,8 +9766,8 @@ async function qdLogToContact() {
   if (statusEl) { statusEl.style.color='var(--muted)'; statusEl.innerHTML='<div class="dot spin" style="display:inline-block;margin-right:5px"></div> Logging note…'; }
   try {
     await odooExecute(odooUid, 'res.partner', 'message_post', [[window._qdOdooPartnerId]], {
-      body: '<p><strong>' + escHtml(subject || 'Request Desk draft response') + '</strong></p>'
-          + '<p>' + escHtml(body).replace(/\n/g, '<br>') + '</p>',
+      body: '<strong>' + escHtml(subject || 'Request Desk draft response') + '</strong><br>'
+          + escHtml(body).replace(/\n/g, '<br>'),
       message_type: 'comment',
       subtype_xmlid: 'mail.mt_note',
     });
@@ -9174,7 +10094,7 @@ async function projLogNote(taskId) {
   if (!note || !odooUid) return;
   try {
     await odooExecute(odooUid, 'project.task', 'message_post', [[taskId]], {
-      body: '<p>' + escHtml(note) + '</p>',
+      body: escHtml(note),
       message_type: 'comment', subtype_xmlid: 'mail.mt_note',
     });
     alert('✓ Note logged');
@@ -9340,12 +10260,12 @@ async function projChatSend() {
 
 
   try {
-    const model = document.getElementById('gemini-model')?.value || 'llama-3.3-70b-versatile';
+    const model = document.getElementById('gemini-model')?.value || 'qwen/qwen3.6-27b';
     const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + groqKey },
       body: JSON.stringify({
-        model, max_tokens: 800, temperature: 0.6,
+        model, reasoning_effort:'none', reasoning_format:'hidden', max_tokens: 800, temperature: 0.6,
         messages: [
           { role: 'system', content: systemPrompt },
           ..._projChatHistory
@@ -9739,7 +10659,7 @@ async function ptmSave() {
     // Log note if provided
     if (note) {
       await odooExecute(odooUid, 'project.task', 'message_post', [[_ptmTaskId]], {
-        body: '<p>' + escHtml(note) + '</p>',
+        body: escHtml(note),
         message_type: 'comment', subtype_xmlid: 'mail.mt_note',
       });
     }
@@ -9782,7 +10702,7 @@ async function ptmAIRewrite() {
   suggestionsEl.style.display = 'none';
 
   try {
-    const model = document.getElementById('gemini-model')?.value || 'llama-3.3-70b-versatile';
+    const model = document.getElementById('gemini-model')?.value || 'qwen/qwen3.6-27b';
     const prompt =
       'Rewrite this project task name 3 different ways — clearer, more actionable, and professional. ' +
       'Each version should be concise (under 60 chars) and start with an action verb. ' +
@@ -9792,7 +10712,7 @@ async function ptmAIRewrite() {
     const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + groqKey },
-      body: JSON.stringify({ model, max_tokens: 200, temperature: 0.7,
+      body: JSON.stringify({ model, reasoning_effort:'none', reasoning_format:'hidden', max_tokens: 200, temperature: 0.7,
         messages: [{ role: 'user', content: prompt }] }),
       signal: AbortSignal.timeout(15000)
     });
@@ -9860,7 +10780,7 @@ async function qspExtract() {
   if (!raw) { alert('Paste a quote request first'); return; }
   const groqKey = document.getElementById('gemini-key')?.value?.trim();
   if (!groqKey) { alert('Groq API key required — enter it in Settings'); return; }
-  const model = document.getElementById('gemini-model')?.value || 'llama-3.3-70b-versatile';
+  const model = document.getElementById('gemini-model')?.value || 'qwen/qwen3.6-27b';
   const btn = document.getElementById('qsp-extract-btn');
   if (btn) btn.disabled = true;
   qspSetStatus('<div class="dot spin" style="display:inline-block;margin-right:5px"></div> Extracting contact &amp; event details…');
@@ -9869,7 +10789,7 @@ async function qspExtract() {
     const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + groqKey },
-      body: JSON.stringify({ model, max_tokens: maxTok || 400, temperature: 0,
+      body: JSON.stringify({ model, reasoning_effort:'none', reasoning_format:'hidden', max_tokens: maxTok || 400, temperature: 0,
         messages: [{ role: 'user', content: prompt }] }),
       signal: AbortSignal.timeout(25000)
     });
@@ -10240,87 +11160,11 @@ async function qspLoadOdooTemplates() {
 
 // ── v11.0 NEW FEATURES ──
 const QSB_TMPL_KEY = 'oel_qb_local_templates';
-
-const SB_ORDER_KEY = 'oel_sidebar_order';
-
 const DOC_LIB_KEY = 'oel_doc_library';
 
 let _docLibrary = [];
 
 let _bouncedTagId = null;
-
-function sbToggleCustomize() {
-  _sbCustomizing = !_sbCustomizing;
-  const nav = document.getElementById('sb-nav');
-  const btn = document.getElementById('sb-customize-btn');
-  if (!nav) return;
-  nav.classList.toggle('sb-customize-mode', _sbCustomizing);
-  if (btn) {
-    btn.style.color    = _sbCustomizing ? 'var(--accent)' : 'var(--muted)';
-    btn.style.borderColor = _sbCustomizing ? 'var(--accent)' : 'var(--border)';
-    btn.innerHTML = _sbCustomizing
-      ? '<svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M1 2h9M1 5.5h9M1 9h9" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg> Done — layout saved'
-      : '<svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M1 2h9M1 5.5h9M1 9h9" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg> Customize layout';
-  }
-  if (!_sbCustomizing) sbSaveOrder();
-}
-
-function sbDragStart(e, navId) {
-  if (!_sbCustomizing) { e.preventDefault(); return; }
-  _sbDragId = navId;
-  e.dataTransfer.effectAllowed = 'move';
-  e.currentTarget.style.opacity = '0.4';
-}
-
-function sbDragEnd(e) {
-  e.currentTarget.style.opacity = '';
-  document.querySelectorAll('.sb-item').forEach(function(el) {
-    el.classList.remove('sb-drag-over');
-  });
-  _sbDragId = null;
-}
-
-function sbDragOver(e) {
-  if (!_sbCustomizing || !_sbDragId) return;
-  e.preventDefault();
-  e.dataTransfer.dropEffect = 'move';
-  document.querySelectorAll('.sb-item').forEach(function(el) {
-    el.classList.remove('sb-drag-over');
-  });
-  e.currentTarget.classList.add('sb-drag-over');
-}
-
-function sbDrop(e, targetId) {
-  if (!_sbCustomizing || !_sbDragId || _sbDragId === targetId) return;
-  e.preventDefault();
-  const nav = document.getElementById('sb-nav');
-  if (!nav) return;
-  const dragEl   = nav.querySelector('[data-nav-id="' + _sbDragId + '"]');
-  const targetEl = nav.querySelector('[data-nav-id="' + targetId + '"]');
-  if (!dragEl || !targetEl) return;
-  // Insert dragged item before target
-  nav.insertBefore(dragEl, targetEl);
-  targetEl.classList.remove('sb-drag-over');
-}
-
-function sbSaveOrder() {
-  const nav = document.getElementById('sb-nav');
-  if (!nav) return;
-  const order = Array.from(nav.querySelectorAll('[data-nav-id]'))
-    .map(function(el) { return el.dataset.navId; });
-  localStorage.setItem(SB_ORDER_KEY, JSON.stringify(order));
-}
-
-function sbRestoreOrder() {
-  const saved = JSON.parse(localStorage.getItem(SB_ORDER_KEY) || 'null');
-  if (!saved || !saved.length) return;
-  const nav = document.getElementById('sb-nav');
-  if (!nav) return;
-  saved.forEach(function(navId) {
-    const el = nav.querySelector('[data-nav-id="' + navId + '"]');
-    if (el) nav.appendChild(el); // moves to end in saved order
-  });
-}
 
 function docLibLoad() {
   try { _docLibrary = JSON.parse(localStorage.getItem(DOC_LIB_KEY) || '[]'); }
@@ -11027,8 +11871,8 @@ async function testGroqExtraction() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${groqKey}` },
       body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
-        max_tokens: 200, temperature: 0,
+        model: 'qwen/qwen3.6-27b',
+        reasoning_effort:'none', reasoning_format:'hidden', max_tokens: 200, temperature: 0,
         messages: [
           { role: 'system', content: 'Extract lead fields and return ONLY JSON with keys: customer_name, phone, email, notes, agent. notes should be verbatim full description. agent is the staff member who handled the call.' },
           { role: 'user',   content: 'Caller: JOHN SMITH\nPhone: (305) 555-1234\nEmail: john@example.com\nRequested truss backdrop rental for next-week trade show; Agent Andrew gave email and asked for dimensions, show name, and photos to prepare and send a quote.' }
@@ -12699,7 +13543,7 @@ async function _openScheduleActivityModal({ em, emailTo, subject, sender, src, i
             res_model: 'res.partner',
             res_id: partner.id,
             summary: summary || 'Follow up re: ' + ((bEm && bEm.subject) || subject),
-            note: notes ? '<p>' + escHtml(notes) + '</p>' : '',
+            note: notes ? escHtml(notes) : '',
             date_deadline: dueDate,
           };
           if (typeId) vals.activity_type_id = typeId;
@@ -13439,7 +14283,7 @@ async function lazDraftSelected() {
 
 async function lazGenerateDraft(em, body) {
   const groqKey = document.getElementById('gemini-key')?.value?.trim() || '';
-  const model   = document.getElementById('gemini-model')?.value || 'llama-3.3-70b-versatile';
+  const model   = document.getElementById('gemini-model')?.value || 'qwen/qwen3.6-27b';
 
   // Find best matching template
   const tmpl     = lazMatchTemplate(body + ' ' + (em.subject||''));
@@ -13475,7 +14319,7 @@ IMPORTANT: Return raw JSON only. No markdown fences. No special characters outsi
     const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${groqKey}` },
-      body: JSON.stringify({ model, max_tokens: 900, temperature: 0.4,
+      body: JSON.stringify({ model, reasoning_effort:'none', reasoning_format:'hidden', max_tokens: 900, temperature: 0.4,
         messages: [{ role: 'user', content: prompt }]
       }),
       signal: AbortSignal.timeout(30000)
@@ -13973,7 +14817,7 @@ async function lazWizRenderPage() {
 
 async function lazWizGenerateSuggestion(d) {
   const groqKey = document.getElementById('gemini-key')?.value?.trim() || '';
-  const model   = document.getElementById('gemini-model')?.value || 'llama-3.3-70b-versatile';
+  const model   = document.getElementById('gemini-model')?.value || 'qwen/qwen3.6-27b';
 
   const cleanBody = (d.body||'')
     .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
@@ -14001,7 +14845,7 @@ Raw JSON only. No markdown.`;
     const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${groqKey}` },
-      body: JSON.stringify({ model, max_tokens: 700, temperature: 0.5,
+      body: JSON.stringify({ model, reasoning_effort:'none', reasoning_format:'hidden', max_tokens: 700, temperature: 0.5,
         messages: [{ role: 'user', content: prompt }]
       }),
       signal: AbortSignal.timeout(30000)
@@ -14254,13 +15098,13 @@ async function discussAIDraft() {
   const statusEl = document.getElementById('discuss-reply-status');
   statusEl.style.color = 'var(--muted)';
   statusEl.innerHTML = '<div class="dot spin" style="display:inline-block;margin-right:4px"></div> Drafting...';
-  const model = document.getElementById('gemini-model')?.value || 'llama-3.3-70b-versatile';
+  const model = document.getElementById('gemini-model')?.value || 'qwen/qwen3.6-27b';
   const msg   = _discussReplyMsg;
   const prompt = `${LAZ_PERSONA}\n\nYou received this internal Odoo message and need to reply.\n\nFROM: ${msg.author}\nRECORD: ${msg.record_name||''}\nMESSAGE: ${msg.body}\n\nWrite a concise, direct reply in 2-4 sentences. Return plain text only.`;
   try {
     const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method:'POST', headers:{'Content-Type':'application/json','Authorization':`Bearer ${groqKey}`},
-      body: JSON.stringify({model, max_tokens:300, temperature:0.5, messages:[{role:'user',content:prompt}]}),
+      body: JSON.stringify({model, reasoning_effort:'none', reasoning_format:'hidden', max_tokens:300, temperature:0.5, messages:[{role:'user',content:prompt}]}),
       signal: AbortSignal.timeout(20000)
     });
     const data = await r.json();
@@ -14533,7 +15377,7 @@ async function notesCleanupSelected() {
 async function notesRunCleanup(notes) {
   const groqKey = document.getElementById('gemini-key')?.value?.trim() || '';
   if (!groqKey) { alert('No Groq key — add it in Step 1.'); return; }
-  const model   = document.getElementById('gemini-model')?.value || 'llama-3.3-70b-versatile';
+  const model   = document.getElementById('gemini-model')?.value || 'qwen/qwen3.6-27b';
 
   const modal     = document.getElementById('notes-cleanup-modal');
   const listEl    = document.getElementById('notes-cleanup-list');
@@ -14570,7 +15414,7 @@ ${notes.map(n => `{"id": "${n.id}", "text": ${JSON.stringify(n.text.trim())}}`).
     const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {'Content-Type':'application/json','Authorization':'Bearer '+groqKey},
-      body: JSON.stringify({ model, max_tokens: 2000, temperature: 0.2,
+      body: JSON.stringify({ model, reasoning_effort:'none', reasoning_format:'hidden', max_tokens: 2000, temperature: 0.2,
         messages: [{ role:'user', content: prompt }] }),
       signal: AbortSignal.timeout(30000)
     });
@@ -14718,7 +15562,7 @@ async function sfFindShows() {
   document.getElementById('sf-show-list').innerHTML = '';
   document.getElementById('sf-proceed-btn').style.display = 'none';
 
-  const model = document.getElementById('gemini-model')?.value || 'llama-3.3-70b-versatile';
+  const model = document.getElementById('gemini-model')?.value || 'qwen/qwen3.6-27b';
 
   const regionLine = region ? `Region preference: ${region}` : 'Any region, prioritize US shows';
   const prompt = `You are helping a sales person at an AV, staging, and event production rental company find tradeshows to prospect at.
@@ -14759,7 +15603,7 @@ Be specific — use real show names, real attendance figures you know. Raw JSON 
     const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${groqKey}` },
-      body: JSON.stringify({ model, max_tokens: 3500, temperature: 0.3,
+      body: JSON.stringify({ model, reasoning_effort:'none', reasoning_format:'hidden', max_tokens: 3500, temperature: 0.3,
         messages: [{ role: 'user', content: prompt }]
       }),
       signal: AbortSignal.timeout(40000)
@@ -15379,7 +16223,7 @@ async function tsRunExtraction(isNext) {
   const wantEmail      = document.getElementById('ts-ext-email').checked;
   const wantPhone      = document.getElementById('ts-ext-phone').checked;
   const wantWebsite    = document.getElementById('ts-ext-website').checked;
-  const model          = document.getElementById('gemini-model')?.value || 'llama-3.3-70b-versatile';
+  const model          = document.getElementById('gemini-model')?.value || 'qwen/qwen3.6-27b';
 
   const extractBtn = document.getElementById('ts-extract-btn');
   const nextBtn    = document.getElementById('ts-next-btn');
@@ -15425,7 +16269,7 @@ ${chunk}`;
     const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${groqKey}` },
-      body: JSON.stringify({ model, max_tokens: 8000, temperature: 0.1,
+      body: JSON.stringify({ model, reasoning_effort:'none', reasoning_format:'hidden', max_tokens: 8000, temperature: 0.1,
         messages: [{ role: 'user', content: prompt }]
       }),
       signal: AbortSignal.timeout(60000)
@@ -15559,7 +16403,7 @@ ${names}`;
       const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${groqKey}` },
-        body: JSON.stringify({ model, max_tokens: 1500, temperature: 0.7,
+        body: JSON.stringify({ model, reasoning_effort:'none', reasoning_format:'hidden', max_tokens: 1500, temperature: 0.7,
           messages: [{ role: 'user', content: prompt }]
         }),
         signal: AbortSignal.timeout(30000)
@@ -15611,7 +16455,7 @@ async function prospGenerate() {
 
   const btn      = document.getElementById('prosp-btn');
   const statusEl = document.getElementById('prosp-status');
-  const model    = document.getElementById('gemini-model')?.value || 'llama-3.3-70b-versatile';
+  const model    = document.getElementById('gemini-model')?.value || 'qwen/qwen3.6-27b';
 
   btn.disabled = true;
   statusEl.style.color = 'var(--muted)';
@@ -15649,7 +16493,7 @@ Return raw JSON array only — no markdown, no explanation, no wrapper object.`;
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${groqKey}` },
       body: JSON.stringify({
-        model, max_tokens: 3000, temperature: 0.8,
+        model, reasoning_effort:'none', reasoning_format:'hidden', max_tokens: 3000, temperature: 0.8,
         messages: [{ role: 'user', content: prompt }]
       }),
       signal: AbortSignal.timeout(45000)
@@ -16012,7 +16856,7 @@ async function fetchLeads() {
 
   // Run Groq extraction in browser (avoids Cloudflare blocking server-side calls)
   const groqKey = document.getElementById('gemini-key')?.value?.trim() || '';
-  const model   = document.getElementById('gemini-model')?.value || 'llama-3.3-70b-versatile';
+  const model   = document.getElementById('gemini-model')?.value || 'qwen/qwen3.6-27b';
   if (groqKey && leads.length > 0) {
     staticEl.style.color = 'var(--muted)';
     staticEl.textContent = `Extracting fields from ${leads.length} email${leads.length!==1?'s':''} with Groq…`;
@@ -16045,7 +16889,7 @@ async function fetchLeads() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${groqKey}` },
           body: JSON.stringify({
-            model, max_tokens: 400, temperature: 0,
+            model, reasoning_effort:'none', reasoning_format:'hidden', max_tokens: 400, temperature: 0,
             messages: [
               { role: 'system', content: sysMsg },
               { role: 'user',   content: lead.body || lead.body_snippet || '' }
@@ -17358,7 +18202,7 @@ async function supportDraftSelected() {
 
 async function supportGenerateDraft(em, body) {
   const groqKey = document.getElementById('gemini-key')?.value?.trim() || '';
-  const model   = document.getElementById('gemini-model')?.value || 'llama-3.3-70b-versatile';
+  const model   = document.getElementById('gemini-model')?.value || 'qwen/qwen3.6-27b';
   const tmpl    = supportMatchTemplate((em.subject||'') + ' ' + body);
 
   const cleanBody = (body||'').replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g,'')
@@ -17386,7 +18230,7 @@ Raw JSON only — no markdown.`;
   try {
     const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method:'POST', headers:{'Content-Type':'application/json','Authorization':`Bearer ${groqKey}`},
-      body: JSON.stringify({ model, max_tokens:900, temperature:0.4,
+      body: JSON.stringify({ model, reasoning_effort:'none', reasoning_format:'hidden', max_tokens:900, temperature:0.4,
         messages:[{role:'user',content:prompt}]
       }),
       signal: AbortSignal.timeout(30000)
@@ -17627,11 +18471,11 @@ async function supWizRenderPage() {
 
 async function supWizGenerateSuggestion(d) {
   const groqKey=document.getElementById('gemini-key')?.value?.trim()||'';
-  const model=document.getElementById('gemini-model')?.value||'llama-3.3-70b-versatile';
+  const model=document.getElementById('gemini-model')?.value||'qwen/qwen3.6-27b';
   const cleanBody=(d.body||'').replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g,'').replace(/\r\n/g,'\n').slice(0,3000);
   const prompt=`${SUPPORT_PERSONA}\n\nCreate a reusable support reply template for this type of support request.\n\nFROM: ${d.email.sender}\nSUBJECT: ${d.email.subject}\nBODY:\n${cleanBody}\n\nReturn ONLY JSON:\n{"name":"Template name","keywords":"keyword1, keyword2, keyword3","body":"Full reply template with numbered steps where applicable. Use {{customer_name}}, {{subject}}, {{my_name}}. Use [brackets] for per-issue specifics."}\nRaw JSON only.`;
   try {
-    const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${groqKey}`},body:JSON.stringify({model,max_tokens:700,temperature:0.5,messages:[{role:'user',content:prompt}]}),signal:AbortSignal.timeout(30000)});
+    const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${groqKey}`},body:JSON.stringify({model,reasoning_effort:'none', reasoning_format:'hidden', max_tokens:700,temperature:0.5,messages:[{role:'user',content:prompt}]}),signal:AbortSignal.timeout(30000)});
     const data=await r.json();
     let raw=data.choices?.[0]?.message?.content?.trim()||'{}';
     raw=raw.replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'').trim();
@@ -19038,7 +19882,7 @@ async function persDraftSelected() {
   if (!selected.length) return;
   const groqKey = document.getElementById('gemini-key')?.value?.trim() || '';
   if (!groqKey) { alert('No Groq key — add in Step 1.'); return; }
-  const model = document.getElementById('gemini-model')?.value || 'llama-3.3-70b-versatile';
+  const model = document.getElementById('gemini-model')?.value || 'qwen/qwen3.6-27b';
 
   document.getElementById('pers-draft-selected-btn').disabled = true;
   document.getElementById('pers-draft-selected-btn').textContent = '⏳ Drafting…';
@@ -19063,7 +19907,7 @@ async function persDraftSelected() {
     try {
       const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
         method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+groqKey},
-        body: JSON.stringify({model, max_tokens:600, temperature:0.5, messages:[{role:'user',content:prompt}]}),
+        body: JSON.stringify({model, reasoning_effort:'none', reasoning_format:'hidden', max_tokens:600, temperature:0.5, messages:[{role:'user',content:prompt}]}),
         signal: AbortSignal.timeout(25000)
       });
       const d = await r.json();
@@ -19122,14 +19966,14 @@ async function persRegenerateDraft() {
   if (!em) { alert('Click an email first.'); return; }
   const groqKey = document.getElementById('gemini-key')?.value?.trim() || '';
   if (!groqKey) { alert('No Groq key — add in Step 1.'); return; }
-  const model = document.getElementById('gemini-model')?.value || 'llama-3.3-70b-versatile';
+  const model = document.getElementById('gemini-model')?.value || 'qwen/qwen3.6-27b';
   const ta = document.getElementById('pers-draft-body');
   ta.value = '⏳ Drafting reply…';
   try {
     const context = `From: ${em.sender_name||em.sender_email}\nSubject: ${em.subject}\n\n${em.body||em.preview||'(no body)'}`;
     const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+groqKey},
-      body: JSON.stringify({model, max_tokens:500, temperature:0.5,
+      body: JSON.stringify({model, reasoning_effort:'none', reasoning_format:'hidden', max_tokens:500, temperature:0.5,
         messages:[{role:'user',content:PERS_PERSONA+'\n\nDraft a concise, natural reply to this email. Just the reply body — no subject, no signature placeholder.\n\nEMAIL:\n'+context}]
       })
     });
@@ -19224,14 +20068,14 @@ async function persComposeAIDraft() {
   const to      = document.getElementById('pers-compose-to')?.value?.trim() || '';
   const subject = document.getElementById('pers-compose-subject')?.value?.trim() || '';
   const current = document.getElementById('pers-compose-body')?.value?.trim() || '';
-  const model   = document.getElementById('gemini-model')?.value || 'llama-3.3-70b-versatile';
+  const model   = document.getElementById('gemini-model')?.value || 'qwen/qwen3.6-27b';
   const myName  = localStorage.getItem('oel_my_name') || '';
 
   document.getElementById('pers-compose-toolbar-status').innerHTML = '<div class="dot spin" style="display:inline-block;margin-right:4px"></div> Drafting…';
   try {
     const r = await fetch('https://api.groq.com/openai/v1/chat/completions',{
       method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+groqKey},
-      body:JSON.stringify({model, max_tokens:400, temperature:0.5,
+      body:JSON.stringify({model, reasoning_effort:'none', reasoning_format:'hidden', max_tokens:400, temperature:0.5,
         messages:[{role:'user',content:`${PERS_PERSONA}\n\nDraft a personal email.\nTo: ${to||'recipient'}\nSubject: ${subject||'(not specified)'}\n${myName?'From: '+myName:''}\n${current?'\nExisting draft:\n'+current:''}\n\nWrite the email body only. Start naturally (Hi, Hey, Dear, etc). Sign with: ${myName||'me'}`}]}),
       signal:AbortSignal.timeout(20000)
     });
@@ -19389,7 +20233,7 @@ async function persRunNoteCleanup(notes) {
   window._notesCleanupPending = [];
   const groqKey = document.getElementById('gemini-key')?.value?.trim()||'';
   if (!groqKey) { alert('No Groq key.'); return; }
-  const model = document.getElementById('gemini-model')?.value||'llama-3.3-70b-versatile';
+  const model = document.getElementById('gemini-model')?.value||'qwen/qwen3.6-27b';
   const modal = document.getElementById('notes-cleanup-modal');
   const listEl = document.getElementById('notes-cleanup-list');
   const subEl  = document.getElementById('notes-cleanup-subtitle');
@@ -19398,7 +20242,7 @@ async function persRunNoteCleanup(notes) {
   listEl.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:120px;gap:10px;color:var(--muted)"><div class="dot spin" style="display:inline-block"></div><span>AI cleaning notes…</span></div>';
   try {
     const prompt = `Clean up these rough personal notes. Fix grammar/spelling, improve clarity, preserve all facts.\nReturn JSON array: [{"id":"NOTE_ID","cleaned":"text"}]\nNotes:\n${notes.map(n=>`{"id":"${n.id}","text":${JSON.stringify(n.text.trim())}}`).join('\n')}`;
-    const r = await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+groqKey},body:JSON.stringify({model,max_tokens:2000,temperature:0.2,messages:[{role:'user',content:prompt}]}),signal:AbortSignal.timeout(30000)});
+    const r = await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+groqKey},body:JSON.stringify({model,reasoning_effort:'none', reasoning_format:'hidden', max_tokens:2000,temperature:0.2,messages:[{role:'user',content:prompt}]}),signal:AbortSignal.timeout(30000)});
     const data=await r.json();
     let raw=data.choices?.[0]?.message?.content?.trim()||'[]';
     raw=raw.replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'').trim();
@@ -19434,7 +20278,7 @@ async function persGenerateBriefing() {
   const body   = document.getElementById('pers-briefing-body');
   const sub    = document.getElementById('pers-briefing-subtitle');
   const oa     = document.getElementById('pers-briefing-oa')?.checked||false;
-  const model  = document.getElementById('gemini-model')?.value||'llama-3.3-70b-versatile';
+  const model  = document.getElementById('gemini-model')?.value||'qwen/qwen3.6-27b';
   modal.classList.remove('hidden');
   body.style.padding='20px 24px';
   body.innerHTML='<div style="display:flex;align-items:center;gap:10px;color:var(--muted)"><div class="dot spin" style="display:inline-block"></div><span>Scanning personal inbox…</span></div>';
@@ -19490,7 +20334,7 @@ Under 200 words. Talk to me like a helpful friend, not a report.
 
 CALENDAR NOTE: If any note, email, or reminder suggests a meeting, call, or appointment that should be scheduled, flag it with: [SCHEDULE: description | suggested date/time]`;
 
-    const r = await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+groqKey},body:JSON.stringify({model,max_tokens:oa?700:400,temperature:0.5,messages:[{role:'user',content:prompt}]}),signal:AbortSignal.timeout(30000)});
+    const r = await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+groqKey},body:JSON.stringify({model,reasoning_effort:'none', reasoning_format:'hidden', max_tokens:oa?700:400,temperature:0.5,messages:[{role:'user',content:prompt}]}),signal:AbortSignal.timeout(30000)});
     const data=await r.json();
     const text=data.choices?.[0]?.message?.content?.trim()||'Could not generate.';
     window._persBriefingText=text;
@@ -20192,7 +21036,7 @@ async function qcAIDraft() {
   if (!groqKey) { document.getElementById('qc-toolbar-status').style.color='var(--danger)'; document.getElementById('qc-toolbar-status').textContent='No Groq key'; return; }
   const to      = document.getElementById('qc-to').value.trim();
   const subject = document.getElementById('qc-subject').value.trim();
-  const model   = document.getElementById('gemini-model')?.value || 'llama-3.3-70b-versatile';
+  const model   = document.getElementById('gemini-model')?.value || 'qwen/qwen3.6-27b';
   const myName  = document.getElementById('qc-from-name').value.trim() || 'me';
 
   document.getElementById('qc-toolbar-status').style.color = 'var(--muted)';
@@ -20214,7 +21058,7 @@ Keep it concise and on-brand. Sign with: ${myName}`;
     const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${groqKey}` },
-      body: JSON.stringify({ model, max_tokens: 500, temperature: 0.5, messages: [{ role: 'user', content: prompt }] }),
+      body: JSON.stringify({ model, reasoning_effort:'none', reasoning_format:'hidden', max_tokens: 500, temperature: 0.5, messages: [{ role: 'user', content: prompt }] }),
       signal: AbortSignal.timeout(25000)
     });
     const data = await r.json();
@@ -20456,12 +21300,12 @@ async function qmAIDraft() {
   const current = document.getElementById('qm-message').value.trim();
   const statusEl = document.getElementById('qm-status');
   statusEl.innerHTML = '<div class="dot spin" style="display:inline-block;margin-right:4px"></div> Drafting…';
-  const model = document.getElementById('gemini-model')?.value || 'llama-3.3-70b-versatile';
+  const model = document.getElementById('gemini-model')?.value || 'qwen/qwen3.6-27b';
   try {
     const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${groqKey}` },
-      body: JSON.stringify({ model, max_tokens: 150, temperature: 0.5,
+      body: JSON.stringify({ model, reasoning_effort:'none', reasoning_format:'hidden', max_tokens: 150, temperature: 0.5,
         messages: [{ role: 'user', content: `${LAZ_PERSONA}\n\nWrite a brief internal message to my colleague ${colName}.\n${current ? 'Improve or complete this draft:\n' + current : 'Topic: [quick work note or update]'}\nKeep it to 1-3 sentences. Plain text, no greeting label.` }]
       }), signal: AbortSignal.timeout(15000)
     });
@@ -21261,7 +22105,7 @@ async function lazGenerateBriefing() {
   const userId    = parseInt(document.getElementById('laz-pipeline-user')?.value) || odooUid;
   const userFilter = [['user_id','=',userId]];
   const today     = new Date().toISOString().split('T')[0];
-  const model     = document.getElementById('gemini-model')?.value || 'llama-3.3-70b-versatile';
+  const model     = document.getElementById('gemini-model')?.value || 'qwen/qwen3.6-27b';
   sub.textContent = new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
   if (overAchiever) sub.textContent += ' ⚡ Over Achiever';
 
@@ -21364,7 +22208,7 @@ async function lazGenerateBriefing() {
       headers: {'Content-Type':'application/json','Authorization':'Bearer '+groqKey},
       body: JSON.stringify({
         model,
-        max_tokens: overAchiever ? 900 : 600,
+        reasoning_effort:'none', reasoning_format:'hidden', max_tokens: overAchiever ? 900 : 600,
         temperature: 0.5,
         messages: [{ role:'user', content: basePrompt + standardInstruction + overAchieverAddition }]
       }),
@@ -21968,7 +22812,7 @@ On Windows, \`start.bat\` launches both servers silently in the background — n
 Everything runs locally. Credentials are stored in your browser's localStorage and optionally in an export file you control. Nothing is sent to any third-party service except Groq (for AI) and your own Odoo instance.
 
 **What Groq model does it use?**
-\`llama-3.3-70b-versatile\` by default — free tier, no credit card. Switch to \`llama-3.1-8b-instant\` for faster responses at higher volume.
+\`qwen/qwen3.6-27b\` by default — free tier, no credit card. Switch to \`openai/gpt-oss-20b\` for faster responses at higher volume.
 
 **Can multiple people use it?**
 Yes — each person runs their own copy and connects with their own Odoo credentials. Activities are always filtered to the logged-in user. Export your settings and share the JSON with a teammate to get them set up quickly (they'll need to add their own passwords).
@@ -22024,30 +22868,16 @@ window.inboxTab = function(tab) {
   localStorage.setItem('oel5_inbox_tab', tab);
 };
 
-window.actTab = function(tab) {
-  document.querySelectorAll('#panel-activities .sec-tab').forEach(el => el.classList.remove('active'));
-  const btn = document.getElementById('act-tab-' + tab);
-  if (btn) btn.classList.add('active');
-  ['act-panel-connect','act-panel-draft','act-panel-send','act-panel-tracker'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.classList.remove('active');
-  });
-  const panel = document.getElementById('act-panel-' + tab);
-  if (panel) panel.classList.add('active');
-  if (tab === 'tracker' && typeof lftLoad === 'function') lftLoad();
-  if (tab === 'draft' && typeof draftAllEmails === 'function' && window.activities && window.activities.length) draftAllEmails();
-};
-
 
 // ── Sidebar Order ──────────────────────────────────────────────
 (function() {
   var KEY = 'oel_sidebar_order';
   var DEFAULTS = [
     ['nav-inbox','Inbox'],['nav-leads','Lead Capture'],['nav-activities','Activities'],
-    ['nav-quotes','Quotes'],['nav-smartbuilder','Smart Builder'],['nav-quotedesk','Request Desk'],
-    ['nav-projects','Projects'],['nav-templates','Templates'],['nav-discuss','Discuss'],
-    ['nav-support','Support'],['nav-bounces','Bounces'],['nav-dataexplorer','Data Explorer'],['nav-catchup','Dormant Contacts'],
-    ['nav-vendor','Vendor Outreach'],['nav-docs','Documents'],['nav-prospect','Prospecting'],
+    ['nav-quotedesk','Request Desk'],['nav-smartbuilder','Smart Builder'],['nav-quotes','Quotes'],['nav-templates','Templates'],
+    ['nav-prospect','Prospecting'],['nav-catchup','Dormant Contacts'],['nav-vendor','Vendor Outreach'],
+    ['nav-projects','Projects'],['nav-discuss','Discuss'],['nav-support','Support'],
+    ['nav-bounces','Bounces'],['nav-dataexplorer','Data Explorer'],['nav-docs','Documents'],
     ['nav-reports','Reports'],['nav-help','Help']
   ];
 
@@ -22073,6 +22903,7 @@ window.actTab = function(tab) {
     for(var j=0;j<DEFAULTS.length;j++){var el2=document.getElementById(DEFAULTS[j][0]);if(el2&&ordered.indexOf(el2)<0)ordered.push(el2);}
     for(var k=0;k<ordered.length;k++){nav.insertBefore(ordered[k],anchor);}
     nav.querySelectorAll('.sb-section-label').forEach(function(l){l.style.display='none';});
+    nav.querySelectorAll('.sb-divider').forEach(function(d){ if (d !== anchor) d.style.display='none'; });
   }
 
   function buildModal() {
@@ -22160,6 +22991,7 @@ window.actTab = function(tab) {
       if (!anchor || anchor.parentNode !== nav) anchor = settingsEl;
       for(var i=0;i<DEFAULTS.length;i++){var el=document.getElementById(DEFAULTS[i][0]);if(el)nav.insertBefore(el,anchor);}
       nav.querySelectorAll('.sb-section-label').forEach(function(l){l.style.display='';});
+      nav.querySelectorAll('.sb-divider').forEach(function(d){d.style.display='';});
     }
     buildModal();
   }
@@ -22217,7 +23049,8 @@ window.navTo = function(section) {
   if (pills) pills.style.display = NAV_PANELS[section].hasSrc ? 'flex' : 'none';
   if (typeof updateTopbarActions === 'function') updateTopbarActions(section);
   localStorage.setItem('oel5_nav', section);
-  if (section === 'reports') setTimeout(() => { if (typeof lazDashboardLoad === 'function') lazDashboardLoad(); }, 200);
+  if (typeof oelTrackNavVisit === 'function') oelTrackNavVisit(section);
+  if (section === 'reports') setTimeout(async () => { if (typeof lazDashboardLoad === 'function') lazDashboardLoad(); if (typeof srPopulateReps === 'function') srPopulateReps(); if (typeof srDetectDeliveryField === 'function') await srDetectDeliveryField(); if (typeof srLoad === 'function') srLoad(); }, 200);
   if (section === 'activities' && !window.odooUid) setTimeout(() => { if (typeof lazSilentConnect === 'function') lazSilentConnect(); }, 300);
   if (section === 'discuss') setTimeout(() => { if (typeof qmPopulateUsers === 'function') qmPopulateUsers(); if (typeof lazPopulatePipelineUsers === 'function') lazPopulatePipelineUsers(); }, 200);
   if (section === 'catchup') setTimeout(() => { if (typeof cuInit === 'function') cuInit(); }, 200);
@@ -23032,8 +23865,8 @@ Write a 3-4 sentence email: acknowledge the gap, briefly reference the deal cont
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${groqKey}` },
       body: JSON.stringify({
-        model: document.getElementById('gemini-model')?.value || 'llama-3.3-70b-versatile',
-        max_tokens: 300, temperature: 0.7,
+        model: document.getElementById('gemini-model')?.value || 'qwen/qwen3.6-27b',
+        reasoning_effort:'none', reasoning_format:'hidden', max_tokens: 300, temperature: 0.7,
         messages: [{ role: 'user', content: prompt }]
       }),
       signal: AbortSignal.timeout(20000)
@@ -23129,7 +23962,7 @@ async function cuLogNote(i) {
   if (!lead._draft) { alert('Generate a draft first, then log it'); return; }
   try {
     await odooExecute(odooUid, model, 'message_post', [[lead.id]], {
-      body: '<p>' + escHtml(lead._draft).replace(/\n/g,'<br>') + '</p>',
+      body: escHtml(lead._draft).replace(/\n/g,'<br>'),
       message_type: 'comment',
       subtype_xmlid: 'mail.mt_note',
     });
@@ -23373,6 +24206,13 @@ function actTab(tab) {
   });
   const panel = document.getElementById('act-panel-' + tab);
   if (panel) panel.classList.add('active');
+
+  if (tab === 'draft') {
+    const triggerRow = document.getElementById('draft-trigger-row');
+    if (triggerRow && (!Array.isArray(draftedEmails) || !draftedEmails.length)) {
+      triggerRow.classList.remove('hidden');
+    }
+  }
 
   if (tab === 'tracker' && typeof lftLoad === 'function') lftLoad();
 }
@@ -25155,7 +25995,7 @@ window.persTab = function(tab) {
     if (!el) return;
     var groqKey = document.getElementById('gemini-key') && document.getElementById('gemini-key').value.trim();
     if (!groqKey) { el.textContent = 'Add Groq API key in Settings to enable AI coaching.'; return; }
-    var model = (document.getElementById('gemini-model') && document.getElementById('gemini-model').value) || 'llama-3.3-70b-versatile';
+    var model = (document.getElementById('gemini-model') && document.getElementById('gemini-model').value) || 'qwen/qwen3.6-27b';
     var notesText = messages.slice(0, 5).map(function (msg) {
       return msg.date.substring(0, 10) + ': ' + msg.body.replace(/<[^>]+>/g, '').substring(0, 200);
     }).join('\n');
@@ -25173,7 +26013,7 @@ window.persTab = function(tab) {
       var r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + groqKey },
-        body: JSON.stringify({ model: model, max_tokens: 200, temperature: 0.7, messages: [{ role: 'user', content: prompt }] }),
+        body: JSON.stringify({ model: model, reasoning_effort:'none', reasoning_format:'hidden', max_tokens: 200, temperature: 0.7, messages: [{ role: 'user', content: prompt }] }),
         signal: AbortSignal.timeout(20000)
       });
       var data = await r.json();
