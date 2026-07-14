@@ -1,4 +1,4 @@
-# OEL Command v12.0
+# OEL Command v13.2
 
 **AI-powered sales operations command center — built for TRSAV and Odoo 19.**
 
