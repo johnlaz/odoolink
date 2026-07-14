@@ -31,7 +31,11 @@
   }
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: smooth; }
+  html {
+    scroll-behavior: smooth;
+    overflow-x: hidden;
+    width: 100%;
+  }
 
   body {
     background: var(--bg);
@@ -39,6 +43,8 @@
     font-family: 'DM Sans', sans-serif;
     font-weight: 400;
     overflow-x: hidden;
+    width: 100%;
+    max-width: 100vw;
     min-height: 100vh;
   }
 
@@ -746,6 +752,7 @@
     text-align: center;
     padding: 120px 24px;
     border-top: 1px solid var(--border);
+    overflow: hidden;
   }
 
   .cta-glow {
@@ -895,6 +902,13 @@
     .stats-inner { grid-template-columns: repeat(2, 1fr); }
     footer { flex-direction: column; text-align: center; }
     .footer-right { text-align: center; }
+  }
+
+  @media (max-width: 480px) {
+    section { padding-left: 16px; padding-right: 16px; }
+    .modules-grid { grid-template-columns: 1fr; }
+    .pipeline { grid-template-columns: 1fr; }
+    .stats-inner { grid-template-columns: 1fr; }
   }
 </style>
 </head>
