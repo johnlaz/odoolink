@@ -3,7 +3,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <meta name="oel-version" content="v13.4">
+  <meta name="oel-version" content="v13.6">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="mobile-web-app-capable" content="yes">
@@ -279,7 +279,12 @@
     gap: 12px;
     flex-shrink: 0;
     background: var(--surface);
+    position: relative;
   }
+  .topbar-search-toggle { background: none; border: 1px solid var(--border); border-radius: 8px; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; color: var(--muted); cursor: pointer; flex-shrink: 0; transition: all 0.15s; padding: 0; }
+  .topbar-search-toggle:hover, .topbar-search-toggle.active { border-color: var(--accent); color: var(--accent); }
+  .topbar-search-panel { display: none; position: absolute; top: calc(100% + 6px); left: 50%; transform: translateX(-50%); width: min(440px, calc(100vw - 24px)); background: var(--surface); border: 1px solid var(--border); border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.45); z-index: 150; padding: 10px; }
+  .topbar-search-panel.open { display: block; }
   .topbar-left { display: flex; align-items: center; gap: 8px; min-width: 0; flex-wrap: wrap; }
   .topbar-section-title {
     font-family: 'DM Serif Display', serif;
@@ -315,7 +320,10 @@
   .tb-btn.primary:hover { background: var(--accent); color: var(--bg); }
 
   /* Source toggle pills */
-  .source-pills { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; }
+  .source-pills { display: flex; gap: 4px; align-items: center; }
+  #topbar-source-pills.source-pills { padding: 8px 20px; border-bottom: 1px solid var(--border); background: var(--surface); overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; scrollbar-width: none; flex-shrink: 0; }
+  #topbar-source-pills.source-pills::-webkit-scrollbar { display: none; }
+  #topbar-source-pills .src-pill { flex-shrink: 0; }
   .src-pill {
     padding: 4px 10px;
     font-size: 11px;
@@ -770,6 +778,14 @@
     .modal-body { padding: 13px 15px; }
     .modal-header { padding: 13px 15px 11px; }
     .modal-footer { padding: 11px 15px; }
+    .oel-split-pane { flex-direction: column !important; }
+    .oel-split-sidebar { width: 100% !important; max-height: 220px; border-left: none !important; border-right: none !important; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .tb-conn-txt { display: none; }
+    .laz-notes-label { display: none; }
+    #laz-notes-btn { padding: 5px 8px; }
+    .topbar-section-title { max-width: 90px; overflow: hidden; text-overflow: ellipsis; }
+    #topbar { padding: 0 10px; gap: 6px; }
+    #topbar-source-pills.source-pills { padding: 6px 10px; }
   }
 </style>
 </head>
@@ -1020,23 +1036,20 @@
       <div>
         <div class="topbar-section-title" id="topbar-title">Inbox</div>
       </div>
-      <div id="topbar-source-pills" class="source-pills" style="display:none">
-        <button class="src-pill" id="src-odoo" onclick="toggleInboxPanel('odoo')">Odoo</button>
-        <button class="src-pill" id="src-turbify" onclick="toggleInboxPanel('turbify')">Turbify</button>
-        <button class="src-pill" id="src-gmail" onclick="toggleInboxPanel('gmail')">Gmail</button>
-      </div>
     </div>
-    <div class="topbar-search-wrap" style="position:relative;flex:1;max-width:420px;margin:0 4px;min-width:120px">
+    <button id="oel-nav-search-btn" class="topbar-search-toggle" onclick="oelToggleNavSearch()" title="What do you need to do?">
+      <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.3"></circle><path d="M10 10l3.5 3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"></path></svg>
+    </button>
+    <div id="oel-nav-search-panel" class="topbar-search-panel">
       <input type="text" id="oel-nav-search" placeholder="What do you need to do?"
         oninput="oelNavSearchInput()"
-        onfocus="oelNavSearchInput()"
-        onkeydown="if(event.key==='Enter'){event.preventDefault();oelSearchAI();}else if(event.key==='Escape'){this.blur();var b=document.getElementById('oel-nav-results');if(b)b.style.display='none';}"
+        onkeydown="if(event.key==='Enter'){event.preventDefault();oelSearchAI();}else if(event.key==='Escape'){oelToggleNavSearch(false);}"
         style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.82rem;outline:none">
-      <div id="oel-nav-results" style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--surface);border:1px solid var(--border);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.4);z-index:500;padding:6px;max-height:360px;overflow-y:auto"></div>
+      <div id="oel-nav-results" style="max-height:340px;overflow-y:auto;margin-top:6px"></div>
     </div>
     <div class="topbar-right">
       <div class="tb-status-cluster">
-        <div class="tb-conn-dot" id="topbar-conn-dot"></div>
+        <div class="tb-conn-dot" id="topbar-conn-dot" title="Odoo connection status"></div>
         <span class="tb-conn-txt" id="topbar-conn-txt">Not connected</span>
         <button id="topbar-connect-btn" onclick="oelConnectNow()" style="padding:4px 10px;font-size:11px;border-radius:6px;border:1px solid var(--accent);background:var(--accent-dim);color:var(--accent);cursor:pointer;font-family:'DM Sans',sans-serif;display:inline-block;margin-left:6px">
           Connect
@@ -1046,10 +1059,17 @@
       <!-- Global notes button -->
       <button id="laz-notes-btn" onclick="toggleLazNotes()" title="Notes" style="background:none;border:1px solid var(--border);border-radius:7px;padding:5px 10px;cursor:pointer;color:var(--muted);display:flex;align-items:center;gap:5px;font-family:'DM Sans',sans-serif;font-size:0.78rem;transition:all 0.15s;position:relative;flex-shrink:0" onmouseover="if(!document.getElementById('laz-notes-panel').classList.contains('open')){this.style.borderColor='var(--accent)';this.style.color='var(--accent)'}" onmouseout="if(!document.getElementById('laz-notes-panel').classList.contains('open')){this.style.borderColor='var(--border)';this.style.color='var(--muted)'}">
         <svg width="13" height="13" viewBox="0 0 12 12" fill="none"><path d="M2 2h8v6.5L7.5 11H2V2z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"></path><path d="M7.5 11V8.5H10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-        Notes
+        <span class="laz-notes-label">Notes</span>
         <span id="notes-count" style="position:absolute;top:-5px;right:-5px;background:var(--accent);color:#000;font-size:0.6rem;font-weight:700;border-radius:50%;width:15px;height:15px;display:none;align-items:center;justify-content:center;font-family:'DM Mono',monospace"></span>
       </button>
     </div>
+  </div>
+
+  <!-- Source pills: separate row so they never compete for space in the fixed-height topbar -->
+  <div id="topbar-source-pills" class="source-pills" style="display:none">
+    <button class="src-pill" id="src-odoo" onclick="toggleInboxPanel('odoo')">Odoo</button>
+    <button class="src-pill" id="src-turbify" onclick="toggleInboxPanel('turbify')">Turbify</button>
+    <button class="src-pill" id="src-gmail" onclick="toggleInboxPanel('gmail')">Gmail</button>
   </div>
 
   <!-- Content area -->
@@ -1856,12 +1876,12 @@
 
       <!-- Equipment lines -->
       <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:12px">
-        <div style="display:flex;align-items:center;margin-bottom:10px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:10px">
           <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);font-weight:500">Equipment</div>
-          <div style="flex:1"></div>
-          <button onclick="qbShowLocalTemplates()" class="btn btn-ghost" style="padding:3px 8px;font-size:0.72rem;margin-right:6px">My templates</button>
+          <div style="flex:1;min-width:8px"></div>
+          <button onclick="qbShowLocalTemplates()" class="btn btn-ghost" style="padding:3px 8px;font-size:0.72rem">My templates</button>
           <button onclick="qbAddLine()" title="Add a blank line item to the quote" style="background:none;border:1px solid var(--border);border-radius:5px;padding:3px 10px;font-size:0.74rem;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">+ Add item</button>
-          <button onclick="qbOpenCatalog()" title="Browse Odoo product catalog to add items" style="background:var(--accent-dim);border:1px solid var(--accent);border-radius:5px;padding:3px 10px;font-size:0.74rem;color:var(--accent);cursor:pointer;font-family:'DM Sans',sans-serif;margin-left:6px">
+          <button onclick="qbOpenCatalog()" title="Browse Odoo product catalog to add items" style="background:var(--accent-dim);border:1px solid var(--accent);border-radius:5px;padding:3px 10px;font-size:0.74rem;color:var(--accent);cursor:pointer;font-family:'DM Sans',sans-serif">
             ⊞ Browse catalog
           </button>
         </div>
@@ -2489,7 +2509,7 @@ Support Team"></textarea>
 
       <!-- ── AI BRAINSTORM sub-panel ──────────────────────────────────────── -->
       <div id="proj-sub-ai" class="sub-panel">
-        <div style="display:flex;height:100%;overflow:hidden">
+        <div class="oel-split-pane" style="display:flex;height:100%;overflow:hidden">
 
           <!-- Chat area -->
           <div style="flex:1;display:flex;flex-direction:column;overflow:hidden">
@@ -2553,7 +2573,7 @@ Support Team"></textarea>
           </div>
 
           <!-- Brainstorm sidebar: saved tasks from this session -->
-          <div id="proj-brainstorm-sidebar" style="width:260px;flex-shrink:0;border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;transition:width 0.2s">
+          <div id="proj-brainstorm-sidebar" class="oel-split-sidebar" style="width:260px;flex-shrink:0;border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;transition:width 0.2s">
             <div style="padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
               <div>
                 <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);font-weight:600">Task Summary</div>
@@ -2572,10 +2592,10 @@ Support Team"></textarea>
 
     <!-- ── TEMPLATES ────────────────────────────────────────────────────── -->
     <div class="section-panel" id="panel-templates">
-      <div style="display:flex;height:100%;overflow:hidden">
+      <div class="oel-split-pane" style="display:flex;height:100%;overflow:hidden">
 
         <!-- Left: template card list -->
-        <div style="width:240px;flex-shrink:0;border-right:1px solid var(--border);display:flex;flex-direction:column">
+        <div class="oel-split-sidebar" style="width:240px;flex-shrink:0;border-right:1px solid var(--border);display:flex;flex-direction:column">
           <div style="padding:14px 14px 10px;border-bottom:1px solid var(--border);display:flex;gap:6px;align-items:center">
             <span style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);font-weight:600;flex:1">Saved Templates</span>
             <button class="btn btn-primary" onclick="lazNewTemplate()" style="padding:4px 12px;font-size:0.76rem">+ New</button>
@@ -2731,9 +2751,9 @@ Support Team"></textarea>
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
           <div>
             <div style="font-family:'DM Serif Display',serif;font-size:1.3rem;color:var(--text)">OEL Command</div>
-            <div style="font-size:0.75rem;color:var(--muted);margin-top:2px">Quick Reference Guide · v13.4</div>
+            <div style="font-size:0.75rem;color:var(--muted);margin-top:2px">Quick Reference Guide · v13.6</div>
           </div>
-          <span style="font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace">v13.4</span>
+          <span style="font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace">v13.6</span>
         </div>
 
         <!-- Setup -->
@@ -2859,7 +2879,7 @@ Support Team"></textarea>
         <div class="card" style="margin-bottom:14px">
           <div class="card-title">🔧 Troubleshooting</div>
           <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
-            <p style="margin:0 0 4px"><strong style="color:var(--text)">App not updating after deploy:</strong> Hard refresh Ctrl+Shift+R. Service worker cache key = oel-v13.4.</p>
+            <p style="margin:0 0 4px"><strong style="color:var(--text)">App not updating after deploy:</strong> Hard refresh Ctrl+Shift+R. Service worker cache key = oel-v13.6.</p>
             <p style="margin:0 0 4px"><strong style="color:var(--text)">Odoo calls failing:</strong> Confirm server.py is running on port 7842. Check status lights in Settings. All domains must be flat arrays for Odoo 19 — no nested | operators.</p>
             <p style="margin:0 0 4px"><strong style="color:var(--text)">IMAP not working:</strong> Confirm imap_server.py is running on port 7843. Gmail requires an App Password. Turbify uses standard IMAP credentials.</p>
             <p style="margin:0 0 4px"><strong style="color:var(--text)">AI drafts failing:</strong> Check Groq API key in Settings. Verify model name — default is qwen/qwen3.6-27b.</p>
@@ -2868,7 +2888,7 @@ Support Team"></textarea>
         </div>
 
         <div style="text-align:center;font-size:0.72rem;color:var(--muted);padding:12px 0">
-          OEL Command v13.4 · Built by Lazzaro · Powered by Groq AI + Odoo 19
+          OEL Command v13.6 · Built by Lazzaro · Powered by Groq AI + Odoo 19
         </div>
 
       </div>
@@ -2978,7 +2998,7 @@ Support Team"></textarea>
           <div class="card-title" style="font-family:'DM Serif Display',serif;font-size:1.2rem;margin-bottom:6px">Dashboard</div>
           <div class="card-subtitle" style="margin-bottom:16px">Pipeline, opportunities, and team performance from Odoo.</div>
           <div style="display:inline-flex;align-items:center;gap:6px;margin-bottom:8px">
-            <span style="font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace;box-shadow:0 0 8px rgba(201,168,76,0.35),0 0 20px rgba(201,168,76,0.12);animation:versionGlow 3s ease-in-out infinite alternate">OEL Command v13.4</span>
+            <span style="font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace;box-shadow:0 0 8px rgba(201,168,76,0.35),0 0 20px rgba(201,168,76,0.12);animation:versionGlow 3s ease-in-out infinite alternate">OEL Command v13.6</span>
             <span style="font-size:0.68rem;color:var(--muted)">Built by Lazzaro</span>
           </div>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px">
@@ -8321,12 +8341,25 @@ function oelSearchLocal(query) {
     .map(function(r){ return r.item; });
 }
 
+function oelToggleNavSearch(forceOpen) {
+  const panel = document.getElementById('oel-nav-search-panel');
+  const btn   = document.getElementById('oel-nav-search-btn');
+  const input = document.getElementById('oel-nav-search');
+  if (!panel || !btn) return;
+  const shouldOpen = (typeof forceOpen === 'boolean') ? forceOpen : !panel.classList.contains('open');
+  panel.classList.toggle('open', shouldOpen);
+  btn.classList.toggle('active', shouldOpen);
+  if (shouldOpen) {
+    setTimeout(function(){ input?.focus(); }, 30);
+    oelNavSearchInput();
+  } else {
+    if (input) input.blur();
+  }
+}
+
 function oelNavSearchGo(id) {
   navTo(id);
-  const input = document.getElementById('oel-nav-search');
-  const box   = document.getElementById('oel-nav-results');
-  if (input) { input.value = ''; input.blur(); }
-  if (box) { box.innerHTML = ''; box.style.display = 'none'; }
+  oelCloseNavSearch();
 }
 
 function oelNavSearchShowFrequent() {
@@ -8336,8 +8369,7 @@ function oelNavSearchShowFrequent() {
   const top = Object.keys(freq).sort(function(a,b){ return freq[b]-freq[a]; }).slice(0,4)
     .map(function(id){ return OEL_SEARCH_INDEX.find(function(s){ return s.id===id; }); })
     .filter(Boolean);
-  if (!top.length) { box.style.display = 'none'; return; }
-  box.style.display = 'block';
+  if (!top.length) { box.innerHTML = ''; return; }
   box.innerHTML = '<div style="padding:4px 10px 6px;font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em">Frequently used</div>'
     + top.map(function(m) {
         return '<div onclick="oelNavSearchGo(\'' + m.id + '\')" style="padding:8px 10px;font-size:0.82rem;color:var(--text);cursor:pointer;border-radius:6px" onmouseover="this.style.background=\'var(--surface2)\'" onmouseout="this.style.background=\'none\'">' + escHtml(m.label) + '</div>';
@@ -8394,7 +8426,8 @@ function oelCloseNavSearch() {
   const input = document.getElementById('oel-nav-search');
   const box   = document.getElementById('oel-nav-results');
   if (input) input.value = '';
-  if (box) { box.innerHTML = ''; box.style.display = 'none'; }
+  if (box) box.innerHTML = '';
+  oelToggleNavSearch(false);
 }
 
 function oelComposeToContact(idx) {
@@ -8419,8 +8452,7 @@ function oelAddNoteToContact(idx) {
   if (textEl) textEl.value = '';
   if (statusEl) { statusEl.textContent = ''; statusEl.style.color = 'var(--muted)'; }
   if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Log to Odoo'; }
-  const searchBox = document.getElementById('oel-nav-results');
-  if (searchBox) searchBox.style.display = 'none';
+  if (typeof oelToggleNavSearch === 'function') oelToggleNavSearch(false);
   document.getElementById('oel-note-modal')?.classList.remove('hidden');
   setTimeout(function(){ textEl?.focus(); }, 50);
 }
@@ -8594,11 +8626,11 @@ async function oelSearchAI() {
 }
 
 document.addEventListener('click', function(e) {
-  const wrap = document.querySelector('.topbar-search-wrap');
-  const box  = document.getElementById('oel-nav-results');
-  if (!wrap || !box) return;
+  const panel = document.getElementById('oel-nav-search-panel');
+  const btn   = document.getElementById('oel-nav-search-btn');
+  if (!panel || !btn || !panel.classList.contains('open')) return;
   const path = e.composedPath ? e.composedPath() : [e.target];
-  if (path.indexOf(wrap) === -1) box.style.display = 'none';
+  if (path.indexOf(panel) === -1 && path.indexOf(btn) === -1) oelToggleNavSearch(false);
 });
 
 // ═══════════════════════════════════════════════════════════════════════════
