@@ -3,7 +3,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <meta name="oel-version" content="v13.6">
+  <meta name="oel-version" content="v14.2">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="mobile-web-app-capable" content="yes">
@@ -966,6 +966,11 @@
         </svg>
       </div>
       <span class="sb-item-label">Bounces</span>
+    </div>
+
+    <div class="sb-item" id="nav-salestargeting" onclick="navTo('salestargeting')" title="Sales Targeting — build a rep target list from historical sales">
+      <div class="sb-item-icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="4" cy="10" r="1.6" stroke="currentColor" stroke-width="1.1"/><circle cx="7.5" cy="6.5" r="1.6" stroke="currentColor" stroke-width="1.1"/><circle cx="11" cy="9" r="1.6" stroke="currentColor" stroke-width="1.1"/><path d="M5.3 9l1-1.3M8.7 7.5l1.2 1" stroke="currentColor" stroke-width="1.1"/></svg></div>
+      <span class="sb-item-label">Sales Targeting</span>
     </div>
 
     <div class="sb-item" id="nav-dataexplorer" onclick="navTo('dataexplorer')" title="Data Explorer">
@@ -2751,9 +2756,9 @@ Support Team"></textarea>
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
           <div>
             <div style="font-family:'DM Serif Display',serif;font-size:1.3rem;color:var(--text)">OEL Command</div>
-            <div style="font-size:0.75rem;color:var(--muted);margin-top:2px">Quick Reference Guide · v13.6</div>
+            <div style="font-size:0.75rem;color:var(--muted);margin-top:2px">Quick Reference Guide · v14.2</div>
           </div>
-          <span style="font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace">v13.6</span>
+          <span style="font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace">v14.2</span>
         </div>
 
         <!-- Setup -->
@@ -2771,24 +2776,24 @@ Support Team"></textarea>
           </div>
         </div>
 
+        <!-- Search -->
+        <div class="card" style="margin-bottom:14px">
+          <div class="card-title">🔍 Search (top nav)</div>
+          <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
+            <p style="margin:0 0 4px">Click the search icon in the top bar and type what you need to do — it instantly matches against every section below, or ✦ Ask AI for a natural-language recommendation if nothing obvious matches (needs a Groq key).</p>
+            <p style="margin:0">3+ characters also live-searches Odoo contacts and orders directly — jump to a customer, ✉ Compose, 📝 Note, 📅 Activity, or 🧾 Quote them without leaving the search box.</p>
+          </div>
+        </div>
+
+        <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);font-weight:500;margin:20px 0 10px 2px">Daily</div>
+
         <!-- Inbox -->
         <div class="card" style="margin-bottom:14px">
           <div class="card-title">✉ Inbox</div>
           <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
             <p style="margin:0 0 4px">Unified inbox for Turbify/IMAP, Odoo messages, and Gmail. <strong style="color:var(--text)">Click any row</strong> to expand the body — invisible tracking characters and HTML noise are automatically stripped.</p>
             <p style="margin:0 0 4px"><strong style="color:var(--text)">✦ Draft</strong> — AI reply draft using Groq. <strong style="color:var(--text)">📋 Log</strong> — fetches body, opens note modal with live Odoo contact search override. <strong style="color:var(--text)">📅</strong> — schedule activity. <strong style="color:var(--text)">🗑</strong> — move to Trash (IMAP only).</p>
-            <p style="margin:0 0 4px"><strong style="color:var(--text)">Bounce emails:</strong> Delivery failures auto-detect the undeliverable address (stripped from email angle-bracket format) and pre-fill the contact search in the log note modal.</p>
-            <p style="margin:0"><strong style="color:var(--text)">Templates tab (in Inbox):</strong> Removed — Templates now has its own sidebar section.</p>
-          </div>
-        </div>
-
-        <!-- Activities -->
-        <div class="card" style="margin-bottom:14px">
-          <div class="card-title">⚡ Activities</div>
-          <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
-            <p style="margin:0 0 4px">Scans your Odoo activities due today and AI-drafts a follow-up email per contact using deal context and last chatter note.</p>
-            <p style="margin:0 0 4px"><strong style="color:var(--text)">Send tab per card:</strong> Review & edit (full modal) · ✉ Draft email (Quick Compose pre-filled) · 📋 Log note (posts to Odoo chatter) · Skip.</p>
-            <p style="margin:0"><strong style="color:var(--text)">Follow-up Tracker:</strong> Shows leads pushed from Lead Capture that have no scheduled activity. Requires Odoo connection — click Check Odoo after connecting in Settings.</p>
+            <p style="margin:0"><strong style="color:var(--text)">Bounce emails:</strong> Delivery failures auto-detect the undeliverable address and pre-fill the contact search in the log note modal.</p>
           </div>
         </div>
 
@@ -2797,32 +2802,72 @@ Support Team"></textarea>
           <div class="card-title">📥 Lead Capture</div>
           <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
             <p style="margin:0 0 4px">Scans IMAP inbox for inbound leads matching your specs. AI extracts contact name, phone, email, and notes.</p>
-            <p style="margin:0 0 4px"><strong style="color:var(--text)">Forwarded emails:</strong> Auto-detected (Fwd: subject). AI prompt instructs Groq to extract the real customer from the forwarded body, not the internal forwarder. Card shows ⟳ Forwarded badge.</p>
+            <p style="margin:0 0 4px"><strong style="color:var(--text)">Forwarded emails:</strong> Auto-detected (Fwd: subject). AI extracts the real customer from the forwarded body, not the internal forwarder. Card shows ⟳ Forwarded badge.</p>
             <p style="margin:0 0 4px"><strong style="color:var(--text)">Contact override:</strong> In the Review modal, search Odoo contacts by name or email to link the lead to an existing contact instead of creating a new one.</p>
             <p style="margin:0"><strong style="color:var(--text)">Push to Odoo:</strong> Creates crm.lead + res.partner + chatter note + follow-up activity in one click.</p>
           </div>
         </div>
+
+        <!-- Activities -->
+        <div class="card" style="margin-bottom:14px">
+          <div class="card-title">⚡ Activities</div>
+          <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
+            <p style="margin:0 0 4px">Scans your Odoo activities due today and AI-drafts a follow-up email per contact using deal context and last chatter note.</p>
+            <p style="margin:0 0 4px"><strong style="color:var(--text)">Draft tab:</strong> shows a "Start drafting" trigger when opened manually, or auto-starts when arriving from Connect. Per card: Review & edit (full modal) · ✉ Draft email · 📋 Log note · Skip.</p>
+            <p style="margin:0"><strong style="color:var(--text)">Follow-up Tracker:</strong> Shows leads pushed from Lead Capture that have no scheduled activity. Requires Odoo connection.</p>
+          </div>
+        </div>
+
+        <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);font-weight:500;margin:20px 0 10px 2px">Quoting</div>
 
         <!-- Request Desk -->
         <div class="card" style="margin-bottom:14px">
           <div class="card-title">📝 Request Desk</div>
           <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
             <p style="margin:0 0 4px">Paste any vague quote request — AI extracts contact info and drafts a TRSAV-style response with clarifying questions (event date, venue, indoor/outdoor, audience size, AV needs, budget).</p>
-            <p style="margin:0 0 4px"><strong style="color:var(--text)">Custom AI prompt:</strong> Click "Customize AI response prompt" to edit and save your own prompt. Blank = use TRSAV default. Stored in localStorage.</p>
-            <p style="margin:0 0 4px"><strong style="color:var(--text)">Actions:</strong> Send email (Quick Compose) · ⬆ Push to Odoo (creates contact + opportunity + logs draft) · Schedule activity · 📋 Log to contact · Copy.</p>
-            <p style="margin:0"><strong style="color:var(--text)">Find in Odoo:</strong> Auto-searches Odoo for the contact after extraction. Click "Use" to link to an existing contact.</p>
+            <p style="margin:0 0 4px"><strong style="color:var(--text)">Custom AI prompt:</strong> Click "Customize AI response prompt" to edit and save your own. Blank = TRSAV default.</p>
+            <p style="margin:0"><strong style="color:var(--text)">Actions:</strong> Send email · ⬆ Push to Odoo (contact + opportunity + logged draft) · Schedule activity · 📋 Log to contact · Copy.</p>
           </div>
         </div>
 
-        <!-- Projects -->
+        <!-- Smart Builder -->
         <div class="card" style="margin-bottom:14px">
-          <div class="card-title">🗂 Projects & Tasks</div>
+          <div class="card-title">✦ Smart Builder</div>
           <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
-            <p style="margin:0 0 4px"><strong style="color:var(--text)">Projects tab:</strong> Card grid of all Odoo projects. Click a project to view its tasks, or + New project to create one.</p>
-            <p style="margin:0 0 4px"><strong style="color:var(--text)">Tasks tab:</strong> Filter by project, assignee, stage. Quick-add bar at top (type + Enter). Click Edit on any task for the full edit modal: name, description, stage, priority, assignee, deadline, chatter note, delete. Checkbox moves task to Done stage in Odoo — it is not deleted and can be reopened.</p>
-            <p style="margin:0 0 4px"><strong style="color:var(--text)">To Do tab:</strong> Personal tasks with no project. Local first, push any item to Odoo as a personal task with ⬆. Sync with Odoo To Do loads your existing personal Odoo tasks.</p>
-            <p style="margin:0 0 4px"><strong style="color:var(--text)">✦ AI Brainstorm tab:</strong> Conversational AI — describe a project or goal, AI asks questions and refines before generating tasks. Only produces TASK: lines when you have enough detail or explicitly ask for a plan. Tasks auto-appear in the Task Summary panel. Buttons below chat: Save as Task · To Do · New project (creates Odoo project with all tasks).</p>
-            <p style="margin:0"><strong style="color:var(--text)">Task edit → AI Rewrite:</strong> In the edit modal, click Rewrite to get 3 AI-generated alternative task names. Click any to apply.</p>
+            <p style="margin:0 0 4px">The AI-first sibling of Request Desk — paste a raw request (email, text, voicemail transcript) and AI extracts customer, dates, venue, and equipment, then auto-builds the quote for you. Fastest path from a raw ask to a built quote.</p>
+            <p style="margin:0">Use Request Desk when you'd rather build the equipment list yourself; use Smart Builder when you want AI to take the first pass.</p>
+          </div>
+        </div>
+
+        <!-- Quotes -->
+        <div class="card" style="margin-bottom:14px">
+          <div class="card-title">🧾 Quotes</div>
+          <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
+            <p style="margin:0 0 4px">The Rental Quotation Builder — creates the order directly in Odoo as a rental (is_rental_order + per-line pickup/return dates), with Odoo's own rental rules calculating pricing.</p>
+            <p style="margin:0 0 4px">Search/pick a contact (shows open opportunities and last contact date), set pickup/return dates, then add equipment via <strong style="color:var(--text)">⊞ Browse catalog</strong>, an Odoo quote template, or a saved local template (My templates).</p>
+            <p style="margin:0">Create deep-links straight to the new order in Odoo's Rentals app.</p>
+          </div>
+        </div>
+
+        <!-- Templates -->
+        <div class="card" style="margin-bottom:14px">
+          <div class="card-title">📋 Templates</div>
+          <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
+            <p style="margin:0 0 4px">Left panel: saved template card list. Right panel: editor + AI Composer.</p>
+            <p style="margin:0 0 4px"><strong style="color:var(--text)">Editor:</strong> Name, keywords (auto-suggest triggers), body with clickable variable insertion ({{customer_name}}, {{subject}}, {{date}}, {{my_name}}, {{sender_email}}).</p>
+            <p style="margin:0 0 4px"><strong style="color:var(--text)">AI Composer:</strong> Describe purpose + tone → Groq returns name, keywords, and body. Available in Quick Compose, Activities drafts, Dormant Contacts.</p>
+            <p style="margin:0"><strong style="color:var(--text)">Build from inbox email:</strong> Wizard pulls real inbox emails to build templates from actual conversations.</p>
+          </div>
+        </div>
+
+        <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);font-weight:500;margin:20px 0 10px 2px">Pipeline</div>
+
+        <!-- Prospecting -->
+        <div class="card" style="margin-bottom:14px">
+          <div class="card-title">🔭 Prospecting</div>
+          <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
+            <p style="margin:0 0 4px">Target-criteria search (industry, niche) to find brand-new prospect companies you haven't worked with yet.</p>
+            <p style="margin:0">Net-new business — distinct from Dormant Contacts (existing accounts gone quiet) and Sales Targeting (mining your own sales history).</p>
           </div>
         </div>
 
@@ -2831,7 +2876,7 @@ Support Team"></textarea>
           <div class="card-title">💤 Dormant Contacts</div>
           <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
             <p style="margin:0 0 4px">Finds contacts and open opportunities with no scheduled activity and no recent movement. Filters: days inactive, type (customer/supplier/all), rep, exclude tag.</p>
-            <p style="margin:0 0 4px"><strong style="color:var(--text)">Search:</strong> Name, company, or internal reference # (Odoo ref field). All Contacts uses stored fields only — computed fields like opportunity_count are filtered in JS after fetch.</p>
+            <p style="margin:0 0 4px"><strong style="color:var(--text)">Search:</strong> Name, company, or internal reference # (Odoo ref field).</p>
             <p style="margin:0">AI re-engagement draft · Send via IMAP with auto-log · Bulk schedule activity on all selected.</p>
           </div>
         </div>
@@ -2841,37 +2886,87 @@ Support Team"></textarea>
           <div class="card-title">🏭 Vendor Outreach</div>
           <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
             <p style="margin:0 0 4px">Search Odoo vendors or use 🔍 Find vendors to open YellowPages/Yelp/Google pre-filled. Paste results → AI extracts contacts into cards.</p>
-            <p style="margin:0 0 4px"><strong style="color:var(--text)">Pending section</strong> (gold border): extracted vendors not yet in Odoo. ⬆ Push to Odoo per card or Push all. Saved as res.partner with supplier_rank=1.</p>
-            <p style="margin:0">Blast quote request emails to all selected vendors with email addresses.</p>
+            <p style="margin:0 0 4px"><strong style="color:var(--text)">Pending section</strong> (gold border): extracted vendors not yet in Odoo. ⬆ Push to Odoo per card or Push all.</p>
+            <p style="margin:0"><strong style="color:var(--text)">Per vendor:</strong> ✉ Mail (opens your default mail app, prefills their email if known) · Send (internal compose) · Blast quote requests to all selected.</p>
           </div>
         </div>
+
+        <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);font-weight:500;margin:20px 0 10px 2px">Work & Comms</div>
+
+        <!-- Projects -->
+        <div class="card" style="margin-bottom:14px">
+          <div class="card-title">🗂 Projects & Tasks</div>
+          <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
+            <p style="margin:0 0 4px"><strong style="color:var(--text)">Projects tab:</strong> Card grid of all Odoo projects. Click a project to view its tasks, or + New project to create one.</p>
+            <p style="margin:0 0 4px"><strong style="color:var(--text)">Tasks tab:</strong> Filter by project, assignee, stage. Quick-add bar at top. Checkbox moves task to Done in Odoo — not deleted, can be reopened.</p>
+            <p style="margin:0 0 4px"><strong style="color:var(--text)">To Do tab:</strong> Personal tasks, local first, push to Odoo with ⬆.</p>
+            <p style="margin:0"><strong style="color:var(--text)">✦ AI Brainstorm tab:</strong> Conversational — describe a goal, AI asks questions before generating tasks. Save as Task · To Do · New project.</p>
+          </div>
+        </div>
+
+        <!-- Discuss -->
+        <div class="card" style="margin-bottom:14px">
+          <div class="card-title">💬 Discuss</div>
+          <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
+            <p style="margin:0">Quick Message tool — send a message to an Odoo colleague or log a note directly to a lead/contact without leaving the app.</p>
+          </div>
+        </div>
+
+        <!-- Support -->
+        <div class="card" style="margin-bottom:14px">
+          <div class="card-title">🛠 Support</div>
+          <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
+            <p style="margin:0">Remote Support launchers — Quick Assist, Windows RDP, AnyDesk, TeamViewer — or send a client a session invite link.</p>
+          </div>
+        </div>
+
+        <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);font-weight:500;margin:20px 0 10px 2px">Utilities</div>
 
         <!-- Bounce Manager -->
         <div class="card" style="margin-bottom:14px">
           <div class="card-title">📭 Bounce Manager</div>
           <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
             <p style="margin:0 0 4px">Upload .txt or .csv of undeliverable emails, or paste them. Fuzzy-matches against Odoo contacts — exact email first, then local-part matching.</p>
-            <p style="margin:0">Per card: 📋 Log note to chatter · ✕ Clear activities · 📅 Reschedule · Bulk log all matched at once. Custom note template editable at top.</p>
+            <p style="margin:0">Per card: 📋 Log note to chatter · ✕ Clear activities · 📅 Reschedule · Bulk log all matched at once.</p>
           </div>
         </div>
 
-        <!-- Templates -->
+        <!-- Sales Targeting -->
         <div class="card" style="margin-bottom:14px">
-          <div class="card-title">📋 Templates</div>
+          <div class="card-title">🎯 Sales Targeting</div>
           <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
-            <p style="margin:0 0 4px">Standalone sidebar section. Left panel: saved template card list. Right panel: editor + AI Composer.</p>
-            <p style="margin:0 0 4px"><strong style="color:var(--text)">Editor:</strong> Name, keywords (trigger words for auto-suggest in composers), body with clickable variable insertion ({{customer_name}}, {{subject}}, {{date}}, {{my_name}}, {{sender_email}}).</p>
-            <p style="margin:0 0 4px"><strong style="color:var(--text)">AI Composer:</strong> Describe the template purpose + tone → 3 separate Groq calls return name, keywords, and body as plain text (no JSON, no parsing errors). Templates available in Quick Compose, Activities drafts, Dormant Contacts.</p>
-            <p style="margin:0"><strong style="color:var(--text)">Build from inbox email:</strong> Wizard pulls real inbox emails to build templates from actual conversations.</p>
+            <p style="margin:0 0 4px">Load a QuickBooks "Sales by Customer by Quarter" pivot export (.xlsx/.csv) to build a rep target list for the quarter.</p>
+            <p style="margin:0 0 4px">Filter by year, quarter, minimum spend, and recency — including <strong style="color:var(--text)">Lapsed</strong> (12+ or 20+ quarters with no order) to surface who needs a call.</p>
+            <p style="margin:0"><strong style="color:var(--text)">→ Move to Data Explorer:</strong> sends the current filtered list straight into Data Explorer's matching/activity pipeline in memory — no export or re-upload needed.</p>
           </div>
         </div>
 
-        <!-- Dashboard -->
+        <!-- Data Explorer -->
         <div class="card" style="margin-bottom:14px">
-          <div class="card-title">📊 Dashboard & Reports</div>
+          <div class="card-title">🔎 Data Explorer</div>
           <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
-            <p style="margin:0 0 4px">8 CRM cards + 4 accounting cards. Click any for drill-down. ⚡ Daily AI Briefing summarizes pipeline, wins, due activities, stale deals — Over Achiever mode adds flagged email action items.</p>
-            <p style="margin:0">Quick reports: Aged AR · Top Customers (YTD) · Overdue Notices — all print-ready with Save as PDF.</p>
+            <p style="margin:0 0 4px">Upload any spreadsheet (or receive one directly from Sales Targeting), pick which columns matter, and it scans Odoo to match each row — Exact / Partial / New.</p>
+            <p style="margin:0 0 4px"><strong style="color:var(--text)">Bulk actions:</strong> assign a rep + due date to checked rows · 📅 Schedule checked (creates Odoo activities in bulk) · ⚠ Create & Link checked (for companies not yet in Odoo).</p>
+            <p style="margin:0">Export XLSX or Print report from the same toolbar.</p>
+          </div>
+        </div>
+
+        <!-- Documents -->
+        <div class="card" style="margin-bottom:14px">
+          <div class="card-title">📄 Documents</div>
+          <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
+            <p style="margin:0">Local document library — W9s, COIs, contracts. Attach any file to an Odoo contact whenever you need it.</p>
+          </div>
+        </div>
+
+        <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);font-weight:500;margin:20px 0 10px 2px">Reports</div>
+
+        <!-- Reports -->
+        <div class="card" style="margin-bottom:14px">
+          <div class="card-title">📊 Reports</div>
+          <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
+            <p style="margin:0 0 4px"><strong style="color:var(--text)">Dashboard:</strong> 8 CRM cards + 4 accounting cards, click any for drill-down. ⚡ Daily AI Briefing summarizes pipeline, wins, due activities, stale deals. Quick reports: Aged AR · Top Customers (YTD) · Overdue Notices — print-ready.</p>
+            <p style="margin:0"><strong style="color:var(--text)">Sales Reporting:</strong> filter rental/sales orders by rep, order type, stage, and delivery month, sortable on every column. <strong style="color:var(--text)">Commission estimate</strong> toggle restricts to confirmed orders, switches to delivery-date filtering, and totals products-only revenue (services excluded) — the delivery-date field auto-detects from your Odoo schema and can be overridden in the dropdown if it guesses wrong.</p>
           </div>
         </div>
 
@@ -2879,7 +2974,7 @@ Support Team"></textarea>
         <div class="card" style="margin-bottom:14px">
           <div class="card-title">🔧 Troubleshooting</div>
           <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
-            <p style="margin:0 0 4px"><strong style="color:var(--text)">App not updating after deploy:</strong> Hard refresh Ctrl+Shift+R. Service worker cache key = oel-v13.6.</p>
+            <p style="margin:0 0 4px"><strong style="color:var(--text)">App not updating after deploy:</strong> Hard refresh Ctrl+Shift+R. Service worker cache key = oel-v14.2.</p>
             <p style="margin:0 0 4px"><strong style="color:var(--text)">Odoo calls failing:</strong> Confirm server.py is running on port 7842. Check status lights in Settings. All domains must be flat arrays for Odoo 19 — no nested | operators.</p>
             <p style="margin:0 0 4px"><strong style="color:var(--text)">IMAP not working:</strong> Confirm imap_server.py is running on port 7843. Gmail requires an App Password. Turbify uses standard IMAP credentials.</p>
             <p style="margin:0 0 4px"><strong style="color:var(--text)">AI drafts failing:</strong> Check Groq API key in Settings. Verify model name — default is qwen/qwen3.6-27b.</p>
@@ -2888,7 +2983,7 @@ Support Team"></textarea>
         </div>
 
         <div style="text-align:center;font-size:0.72rem;color:var(--muted);padding:12px 0">
-          OEL Command v13.6 · Built by Lazzaro · Powered by Groq AI + Odoo 19
+          OEL Command v14.2 · Built by Lazzaro · Powered by Groq AI + Odoo 19
         </div>
 
       </div>
@@ -2998,7 +3093,7 @@ Support Team"></textarea>
           <div class="card-title" style="font-family:'DM Serif Display',serif;font-size:1.2rem;margin-bottom:6px">Dashboard</div>
           <div class="card-subtitle" style="margin-bottom:16px">Pipeline, opportunities, and team performance from Odoo.</div>
           <div style="display:inline-flex;align-items:center;gap:6px;margin-bottom:8px">
-            <span style="font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace;box-shadow:0 0 8px rgba(201,168,76,0.35),0 0 20px rgba(201,168,76,0.12);animation:versionGlow 3s ease-in-out infinite alternate">OEL Command v13.6</span>
+            <span style="font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace;box-shadow:0 0 8px rgba(201,168,76,0.35),0 0 20px rgba(201,168,76,0.12);animation:versionGlow 3s ease-in-out infinite alternate">OEL Command v14.2</span>
             <span style="font-size:0.68rem;color:var(--muted)">Built by Lazzaro</span>
           </div>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px">
@@ -3142,6 +3237,196 @@ Support Team"></textarea>
     </div>
 
     <!-- DATA EXPLORER -->
+    <div class="section-panel" id="panel-salestargeting">
+      <div class="section-scroll" style="padding:20px 24px">
+
+        <!-- ── Upload / landing state ─────────────────────────────────── -->
+        <div id="hsl-landing">
+          <div style="margin-bottom:16px">
+            <div style="font-size:1.05rem;font-weight:600;margin-bottom:4px">Sales Targeting</div>
+            <div style="font-size:0.83rem;color:var(--muted)">Load a QuickBooks "Sales by Customer by Quarter" export to build a rep target list, then push it straight into Data Explorer</div>
+          </div>
+          <div id="hsl-drop-card" style="border:2px dashed var(--border);border-radius:10px;padding:40px 20px;text-align:center;background:var(--surface2);transition:all 0.15s">
+            <div style="font-size:2rem;margin-bottom:10px">📊</div>
+            <div style="font-weight:600;font-size:0.9rem;margin-bottom:6px">Load your sales export</div>
+            <div style="font-size:0.82rem;color:var(--muted);margin-bottom:18px;max-width:440px;margin-left:auto;margin-right:auto;line-height:1.5">Drop the QuickBooks "Sales by Customer by Quarter" pivot export (.xlsx or .csv) — company rows, quarterly period columns. Parsed entirely in your browser and cached locally for next time.</div>
+            <label style="cursor:pointer">
+              <input type="file" accept=".xlsx,.xls,.csv" id="hsl-file-input" style="display:none">
+              <span class="btn btn-primary" style="padding:8px 20px;font-size:0.85rem" id="hsl-pick-file-btn">Choose File</span>
+            </label>
+            <div style="font-size:0.74rem;color:var(--muted);margin-top:18px;line-height:1.6">
+              Expected shape: column A/B = <code style="background:var(--surface);padding:1px 6px;border-radius:5px;font-family:'DM Mono',monospace">CompanyName</code>, remaining columns = quarter-end period headers like <code style="background:var(--surface);padding:1px 6px;border-radius:5px;font-family:'DM Mono',monospace">Mar 31, 24</code>, optional trailing <code style="background:var(--surface);padding:1px 6px;border-radius:5px;font-family:'DM Mono',monospace">TOTAL</code> column.
+            </div>
+            <div id="hsl-contact-merge-status" style="margin-top:14px;font-size:0.78rem;color:var(--accent)"></div>
+          </div>
+        </div>
+
+        <!-- ── Results state ──────────────────────────────────────────── -->
+        <div id="hsl-app" style="display:none">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;flex-wrap:wrap;gap:8px">
+            <div>
+              <div style="font-size:1.05rem;font-weight:600">Sales Targeting</div>
+              <div id="hsl-dataset-sub" style="font-size:0.78rem;color:var(--muted)"></div>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn btn-ghost" id="hsl-load-contacts-btn" style="padding:6px 12px;font-size:0.78rem">+ Merge contacts</button>
+              <button class="btn btn-ghost" id="hsl-reload-btn" style="padding:6px 12px;font-size:0.78rem">Load new file</button>
+              <button class="btn btn-ghost" id="hsl-export-btn" style="padding:6px 12px;font-size:0.78rem;border-color:var(--accent);color:var(--accent)">Export filtered (.xlsx)</button>
+              <button class="btn btn-primary" id="hsl-move-to-de-btn" style="padding:6px 14px;font-size:0.78rem" title="Send the filtered list straight into Data Explorer — no export/re-upload needed">→ Move to Data Explorer</button>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:16px;margin-top:16px;align-items:flex-start;flex-wrap:wrap">
+            <!-- Filters -->
+            <div id="hsl-filters" style="width:230px;flex-shrink:0;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px">
+              <div class="hsl-filter-group">
+                <label class="hsl-group-label">Search</label>
+                <input type="text" id="hsl-search-input" placeholder="Company name contains…" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:7px 10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.82rem;outline:none">
+              </div>
+
+              <div class="hsl-filter-group">
+                <label class="hsl-group-label">Years</label>
+                <div style="max-height:150px;overflow-y:auto;padding-right:4px">
+                  <div class="hsl-chip-grid" id="hsl-year-chips"></div>
+                </div>
+                <div style="display:flex;gap:8px;margin-top:6px">
+                  <button class="hsl-link-btn" id="hsl-years-all">Select all</button>
+                  <button class="hsl-link-btn" id="hsl-years-none">Clear</button>
+                  <button class="hsl-link-btn" id="hsl-years-last3">Last 3 yrs</button>
+                </div>
+                <div class="hsl-field-note">Nothing selected = all years.</div>
+              </div>
+
+              <div class="hsl-filter-group">
+                <label class="hsl-group-label">Quarters</label>
+                <div class="hsl-chip-grid" id="hsl-quarter-chips">
+                  <div class="hsl-chip" data-q="1">Q1</div>
+                  <div class="hsl-chip" data-q="2">Q2</div>
+                  <div class="hsl-chip" data-q="3">Q3</div>
+                  <div class="hsl-chip" data-q="4">Q4</div>
+                </div>
+                <div class="hsl-field-note">Nothing selected = all quarters.</div>
+              </div>
+
+              <div class="hsl-filter-group">
+                <label class="hsl-group-label">Min. spend in period</label>
+                <input type="number" id="hsl-min-spend" placeholder="e.g. 5000" min="0" step="100" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:7px 10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.82rem;outline:none">
+              </div>
+
+              <div class="hsl-filter-group">
+                <label class="hsl-group-label">Recency (last order)</label>
+                <select id="hsl-recency-select" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:7px 10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.82rem;outline:none">
+                  <option value="any">Any time</option>
+                  <option value="4">Ordered in last 4 quarters</option>
+                  <option value="8">Ordered in last 8 quarters</option>
+                  <option value="12">Ordered in last 12 quarters</option>
+                  <option value="lapsed12">Lapsed — no order in 12+ quarters</option>
+                  <option value="lapsed20">Lapsed — no order in 20+ quarters</option>
+                </select>
+              </div>
+
+              <div class="hsl-field-note" style="margin-bottom:16px">Tip: click any column header to sort — click again to flip.</div>
+              <button class="btn btn-ghost" id="hsl-reset-filters" style="width:100%;padding:7px;font-size:0.8rem">Reset all filters</button>
+            </div>
+
+            <!-- Results -->
+            <div id="hsl-results" style="flex:1;min-width:280px">
+              <div id="hsl-stats-row" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px">
+                <div class="laz-stat-card"><div class="laz-stat-label">Matching companies</div><div class="laz-stat-value" id="hsl-stat-count">0</div></div>
+                <div class="laz-stat-card"><div class="laz-stat-label">Period revenue</div><div class="laz-stat-value accent" id="hsl-stat-period-total">$0</div></div>
+                <div class="laz-stat-card"><div class="laz-stat-label">All-time revenue</div><div class="laz-stat-value" id="hsl-stat-alltime-total">$0</div></div>
+                <div class="laz-stat-card"><div class="laz-stat-label">Active in period</div><div class="laz-stat-value" id="hsl-stat-active">0</div></div>
+              </div>
+
+              <div id="hsl-active-filter-summary" class="hsl-field-note" style="margin:0 0 12px"></div>
+
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;flex-wrap:wrap">
+                <span id="hsl-results-count-label" class="hsl-field-note" style="margin:0"></span>
+                <button class="btn btn-ghost" id="hsl-page-size-btn" style="padding:5px 12px;font-size:0.76rem">100 rows / page</button>
+              </div>
+
+              <div id="hsl-table-wrap" style="border:1px solid var(--border);border-radius:8px;overflow:auto;max-height:60vh">
+                <table style="width:100%;border-collapse:collapse;font-size:0.79rem">
+                  <thead>
+                    <tr style="border-bottom:1px solid var(--border)">
+                      <th class="hsl-th" data-sort="name">Company <span class="hsl-arrow"></span></th>
+                      <th class="hsl-th" data-sort="lastOrder">Last Order <span class="hsl-arrow"></span></th>
+                      <th class="hsl-th hsl-contact-col" style="display:none">Contact</th>
+                      <th class="hsl-th" data-sort="periodTotal">Period Total <span class="hsl-arrow"></span></th>
+                      <th class="hsl-th" data-sort="allTimeTotal">All-Time Total <span class="hsl-arrow"></span></th>
+                      <th class="hsl-th" data-sort="activeQuarters"># Active Qtrs <span class="hsl-arrow"></span></th>
+                      <th class="hsl-th" data-sort="avgPerQtr">Avg / Active Qtr <span class="hsl-arrow"></span></th>
+                    </tr>
+                  </thead>
+                  <tbody id="hsl-results-body"></tbody>
+                </table>
+                <div id="hsl-no-results" style="display:none;text-align:center;padding:40px 20px;color:var(--muted);font-size:0.85rem">No companies match the current filters.</div>
+              </div>
+
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px;font-size:0.78rem;color:var(--muted)">
+                <span id="hsl-pager-label"></span>
+                <div style="display:flex;gap:8px">
+                  <button class="btn btn-ghost" id="hsl-prev-page" style="padding:5px 12px;font-size:0.78rem">← Prev</button>
+                  <button class="btn btn-ghost" id="hsl-next-page" style="padding:5px 12px;font-size:0.78rem">Next →</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Load-new-file confirm modal -->
+    <div id="hsl-reload-modal" class="modal-overlay hidden">
+      <div class="modal" style="max-width:440px">
+        <div class="modal-header">
+          <div class="modal-header-text">
+            <div class="record">Load a new file?</div>
+            <div class="contact">This replaces the currently loaded dataset in this browser</div>
+          </div>
+          <button class="modal-close" id="hsl-reload-cancel-x">✕</button>
+        </div>
+        <div class="modal-body">
+          <div style="font-size:0.85rem;color:var(--muted);line-height:1.5">Your current dataset won't be lost anywhere else — it just won't be active here anymore.</div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" id="hsl-reload-cancel">Cancel</button>
+          <div style="flex:1"></div>
+          <button class="btn btn-primary" id="hsl-reload-confirm">Load new file</button>
+        </div>
+      </div>
+    </div>
+
+    <style>
+      .hsl-filter-group { margin-bottom: 18px; }
+      .hsl-group-label { display: block; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
+      .hsl-chip-grid { display: flex; flex-wrap: wrap; gap: 5px; }
+      .hsl-chip { padding: 5px 11px; border-radius: 20px; border: 1px solid var(--border); background: var(--surface); font-size: 0.74rem; font-weight: 600; cursor: pointer; color: var(--muted); user-select: none; transition: all 0.12s ease; }
+      .hsl-chip:hover { border-color: var(--muted); color: var(--text); }
+      .hsl-chip.on { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
+      .hsl-link-btn { background: none; border: none; color: var(--muted); font-size: 0.72rem; cursor: pointer; padding: 0; font-family: inherit; text-decoration: underline; }
+      .hsl-link-btn:hover { color: var(--accent); }
+      .hsl-field-note { font-size: 0.72rem; color: var(--muted); margin-top: 5px; line-height: 1.4; }
+      .hsl-th { text-align: left; padding: 8px 10px; font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); cursor: pointer; user-select: none; white-space: nowrap; position: sticky; top: 0; background: var(--surface2); z-index: 2; }
+      .hsl-th:hover { color: var(--accent); }
+      .hsl-arrow { opacity: 0.6; margin-left: 3px; font-size: 0.68rem; }
+      #hsl-results-body tr { border-bottom: 1px solid var(--border); transition: background 0.1s ease; }
+      #hsl-results-body tr:hover { background: var(--surface2); }
+      #hsl-results-body td { padding: 8px 10px; vertical-align: middle; }
+      .hsl-company { font-weight: 600; max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .hsl-num { font-family: 'DM Mono', monospace; text-align: right; color: var(--text); }
+      .hsl-num.hero { color: var(--accent); font-weight: 600; }
+      .hsl-contact-cell { color: var(--muted); font-size: 0.76rem; }
+      .hsl-lapsed-tag { display: inline-block; font-size: 0.65rem; font-weight: 700; padding: 2px 8px; border-radius: 20px; background: rgba(255,107,107,0.14); color: var(--danger); margin-left: 6px; letter-spacing: 0.02em; }
+      .hsl-active-tag { display: inline-block; font-size: 0.65rem; font-weight: 700; padding: 2px 8px; border-radius: 20px; background: var(--accent-dim); color: var(--accent); margin-left: 6px; letter-spacing: 0.02em; }
+      #hsl-drop-card.hsl-drag { border-color: var(--accent); background: var(--accent-dim); }
+      @media (max-width: 900px) {
+        #hsl-app > div[style*="flex"] { flex-direction: column; }
+        #hsl-filters { width: 100% !important; }
+        #hsl-stats-row { grid-template-columns: repeat(2,1fr) !important; }
+      }
+    </style>
     <div class="section-panel" id="panel-dataexplorer">
       <div class="section-scroll" style="padding:20px 24px">
         <div id="de-upload-phase">
@@ -8300,6 +8585,7 @@ const OEL_SEARCH_INDEX = [
   { id:'discuss',      label:'Discuss',           keywords:'message colleague quick message log note odoo discuss chat with a coworker' },
   { id:'support',      label:'Support',           keywords:'remote support launch remote tools session invite client help desk fix a client issue' },
   { id:'bounces',      label:'Bounce Manager',    keywords:'undeliverable bounced email list clear reschedule activities bad email address' },
+  { id:'salestargeting', label:'Sales Targeting', keywords:'historical sales lookup quickbooks quarterly target list rep focus lapsed dormant customers reactivate prospecting quarter' },
   { id:'dataexplorer', label:'Data Explorer',     keywords:'upload quickbooks export customer list sync review data import spreadsheet' },
   { id:'docs',         label:'Documents',         keywords:'w9 coi contract document library files attach paperwork' },
   { id:'reports',      label:'Reports',           keywords:'dashboard pipeline sales report commission rep stage revenue accounting aged ar top customers overdue invoices sales reporting' },
@@ -22909,7 +23195,7 @@ window.inboxTab = function(tab) {
     ['nav-quotedesk','Request Desk'],['nav-smartbuilder','Smart Builder'],['nav-quotes','Quotes'],['nav-templates','Templates'],
     ['nav-prospect','Prospecting'],['nav-catchup','Dormant Contacts'],['nav-vendor','Vendor Outreach'],
     ['nav-projects','Projects'],['nav-discuss','Discuss'],['nav-support','Support'],
-    ['nav-bounces','Bounces'],['nav-dataexplorer','Data Explorer'],['nav-docs','Documents'],
+    ['nav-bounces','Bounces'],['nav-salestargeting','Sales Targeting'],['nav-dataexplorer','Data Explorer'],['nav-docs','Documents'],
     ['nav-reports','Reports'],['nav-help','Help']
   ];
 
@@ -23067,6 +23353,7 @@ window.navTo = function(section) {
     docs:       {panel:'panel-docs',       title:'Documents',       hasSrc:false},
     bounces:    {panel:'panel-bounces',     title:'Bounce Manager',  hasSrc:false},
     dataexplorer:{panel:'panel-dataexplorer',title:'Data Explorer',   hasSrc:false},
+    salestargeting:{panel:'panel-salestargeting',title:'Sales Targeting', hasSrc:false},
     help:       {panel:'panel-help',        title:'Help & Guide',    hasSrc:false},
   };
   if (!NAV_PANELS[section]) return;
@@ -24571,6 +24858,23 @@ window.persTab = function(tab) {
     if (phase === 'columns')  { deRenderGrid(); deRenderSelTbl(); }
     if (phase === 'matching') { deStartMatching(); }
     if (phase === 'results')  { deRenderResults(); }
+  };
+
+  // In-memory handoff — used by Sales Targeting's "Move to Data Explorer" button
+  // to skip the export/re-upload round trip. Mirrors what deHandleUpload does
+  // after parsing a file, just fed with already-parsed rows instead.
+  window.deLoadRowsProgrammatically = function (rows, sourceLabel) {
+    if (!rows || !rows.length) return;
+    S.rows = rows;
+    S.cols = Object.keys(rows[0] || {});
+    S.sel = new Set();
+    S.assignments = {};
+    S.checked = new Set();
+    S.scheduled = new Set();
+    var banner = document.getElementById('de-file-banner');
+    if (banner) banner.textContent = (sourceLabel || 'Imported list') + '  x  ' + rows.length + ' rows  x  ' + S.cols.length + ' columns';
+    deTbl('de-preview-tbl', S.cols, rows.slice(0, 10));
+    deGoTo('preview');
   };
 
   window.deHandleUpload = async function (input) {
@@ -26129,4 +26433,572 @@ window.persTab = function(tab) {
 
 }());
 </script>
+<script>
+(function(){
+"use strict";
+
+/* ============================================================
+   HSL — Sales Targeting (ported from Historical Sales Lookup)
+   ============================================================ */
+const HSL = {
+  periods: [],
+  companies: [],
+  contacts: {},
+  filtered: [],
+  sortKey: 'periodTotal',
+  sortDir: 'desc',
+  page: 1,
+  pageSize: 100,
+  selectedYears: new Set(),
+  selectedQuarters: new Set(),
+};
+
+const HSL_MONTH_TO_Q = {
+  Jan:1, Feb:1, Mar:1, Apr:2, May:2, Jun:2,
+  Jul:3, Aug:3, Sep:3, Oct:4, Nov:4, Dec:4
+};
+
+const HSL_STORAGE_KEY = 'oel_hsl_dataset_v1';
+const HSL_CONTACTS_KEY = 'oel_hsl_contacts_v1';
+
+function hslEl(id){ return document.getElementById(id); }
+function hslMoney(n){
+  if (n === null || n === undefined || isNaN(n)) return '$0';
+  const sign = n < 0 ? '-' : '';
+  n = Math.abs(n);
+  return sign + '$' + n.toLocaleString('en-US', {maximumFractionDigits:0});
+}
+function hslNormName(s){
+  return String(s || '')
+    .toLowerCase()
+    .replace(/[.,()\/&]/g, ' ')
+    .replace(/\binc\b|\bllc\b|\bltd\b|\bcorp\b|\bco\b/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+function hslParseHeaderLabel(raw){
+  const m = String(raw).match(/^([A-Za-z]{3})\s+\d{1,2},\s*(\d{2,4})$/);
+  if (!m) return null;
+  const mon = m[1];
+  let yr = parseInt(m[2], 10);
+  if (yr < 100) yr += 2000;
+  const q = HSL_MONTH_TO_Q[mon];
+  if (!q) return null;
+  return { year: yr, quarter: q, label: 'Q' + q + ' ' + yr };
+}
+function hslEscapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* ============================================================
+   Parsing — accepts a workbook (SheetJS) from .xlsx/.xls/.csv
+   ============================================================ */
+function hslParseWorkbook(wb){
+  const sheetName = wb.SheetNames[0];
+  const sheet = wb.Sheets[sheetName];
+  const rows = XLSX.utils.sheet_to_json(sheet, {header:1, raw:true, defval:null});
+  if (!rows.length) throw new Error('Empty sheet.');
+
+  let headerRowIdx = -1, headerCells = null;
+  for (let r = 0; r < Math.min(rows.length, 10); r++){
+    const row = rows[r];
+    const hits = row.filter(c => hslParseHeaderLabel(c)).length;
+    if (hits >= 2){ headerRowIdx = r; headerCells = row; break; }
+  }
+  if (headerRowIdx === -1) throw new Error('Could not find a quarterly header row (e.g. "Mar 31, 24").');
+
+  const periodCols = [];
+  let totalColIdx = -1;
+  headerCells.forEach((cell, idx) => {
+    const p = hslParseHeaderLabel(cell);
+    if (p) periodCols.push({ colIdx: idx, year: p.year, quarter: p.quarter, label: p.label });
+    else if (String(cell||'').trim().toUpperCase() === 'TOTAL') totalColIdx = idx;
+  });
+  if (!periodCols.length) throw new Error('No quarterly columns detected.');
+
+  // Company name column = the column immediately before the first period column
+  // (QuickBooks pivot exports typically put it one or two columns in; scan the
+  // header row's non-period, non-total, non-null cells before periods start)
+  const firstPeriodCol = periodCols[0].colIdx;
+  let nameColIdx = firstPeriodCol - 1;
+  if (nameColIdx < 0) nameColIdx = 0;
+
+  const companies = [];
+  for (let r = headerRowIdx + 1; r < rows.length; r++){
+    const row = rows[r];
+    if (!row) continue;
+    const rawName = row[nameColIdx];
+    if (rawName === null || rawName === undefined || String(rawName).trim() === '') continue;
+    const nameStr = String(rawName).trim();
+    if (nameStr.toUpperCase() === 'TOTAL') continue;
+
+    const qVals = periodCols.map(p => {
+      const v = row[p.colIdx];
+      const n = typeof v === 'number' ? v : parseFloat(v);
+      return isNaN(n) ? 0 : n;
+    });
+    let allTimeTotal;
+    if (totalColIdx >= 0 && typeof row[totalColIdx] === 'number'){
+      allTimeTotal = row[totalColIdx];
+    } else {
+      allTimeTotal = qVals.reduce((a,b) => a+b, 0);
+    }
+    if (allTimeTotal === 0 && qVals.every(v => v === 0)) {
+      if (nameStr.length <= 1) continue;
+    }
+
+    let lastOrderIdx = -1;
+    for (let i = qVals.length - 1; i >= 0; i--){
+      if (qVals[i] !== 0){ lastOrderIdx = i; break; }
+    }
+
+    companies.push({ name: nameStr, key: hslNormName(nameStr), q: qVals, allTimeTotal: allTimeTotal, lastOrderIdx: lastOrderIdx });
+  }
+
+  const periods = periodCols.map((p, i) => ({ year: p.year, quarter: p.quarter, label: p.label, colIndex: i, _origIdx: p.colIdx }));
+
+  return { periods, companies };
+}
+
+function hslParseContactsWorkbook(wb){
+  const sheetName = wb.SheetNames[0];
+  const sheet = wb.Sheets[sheetName];
+  const rows = XLSX.utils.sheet_to_json(sheet, {defval:''});
+  const out = {};
+  rows.forEach(row => {
+    const keys = Object.keys(row);
+    const findKey = (needles) => keys.find(k => needles.some(n => k.toLowerCase().includes(n)));
+    const nameKey = findKey(['company','customer','name']);
+    const contactKey = findKey(['contact']);
+    const phoneKey = findKey(['phone']);
+    const emailKey = findKey(['email']);
+    if (!nameKey || !row[nameKey]) return;
+    const key = hslNormName(row[nameKey]);
+    out[key] = {
+      contact: contactKey ? String(row[contactKey]||'').trim() : '',
+      phone: phoneKey ? String(row[phoneKey]||'').trim() : '',
+      email: emailKey ? String(row[emailKey]||'').trim() : '',
+    };
+  });
+  return out;
+}
+
+/* ============================================================
+   Persistence
+   ============================================================ */
+function hslSaveDataset(){
+  try {
+    localStorage.setItem(HSL_STORAGE_KEY, JSON.stringify({ periods: HSL.periods, companies: HSL.companies }));
+  } catch(e){}
+}
+function hslLoadCachedDataset(){
+  try {
+    const raw = localStorage.getItem(HSL_STORAGE_KEY);
+    if (!raw) return false;
+    const data = JSON.parse(raw);
+    if (!data.periods || !data.companies) return false;
+    HSL.periods = data.periods;
+    HSL.companies = data.companies;
+    return true;
+  } catch(e){ return false; }
+}
+function hslSaveContacts(){
+  try { localStorage.setItem(HSL_CONTACTS_KEY, JSON.stringify(HSL.contacts)); } catch(e){}
+}
+function hslLoadCachedContacts(){
+  try {
+    const raw = localStorage.getItem(HSL_CONTACTS_KEY);
+    if (raw) HSL.contacts = JSON.parse(raw);
+  } catch(e){}
+}
+
+/* ============================================================
+   Filtering / sorting / stats
+   ============================================================ */
+function hslActivePeriodIndices(){
+  const yearsOn = HSL.selectedYears.size > 0;
+  const quartersOn = HSL.selectedQuarters.size > 0;
+  const idxs = [];
+  HSL.periods.forEach(p => {
+    const yearOk = !yearsOn || HSL.selectedYears.has(p.year);
+    const qOk = !quartersOn || HSL.selectedQuarters.has(p.quarter);
+    if (yearOk && qOk) idxs.push(p.colIndex);
+  });
+  return idxs;
+}
+
+function hslComputeFiltered(){
+  const idxs = hslActivePeriodIndices();
+  const periodFilterActive = HSL.selectedYears.size > 0 || HSL.selectedQuarters.size > 0;
+  const searchTerm = hslEl('hsl-search-input').value.trim().toLowerCase();
+  const minSpend = parseFloat(hslEl('hsl-min-spend').value);
+  const recency = hslEl('hsl-recency-select').value;
+  const lastPeriodIdx = HSL.periods.length - 1;
+
+  const out = [];
+  for (const c of HSL.companies){
+    if (searchTerm && !c.name.toLowerCase().includes(searchTerm)) continue;
+
+    let periodTotal = 0, activeQuarters = 0;
+    for (const i of idxs){
+      const v = c.q[i];
+      periodTotal += v;
+      if (v !== 0) activeQuarters++;
+    }
+
+    if (periodFilterActive && activeQuarters === 0) continue;
+    if (!isNaN(minSpend) && periodTotal < minSpend) continue;
+
+    if (recency !== 'any'){
+      const gap = c.lastOrderIdx === -1 ? Infinity : (lastPeriodIdx - c.lastOrderIdx);
+      if (recency === '4' && !(gap <= 4)) continue;
+      if (recency === '8' && !(gap <= 8)) continue;
+      if (recency === '12' && !(gap <= 12)) continue;
+      if (recency === 'lapsed12' && !(gap >= 12)) continue;
+      if (recency === 'lapsed20' && !(gap >= 20)) continue;
+    }
+
+    const contact = HSL.contacts[c.key] || null;
+    const avgPerQtr = activeQuarters > 0 ? periodTotal / activeQuarters : 0;
+
+    out.push({
+      name: c.name, periodTotal, allTimeTotal: c.allTimeTotal, activeQuarters, avgPerQtr,
+      lastOrderIdx: c.lastOrderIdx,
+      lastOrderLabel: c.lastOrderIdx === -1 ? '—' : HSL.periods[c.lastOrderIdx].label,
+      contact
+    });
+  }
+
+  const dir = HSL.sortDir === 'asc' ? 1 : -1;
+  const key = HSL.sortKey;
+  out.sort((a,b) => {
+    if (key === 'name') return dir * a.name.localeCompare(b.name);
+    if (key === 'lastOrder') return dir * ((a.lastOrderIdx) - (b.lastOrderIdx));
+    return dir * ((a[key] || 0) - (b[key] || 0));
+  });
+
+  HSL.filtered = out;
+  HSL.page = 1;
+}
+
+/* ============================================================
+   Rendering
+   ============================================================ */
+function hslRenderYearChips(){
+  const years = Array.from(new Set(HSL.periods.map(p => p.year))).sort((a,b)=>b-a);
+  const wrap = hslEl('hsl-year-chips');
+  wrap.innerHTML = '';
+  years.forEach(y => {
+    const chip = document.createElement('div');
+    chip.className = 'hsl-chip';
+    chip.textContent = y;
+    chip.dataset.year = y;
+    chip.addEventListener('click', () => {
+      if (HSL.selectedYears.has(y)) HSL.selectedYears.delete(y);
+      else HSL.selectedYears.add(y);
+      chip.classList.toggle('on');
+      hslRefresh();
+    });
+    wrap.appendChild(chip);
+  });
+}
+
+function hslRenderStats(){
+  const rows = HSL.filtered;
+  hslEl('hsl-stat-count').textContent = rows.length.toLocaleString();
+  const periodSum = rows.reduce((a,r) => a + r.periodTotal, 0);
+  const allTimeSum = rows.reduce((a,r) => a + r.allTimeTotal, 0);
+  const activeCount = rows.filter(r => r.activeQuarters > 0).length;
+  hslEl('hsl-stat-period-total').textContent = hslMoney(periodSum);
+  hslEl('hsl-stat-alltime-total').textContent = hslMoney(allTimeSum);
+  hslEl('hsl-stat-active').textContent = activeCount.toLocaleString();
+}
+
+function hslRenderFilterSummary(){
+  const yearsOn = HSL.selectedYears.size > 0;
+  const quartersOn = HSL.selectedQuarters.size > 0;
+  const yearsText = yearsOn ? Array.from(HSL.selectedYears).sort((a,b)=>a-b).join(', ') : 'All years';
+  const qLabels = {1:'Q1',2:'Q2',3:'Q3',4:'Q4'};
+  const quartersText = quartersOn ? Array.from(HSL.selectedQuarters).sort().map(q=>qLabels[q]).join(', ') : 'All quarters';
+  let extra = [];
+  const searchTerm = hslEl('hsl-search-input').value.trim();
+  if (searchTerm) extra.push(`name contains "${searchTerm}"`);
+  const minSpend = hslEl('hsl-min-spend').value;
+  if (minSpend) extra.push(`min ${hslMoney(parseFloat(minSpend))}`);
+  const recency = hslEl('hsl-recency-select').value;
+  if (recency !== 'any') extra.push(hslEl('hsl-recency-select').selectedOptions[0].textContent.toLowerCase());
+  const extraText = extra.length ? ' · ' + extra.join(' · ') : '';
+  hslEl('hsl-active-filter-summary').textContent = `Showing: ${yearsText} · ${quartersText}${extraText}`;
+}
+
+function hslRenderTable(){
+  const body = hslEl('hsl-results-body');
+  body.innerHTML = '';
+  const hasContacts = Object.keys(HSL.contacts).length > 0;
+  const contactColHeader = document.querySelector('#panel-salestargeting .hsl-contact-col');
+  if (contactColHeader) contactColHeader.style.display = hasContacts ? '' : 'none';
+
+  const total = HSL.filtered.length;
+  const start = (HSL.page - 1) * HSL.pageSize;
+  const pageRows = HSL.filtered.slice(start, start + HSL.pageSize);
+
+  hslEl('hsl-no-results').style.display = total === 0 ? 'block' : 'none';
+
+  const lastPeriodIdx = HSL.periods.length - 1;
+  pageRows.forEach(r => {
+    const tr = document.createElement('tr');
+    const gap = r.lastOrderIdx === -1 ? Infinity : (lastPeriodIdx - r.lastOrderIdx);
+    const tag = gap === Infinity ? '' :
+      gap >= 12 ? '<span class="hsl-lapsed-tag">LAPSED</span>' :
+      gap <= 2 ? '<span class="hsl-active-tag">ACTIVE</span>' : '';
+
+    let contactCell = '';
+    if (hasContacts){
+      const c = r.contact;
+      contactCell = c
+        ? `<td class="hsl-contact-cell">${hslEscapeHtml(c.contact||'')}${c.phone ? ' · '+hslEscapeHtml(c.phone):''}${c.email ? '<br>'+hslEscapeHtml(c.email):''}</td>`
+        : `<td class="hsl-contact-cell">—</td>`;
+    }
+
+    tr.innerHTML = `
+      <td class="hsl-company" title="${hslEscapeHtml(r.name)}">${hslEscapeHtml(r.name)}</td>
+      <td>${r.lastOrderLabel}${tag}</td>
+      ${contactCell}
+      <td class="hsl-num hero">${hslMoney(r.periodTotal)}</td>
+      <td class="hsl-num">${hslMoney(r.allTimeTotal)}</td>
+      <td class="hsl-num">${r.activeQuarters}</td>
+      <td class="hsl-num">${r.activeQuarters ? hslMoney(r.avgPerQtr) : '—'}</td>
+    `;
+    body.appendChild(tr);
+  });
+
+  const pages = Math.max(1, Math.ceil(total / HSL.pageSize));
+  hslEl('hsl-pager-label').textContent = `Page ${HSL.page} of ${pages} · ${total.toLocaleString()} companies`;
+  hslEl('hsl-results-count-label').textContent = `${total.toLocaleString()} match${total===1?'':'es'}`;
+  hslEl('hsl-prev-page').disabled = HSL.page <= 1;
+  hslEl('hsl-next-page').disabled = HSL.page >= pages;
+
+  document.querySelectorAll('#panel-salestargeting thead th[data-sort]').forEach(th => {
+    const arrow = th.querySelector('.hsl-arrow');
+    if (th.dataset.sort === HSL.sortKey) arrow.textContent = HSL.sortDir === 'asc' ? '▲' : '▼';
+    else arrow.textContent = '';
+  });
+}
+
+function hslRefresh(){
+  hslComputeFiltered();
+  hslRenderStats();
+  hslRenderFilterSummary();
+  hslRenderTable();
+}
+
+/* ============================================================
+   Export
+   ============================================================ */
+function hslBuildExportRows(){
+  const hasContacts = Object.keys(HSL.contacts).length > 0;
+  const header = ['Company Name', 'Last Order', hasContacts ? 'Contact' : null, hasContacts ? 'Phone' : null, hasContacts ? 'Email' : null, 'Period Total', 'All-Time Total', 'Active Quarters in Period'].filter(Boolean);
+  const rows = HSL.filtered.map(r => {
+    const row = [r.name, r.lastOrderLabel];
+    if (hasContacts){
+      row.push(r.contact ? (r.contact.contact||'') : '');
+      row.push(r.contact ? (r.contact.phone||'') : '');
+      row.push(r.contact ? (r.contact.email||'') : '');
+    }
+    row.push(Number(r.periodTotal.toFixed(2)));
+    row.push(Number(r.allTimeTotal.toFixed(2)));
+    row.push(r.activeQuarters);
+    return row;
+  });
+  return { header, rows };
+}
+
+function hslExportFiltered(){
+  const { header, rows } = hslBuildExportRows();
+  const ws = XLSX.utils.aoa_to_sheet([header, ...rows]);
+  ws['!cols'] = header.map((h,i) => ({wch: i===0 ? 32 : 16}));
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Filtered Results');
+  const stamp = new Date().toISOString().slice(0,10);
+  XLSX.writeFile(wb, `sales-targeting_${stamp}.xlsx`);
+}
+
+/* ============================================================
+   Move to Data Explorer — in-memory handoff, no export/re-upload
+   ============================================================ */
+function hslMoveToDataExplorer(){
+  if (!HSL.filtered.length) { alert('No rows in the current filtered list — adjust your filters first.'); return; }
+  const { header, rows } = hslBuildExportRows();
+  const objRows = rows.map(r => {
+    const obj = {};
+    header.forEach((h, i) => { obj[h] = r[i]; });
+    return obj;
+  });
+  if (typeof window.deLoadRowsProgrammatically !== 'function') {
+    alert('Data Explorer bridge is not available.');
+    return;
+  }
+  window.deLoadRowsProgrammatically(objRows, 'Sales Targeting list — ' + objRows.length + ' companies');
+  if (typeof navTo === 'function') navTo('dataexplorer');
+}
+
+/* ============================================================
+   File handling
+   ============================================================ */
+function hslHandleFile(file, isContacts){
+  const reader = new FileReader();
+  reader.onload = function(e){
+    try {
+      const data = new Uint8Array(e.target.result);
+      const wb = XLSX.read(data, {type:'array'});
+      if (isContacts){
+        HSL.contacts = Object.assign(HSL.contacts, hslParseContactsWorkbook(wb));
+        hslSaveContacts();
+        hslEl('hsl-contact-merge-status').textContent = `Merged contact info for ${Object.keys(HSL.contacts).length} companies.`;
+        hslRefresh();
+      } else {
+        const { periods, companies } = hslParseWorkbook(wb);
+        HSL.periods = periods;
+        HSL.companies = companies;
+        hslSaveDataset();
+        hslActivateApp();
+      }
+    } catch(err){
+      alert('Could not parse that file: ' + err.message);
+      console.error(err);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function hslActivateApp(){
+  hslEl('hsl-landing').style.display = 'none';
+  hslEl('hsl-app').style.display = 'block';
+  const years = Array.from(new Set(HSL.periods.map(p=>p.year)));
+  hslEl('hsl-dataset-sub').textContent = `${HSL.companies.length.toLocaleString()} companies · ${years.length} years · ${HSL.periods.length} quarterly periods`;
+  HSL.selectedYears = new Set();
+  HSL.selectedQuarters = new Set();
+  hslRenderYearChips();
+  hslRefresh();
+}
+
+/* ============================================================
+   Wire up UI
+   ============================================================ */
+function hslInit(){
+  const dropCard = hslEl('hsl-drop-card');
+  ['dragenter','dragover'].forEach(evt => dropCard.addEventListener(evt, e => {
+    e.preventDefault(); dropCard.classList.add('hsl-drag');
+  }));
+  ['dragleave','drop'].forEach(evt => dropCard.addEventListener(evt, e => {
+    e.preventDefault(); dropCard.classList.remove('hsl-drag');
+  }));
+  dropCard.addEventListener('drop', e => {
+    const f = e.dataTransfer.files[0];
+    if (f) hslHandleFile(f, false);
+  });
+  hslEl('hsl-pick-file-btn').addEventListener('click', () => hslEl('hsl-file-input').click());
+  hslEl('hsl-file-input').addEventListener('change', e => {
+    if (e.target.files[0]) hslHandleFile(e.target.files[0], false);
+  });
+
+  hslEl('hsl-load-contacts-btn').addEventListener('click', () => {
+    const input = document.createElement('input');
+    input.type = 'file'; input.accept = '.xlsx,.xls,.csv';
+    input.addEventListener('change', e => { if (e.target.files[0]) hslHandleFile(e.target.files[0], true); });
+    input.click();
+  });
+
+  hslEl('hsl-reload-btn').addEventListener('click', () => hslEl('hsl-reload-modal').classList.remove('hidden'));
+  hslEl('hsl-reload-cancel').addEventListener('click', () => hslEl('hsl-reload-modal').classList.add('hidden'));
+  hslEl('hsl-reload-cancel-x').addEventListener('click', () => hslEl('hsl-reload-modal').classList.add('hidden'));
+  hslEl('hsl-reload-confirm').addEventListener('click', () => {
+    hslEl('hsl-reload-modal').classList.add('hidden');
+    hslEl('hsl-app').style.display = 'none';
+    hslEl('hsl-landing').style.display = 'block';
+    hslEl('hsl-file-input').value = '';
+  });
+
+  hslEl('hsl-search-input').addEventListener('input', hslRefresh);
+  hslEl('hsl-min-spend').addEventListener('input', hslRefresh);
+  hslEl('hsl-recency-select').addEventListener('change', hslRefresh);
+  document.querySelectorAll('#hsl-quarter-chips .hsl-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const q = parseInt(chip.dataset.q, 10);
+      if (HSL.selectedQuarters.has(q)) HSL.selectedQuarters.delete(q);
+      else HSL.selectedQuarters.add(q);
+      chip.classList.toggle('on');
+      hslRefresh();
+    });
+  });
+  hslEl('hsl-years-all').addEventListener('click', () => {
+    HSL.selectedYears = new Set(HSL.periods.map(p=>p.year));
+    document.querySelectorAll('#hsl-year-chips .hsl-chip').forEach(c => c.classList.add('on'));
+    hslRefresh();
+  });
+  hslEl('hsl-years-none').addEventListener('click', () => {
+    HSL.selectedYears = new Set();
+    document.querySelectorAll('#hsl-year-chips .hsl-chip').forEach(c => c.classList.remove('on'));
+    hslRefresh();
+  });
+  hslEl('hsl-years-last3').addEventListener('click', () => {
+    const years = Array.from(new Set(HSL.periods.map(p=>p.year))).sort((a,b)=>b-a).slice(0,3);
+    HSL.selectedYears = new Set(years);
+    document.querySelectorAll('#hsl-year-chips .hsl-chip').forEach(c => {
+      c.classList.toggle('on', years.includes(parseInt(c.dataset.year,10)));
+    });
+    hslRefresh();
+  });
+
+  document.querySelectorAll('#panel-salestargeting thead th[data-sort]').forEach(th => {
+    th.addEventListener('click', () => {
+      const key = th.dataset.sort;
+      if (HSL.sortKey === key) HSL.sortDir = HSL.sortDir === 'asc' ? 'desc' : 'asc';
+      else { HSL.sortKey = key; HSL.sortDir = key === 'name' ? 'asc' : 'desc'; }
+      hslRefresh();
+    });
+  });
+
+  hslEl('hsl-reset-filters').addEventListener('click', () => {
+    hslEl('hsl-search-input').value = '';
+    hslEl('hsl-min-spend').value = '';
+    hslEl('hsl-recency-select').value = 'any';
+    HSL.sortKey = 'periodTotal'; HSL.sortDir = 'desc';
+    HSL.selectedYears = new Set();
+    HSL.selectedQuarters = new Set();
+    document.querySelectorAll('#panel-salestargeting .hsl-chip').forEach(c => c.classList.remove('on'));
+    hslRefresh();
+  });
+
+  hslEl('hsl-prev-page').addEventListener('click', () => { if (HSL.page>1){HSL.page--; hslRenderTable();} });
+  hslEl('hsl-next-page').addEventListener('click', () => {
+    const pages = Math.max(1, Math.ceil(HSL.filtered.length / HSL.pageSize));
+    if (HSL.page<pages){HSL.page++; hslRenderTable();}
+  });
+
+  const pageSizes = [50,100,250,500];
+  hslEl('hsl-page-size-btn').addEventListener('click', () => {
+    const idx = pageSizes.indexOf(HSL.pageSize);
+    HSL.pageSize = pageSizes[(idx+1) % pageSizes.length];
+    hslEl('hsl-page-size-btn').textContent = HSL.pageSize + ' rows / page';
+    HSL.page = 1;
+    hslRenderTable();
+  });
+
+  hslEl('hsl-export-btn').addEventListener('click', hslExportFiltered);
+  hslEl('hsl-move-to-de-btn').addEventListener('click', hslMoveToDataExplorer);
+
+  hslLoadCachedContacts();
+  if (hslLoadCachedDataset()){
+    hslActivateApp();
+    if (Object.keys(HSL.contacts).length){
+      hslEl('hsl-contact-merge-status').textContent = `Merged contact info for ${Object.keys(HSL.contacts).length} companies.`;
+    }
+  }
+}
+
+document.addEventListener('DOMContentLoaded', hslInit);
+})();
+</script>
+
 </body></html>
