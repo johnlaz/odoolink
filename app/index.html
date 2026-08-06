@@ -3,7 +3,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <meta name="oel-version" content="v14.2">
+  <meta name="oel-version" content="v14.4">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="mobile-web-app-capable" content="yes">
@@ -918,6 +918,12 @@
     <div class="sb-item" id="nav-vendor" onclick="navTo('vendor')" title="Vendor Outreach">
       <div class="sb-item-icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1l1.5 3 3.5.5-2.5 2.4.6 3.5L7 8.9l-3.1 1.5.6-3.5L2 4.5l3.5-.5z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"></path></svg></div>
       <span class="sb-item-label">Vendor Outreach</span>
+    </div>
+
+    <div class="sb-item" id="nav-massmail" onclick="navTo('massmail')" title="Mass Mail — batch marketing emails from an Odoo contact list">
+      <div class="sb-item-icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="2.5" width="12" height="9" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M1.5 3.5l5 3.8 5-3.8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 8.5l3 3M12 8.5l-3 3" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg></div>
+      <span class="sb-item-label">Mass Mail</span>
+      <span class="sb-badge" id="badge-massmail"></span>
     </div>
 
     <div class="sb-divider"></div>
@@ -2756,9 +2762,9 @@ Support Team"></textarea>
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
           <div>
             <div style="font-family:'DM Serif Display',serif;font-size:1.3rem;color:var(--text)">OEL Command</div>
-            <div style="font-size:0.75rem;color:var(--muted);margin-top:2px">Quick Reference Guide · v14.2</div>
+            <div style="font-size:0.75rem;color:var(--muted);margin-top:2px">Quick Reference Guide · v14.4</div>
           </div>
-          <span style="font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace">v14.2</span>
+          <span style="font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace">v14.4</span>
         </div>
 
         <!-- Setup -->
@@ -2891,6 +2897,16 @@ Support Team"></textarea>
           </div>
         </div>
 
+        <!-- Mass Mail -->
+        <div class="card" style="margin-bottom:14px">
+          <div class="card-title">📨 Mass Mail</div>
+          <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
+            <p style="margin:0 0 4px">Upload an Excel/CSV contact list (needs a name column and an email column). Pick a batch size in increments of 5 up to 75 per batch — Outlook can't reliably take more than that through a single send.</p>
+            <p style="margin:0 0 4px"><strong style="color:var(--text)">Copy recipient list</strong> pastes cleanly into Outlook's To/CC/BCC field (default BCC) — more reliable than "Open in Outlook" for full-size batches.</p>
+            <p style="margin:0"><strong style="color:var(--text)">After you've actually sent it</strong>, click "I sent it — log to Odoo & schedule follow-up." It looks up each recipient by email, posts a note on their contact, and schedules a follow-up activity for whichever rep you assign.</p>
+          </div>
+        </div>
+
         <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);font-weight:500;margin:20px 0 10px 2px">Work & Comms</div>
 
         <!-- Projects -->
@@ -2974,7 +2990,7 @@ Support Team"></textarea>
         <div class="card" style="margin-bottom:14px">
           <div class="card-title">🔧 Troubleshooting</div>
           <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
-            <p style="margin:0 0 4px"><strong style="color:var(--text)">App not updating after deploy:</strong> Hard refresh Ctrl+Shift+R. Service worker cache key = oel-v14.2.</p>
+            <p style="margin:0 0 4px"><strong style="color:var(--text)">App not updating after deploy:</strong> Hard refresh Ctrl+Shift+R. Service worker cache key = oel-v14.4.</p>
             <p style="margin:0 0 4px"><strong style="color:var(--text)">Odoo calls failing:</strong> Confirm server.py is running on port 7842. Check status lights in Settings. All domains must be flat arrays for Odoo 19 — no nested | operators.</p>
             <p style="margin:0 0 4px"><strong style="color:var(--text)">IMAP not working:</strong> Confirm imap_server.py is running on port 7843. Gmail requires an App Password. Turbify uses standard IMAP credentials.</p>
             <p style="margin:0 0 4px"><strong style="color:var(--text)">AI drafts failing:</strong> Check Groq API key in Settings. Verify model name — default is qwen/qwen3.6-27b.</p>
@@ -2983,7 +2999,7 @@ Support Team"></textarea>
         </div>
 
         <div style="text-align:center;font-size:0.72rem;color:var(--muted);padding:12px 0">
-          OEL Command v14.2 · Built by Lazzaro · Powered by Groq AI + Odoo 19
+          OEL Command v14.4 · Built by Lazzaro · Powered by Groq AI + Odoo 19
         </div>
 
       </div>
@@ -3093,7 +3109,7 @@ Support Team"></textarea>
           <div class="card-title" style="font-family:'DM Serif Display',serif;font-size:1.2rem;margin-bottom:6px">Dashboard</div>
           <div class="card-subtitle" style="margin-bottom:16px">Pipeline, opportunities, and team performance from Odoo.</div>
           <div style="display:inline-flex;align-items:center;gap:6px;margin-bottom:8px">
-            <span style="font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace;box-shadow:0 0 8px rgba(201,168,76,0.35),0 0 20px rgba(201,168,76,0.12);animation:versionGlow 3s ease-in-out infinite alternate">OEL Command v14.2</span>
+            <span style="font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace;box-shadow:0 0 8px rgba(201,168,76,0.35),0 0 20px rgba(201,168,76,0.12);animation:versionGlow 3s ease-in-out infinite alternate">OEL Command v14.4</span>
             <span style="font-size:0.68rem;color:var(--muted)">Built by Lazzaro</span>
           </div>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px">
@@ -3715,6 +3731,97 @@ Thank you</textarea>
           <div class="card-title" style="margin-bottom:10px">Quote responses</div>
           <div id="vo-tracker-list" style="display:flex;flex-direction:column;gap:8px"></div>
         </div>
+      </div>
+    </div>
+
+    <div class="section-panel" id="panel-massmail">
+      <div class="section-scroll">
+
+        <!-- Upload -->
+        <div class="card" style="margin-bottom:14px">
+          <div class="card-title">Mass Mail</div>
+          <div class="card-subtitle">Upload an Excel/CSV contact list, compose once, and blast up to 75 recipients per batch through Outlook — then log the send and schedule a follow-up on every matching Odoo contact.</div>
+          <div id="mm-drop" ondragover="event.preventDefault();this.style.borderColor='var(--accent)'" ondragleave="this.style.borderColor='var(--border)'" ondrop="mmHandleDrop(event)" style="border:1.5px dashed var(--border);border-radius:10px;padding:22px;text-align:center;cursor:pointer" onclick="document.getElementById('mm-file-input').click()">
+            <input type="file" id="mm-file-input" accept=".xlsx,.xls,.csv" style="display:none" onchange="mmHandleUpload(this)">
+            <div style="font-size:0.85rem;color:var(--text);margin-bottom:4px">Drop an Excel or CSV file here, or click to browse</div>
+            <div style="font-size:0.74rem;color:var(--muted)">Needs a name column and an email column — headers can be named loosely (e.g. "Email", "E-mail Address", "Contact Name")</div>
+          </div>
+          <div id="mm-file-banner" style="font-size:0.78rem;color:var(--muted);margin-top:10px"></div>
+          <div id="mm-err-banner" style="display:none;font-size:0.78rem;color:var(--danger);margin-top:8px"></div>
+        </div>
+
+        <!-- Recipient list -->
+        <div class="card" id="mm-list-card" style="display:none;margin-bottom:14px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+            <div style="font-size:0.88rem;font-weight:500">Recipients</div>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <label style="display:flex;align-items:center;gap:6px;font-size:0.78rem;color:var(--muted)">Batch size
+                <select id="mm-batch-size" onchange="mmChangeBatchSize()" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-family:'DM Mono',monospace;font-size:0.78rem;outline:none"></select>
+              </label>
+              <button class="btn btn-ghost" onclick="mmToggleAll(true)" style="padding:5px 12px;font-size:0.76rem">Select all</button>
+              <button class="btn btn-ghost" onclick="mmToggleAll(false)" style="padding:5px 12px;font-size:0.76rem">Select none</button>
+              <div id="mm-batch-nav" style="display:flex;align-items:center;gap:6px"></div>
+            </div>
+          </div>
+          <div id="mm-list" style="max-height:320px;overflow-y:auto;display:flex;flex-direction:column;gap:4px"></div>
+          <div id="mm-count-line" style="font-size:0.78rem;color:var(--muted);margin-top:10px"></div>
+        </div>
+
+        <!-- Compose -->
+        <div class="card" id="mm-compose-card" style="display:none;margin-bottom:14px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+            <div style="font-size:0.88rem;font-weight:500">Compose</div>
+            <div style="display:flex;gap:14px;font-size:0.78rem;color:var(--muted)">
+              <label style="display:flex;align-items:center;gap:5px;cursor:pointer"><input type="radio" name="mm-placement" value="bcc" checked onchange="mmSaveState()"> BCC</label>
+              <label style="display:flex;align-items:center;gap:5px;cursor:pointer"><input type="radio" name="mm-placement" value="to" onchange="mmSaveState()"> To</label>
+              <label style="display:flex;align-items:center;gap:5px;cursor:pointer"><input type="radio" name="mm-placement" value="cc" onchange="mmSaveState()"> CC</label>
+            </div>
+          </div>
+          <div class="field" style="margin-bottom:8px"><label>Subject</label><input type="text" id="mm-subject" placeholder="e.g. New rental packages for Q3" oninput="mmSaveState()"></div>
+          <div class="field"><label>Message body</label>
+            <textarea id="mm-body" rows="7" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 13px;color:var(--text);font-family:'DM Mono',monospace;font-size:0.79rem;line-height:1.6;outline:none;resize:vertical" oninput="mmSaveState()" placeholder="Hi [Name],&#10;&#10;..."></textarea>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px">
+            <button class="btn btn-primary" onclick="mmCopyRecipients()" id="mm-copy-btn" style="padding:8px 18px;font-size:0.83rem;gap:5px">📋 Copy recipient list</button>
+            <button class="btn btn-ghost" onclick="mmOpenMailto()" style="padding:8px 16px;font-size:0.83rem">✉ Open in Outlook</button>
+            <div id="mm-compose-status" style="font-size:0.78rem;color:var(--muted)"></div>
+          </div>
+          <div style="font-size:0.72rem;color:var(--muted);margin-top:8px;line-height:1.5">Copy the list, paste it into Outlook's <span id="mm-placement-label">BCC</span> field, write or paste your message, and send it yourself — Outlook doesn't reliably accept 75 addresses through a single link. "Open in Outlook" works fine for smaller batches.</div>
+        </div>
+
+        <!-- Log & Follow-up -->
+        <div class="card" id="mm-log-card" style="display:none;margin-bottom:14px">
+          <div style="font-size:0.88rem;font-weight:500;margin-bottom:10px">Log to Odoo &amp; schedule follow-up</div>
+          <div class="card-subtitle" style="margin-bottom:12px">Once you've actually sent the email in Outlook, run this — it looks up each selected recipient in Odoo by email, posts a note on their contact record, and schedules a follow-up activity.</div>
+          <div class="form-grid" style="margin-bottom:12px">
+            <div class="field"><label>Activity type</label>
+              <select id="mm-activity-type" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.83rem;outline:none">
+                <option value="">— Default —</option>
+              </select>
+            </div>
+            <div class="field"><label>Assign to</label>
+              <select id="mm-activity-user" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.83rem;outline:none">
+                <option value="">— Me —</option>
+              </select>
+            </div>
+            <div class="field"><label>Follow-up due</label>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px" id="mm-date-chips">
+                <div class="lm-chip active" data-days="0" onclick="mmSelectActivityChip(this,0)" style="padding:4px 10px;border:1px solid var(--border);border-radius:6px;font-size:0.74rem;cursor:pointer">Today</div>
+                <div class="lm-chip" data-days="3" onclick="mmSelectActivityChip(this,3)" style="padding:4px 10px;border:1px solid var(--border);border-radius:6px;font-size:0.74rem;cursor:pointer">+3d</div>
+                <div class="lm-chip" data-days="7" onclick="mmSelectActivityChip(this,7)" style="padding:4px 10px;border:1px solid var(--border);border-radius:6px;font-size:0.74rem;cursor:pointer">+7d</div>
+                <div class="lm-chip" data-days="custom" onclick="mmSelectActivityChip(this,'custom')" style="padding:4px 10px;border:1px solid var(--border);border-radius:6px;font-size:0.74rem;cursor:pointer">Custom</div>
+              </div>
+              <input type="date" id="mm-activity-date" style="display:none;width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-family:'DM Mono',monospace;font-size:0.83rem;outline:none">
+            </div>
+          </div>
+          <div class="field" style="margin-bottom:12px"><label>Activity note <span style="color:var(--muted);font-weight:400">(optional)</span></label>
+            <textarea id="mm-activity-note" rows="2" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.83rem;outline:none;resize:vertical" placeholder="Follow up on marketing email…"></textarea>
+          </div>
+          <button class="btn btn-primary" onclick="mmLogAndSchedule()" id="mm-log-btn" style="padding:9px 20px;font-size:0.85rem">I sent it — log to Odoo &amp; schedule follow-up</button>
+          <div id="mm-log-progress" style="font-size:0.78rem;color:var(--muted);margin-top:10px"></div>
+          <div id="mm-log-results" style="display:flex;flex-direction:column;gap:4px;margin-top:8px;max-height:260px;overflow-y:auto"></div>
+        </div>
+
       </div>
     </div>
 
@@ -8581,6 +8688,7 @@ const OEL_SEARCH_INDEX = [
   { id:'prospect',     label:'Prospecting',       keywords:'find new prospects target criteria industry niche cold outreach new business find new customers' },
   { id:'catchup',      label:'Dormant Contacts',  keywords:'dormant stale deals no activity re-engage stalled opportunities open deals no movement follow up old deals' },
   { id:'vendor',       label:'Vendor Outreach',   keywords:'find subcontractors vendors blast quote request track responses rent from vendor mailto email a vendor about pricing' },
+  { id:'massmail',     label:'Mass Mail',         keywords:'marketing email bulk blast batch mass email excel upload contact list outlook bcc cc newsletter campaign send to many contacts' },
   { id:'projects',     label:'Projects',          keywords:'projects tasks todo brainstorm project management to-do list' },
   { id:'discuss',      label:'Discuss',           keywords:'message colleague quick message log note odoo discuss chat with a coworker' },
   { id:'support',      label:'Support',           keywords:'remote support launch remote tools session invite client help desk fix a client issue' },
@@ -23350,6 +23458,7 @@ window.navTo = function(section) {
     reports:    {panel:'panel-reports',    title:'Reports',      hasSrc:false},
     catchup:    {panel:'panel-catchup',    title:'Dormant Contacts',     hasSrc:false},
     vendor:     {panel:'panel-vendor',     title:'Vendor Outreach', hasSrc:false},
+    massmail:   {panel:'panel-massmail',   title:'Mass Mail',       hasSrc:false},
     docs:       {panel:'panel-docs',       title:'Documents',       hasSrc:false},
     bounces:    {panel:'panel-bounces',     title:'Bounce Manager',  hasSrc:false},
     dataexplorer:{panel:'panel-dataexplorer',title:'Data Explorer',   hasSrc:false},
@@ -23374,6 +23483,7 @@ window.navTo = function(section) {
   if (section === 'discuss') setTimeout(() => { if (typeof qmPopulateUsers === 'function') qmPopulateUsers(); if (typeof lazPopulatePipelineUsers === 'function') lazPopulatePipelineUsers(); }, 200);
   if (section === 'catchup') setTimeout(() => { if (typeof cuInit === 'function') cuInit(); }, 200);
   if (section === 'vendor') setTimeout(() => { if (typeof voLoadTracker === 'function') voLoadTracker(); }, 200);
+  if (section === 'massmail') setTimeout(() => { if (typeof mmInit === 'function') mmInit(); }, 200);
 };
 
 window.toggleSidebar = function() {
@@ -26998,6 +27108,384 @@ function hslInit(){
 }
 
 document.addEventListener('DOMContentLoaded', hslInit);
+})();
+</script>
+
+<!-- ── Mass Mail ─────────────────────────────────────────────────────────── -->
+<script>
+(function(){
+
+  let MM = { contacts: [], batchIdx: 0, batchSize: 75 };
+
+  function mmSaveState() {
+    try {
+      localStorage.setItem('oel_mm_draft', JSON.stringify({
+        subject: document.getElementById('mm-subject')?.value || '',
+        body: document.getElementById('mm-body')?.value || '',
+        placement: document.querySelector('input[name="mm-placement"]:checked')?.value || 'bcc',
+        batchSize: MM.batchSize,
+      }));
+    } catch(e) {}
+    const label = document.getElementById('mm-placement-label');
+    if (label) {
+      const p = document.querySelector('input[name="mm-placement"]:checked')?.value || 'bcc';
+      label.textContent = p.toUpperCase();
+    }
+  }
+
+  function mmPopulateBatchSizeSelect() {
+    const sel = document.getElementById('mm-batch-size');
+    if (!sel) return;
+    sel.innerHTML = '';
+    for (let n = 5; n <= 75; n += 5) {
+      const opt = document.createElement('option');
+      opt.value = n;
+      opt.textContent = n + (n === 75 ? ' (max)' : '');
+      sel.appendChild(opt);
+    }
+    sel.value = MM.batchSize;
+  }
+
+  window.mmChangeBatchSize = function() {
+    const sel = document.getElementById('mm-batch-size');
+    const n = parseInt(sel?.value) || 75;
+    MM.batchSize = Math.max(5, Math.min(75, n));
+    MM.batchIdx = 0;
+    mmSaveState();
+    mmRenderList();
+  };
+
+  window.mmInit = async function() {
+    // Restore draft
+    try {
+      const draft = JSON.parse(localStorage.getItem('oel_mm_draft') || 'null');
+      if (draft) {
+        if (document.getElementById('mm-subject')) document.getElementById('mm-subject').value = draft.subject || '';
+        if (document.getElementById('mm-body')) document.getElementById('mm-body').value = draft.body || '';
+        if (draft.placement) {
+          const r = document.querySelector(`input[name="mm-placement"][value="${draft.placement}"]`);
+          if (r) r.checked = true;
+        }
+        if (draft.batchSize) MM.batchSize = Math.max(5, Math.min(75, parseInt(draft.batchSize) || 75));
+      }
+    } catch(e) {}
+    mmPopulateBatchSizeSelect();
+    mmSaveState();
+    if (typeof loadActivityTypes === 'function') {
+      await loadActivityTypes();
+      const sel = document.getElementById('mm-activity-type');
+      if (sel && typeof _activityTypes !== 'undefined') {
+        sel.innerHTML = '<option value="">— Default —</option>' +
+          _activityTypes.map(t => `<option value="${t.id}">${escHtml(t.name)}</option>`).join('');
+      }
+    }
+    // Assignee dropdown — reuses the shared odooUsers cache
+    const userSel = document.getElementById('mm-activity-user');
+    if (userSel && typeof odooUsers !== 'undefined') {
+      userSel.innerHTML = '<option value="">— Me —</option>' +
+        odooUsers.map(u => `<option value="${u.id}">${escHtml(u.name)}</option>`).join('');
+    }
+    // Default due date = today
+    const dateInput = document.getElementById('mm-activity-date');
+    if (dateInput && !dateInput.value) dateInput.value = new Date().toISOString().split('T')[0];
+  };
+
+  function mmErr(msg) {
+    const el = document.getElementById('mm-err-banner');
+    if (el) { el.style.display = 'block'; el.textContent = msg; }
+  }
+
+  // ── Upload / parse ──────────────────────────────────────────────────────
+  window.mmHandleDrop = function(ev) {
+    ev.preventDefault();
+    ev.currentTarget.style.borderColor = 'var(--border)';
+    const file = ev.dataTransfer?.files?.[0];
+    if (!file) return;
+    const input = document.getElementById('mm-file-input');
+    const dt = new DataTransfer();
+    dt.items.add(file);
+    input.files = dt.files;
+    mmHandleUpload(input);
+  };
+
+  window.mmHandleUpload = async function(input) {
+    const file = input.files && input.files[0];
+    if (!file) return;
+    const errBanner = document.getElementById('mm-err-banner');
+    if (errBanner) errBanner.style.display = 'none';
+    try {
+      let rows = [];
+      if (file.name.toLowerCase().endsWith('.csv')) {
+        const lines = (await file.text()).trim().split('\n');
+        const hdrs = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+        for (let i = 1; i < lines.length; i++) {
+          if (!lines[i].trim()) continue;
+          const vals = lines[i].split(',').map(v => v.trim().replace(/^"|"$/g, ''));
+          const row = {};
+          hdrs.forEach((h, j) => row[h] = vals[j] || '');
+          rows.push(row);
+        }
+      } else {
+        if (typeof XLSX === 'undefined') { mmErr('Excel library not loaded — try a CSV file instead'); return; }
+        const wb = XLSX.read(await file.arrayBuffer(), { type: 'array' });
+        rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval: '' });
+        if (!rows.length) { mmErr('No data found in the first sheet'); return; }
+      }
+
+      const cols = Object.keys(rows[0] || {});
+      const emailCol = cols.find(c => /^e[\s\-_]?mail/i.test(c.trim()) || /email/i.test(c));
+      if (!emailCol) { mmErr('Couldn\'t find an email column. Rename the header to something like "Email".'); return; }
+      const nameCol = cols.find(c => /^(contact\s*)?name$/i.test(c.trim()))
+                    || cols.find(c => /name/i.test(c) && c !== emailCol);
+
+      const seen = new Set();
+      const contacts = [];
+      rows.forEach(r => {
+        const email = String(r[emailCol] || '').trim();
+        if (!email || !email.includes('@')) return;
+        const key = email.toLowerCase();
+        if (seen.has(key)) return;
+        seen.add(key);
+        contacts.push({
+          name: (nameCol ? String(r[nameCol] || '').trim() : '') || email.split('@')[0],
+          email,
+          selected: true,
+          status: '',
+        });
+      });
+
+      if (!contacts.length) { mmErr('No valid email addresses found in that file.'); return; }
+
+      MM.contacts = contacts;
+      MM.batchIdx = 0;
+      const banner = document.getElementById('mm-file-banner');
+      if (banner) banner.textContent = `${file.name} — ${contacts.length} contact${contacts.length!==1?'s':''} loaded`;
+
+      document.getElementById('mm-list-card').style.display = 'block';
+      document.getElementById('mm-compose-card').style.display = 'block';
+      document.getElementById('mm-log-card').style.display = 'block';
+      mmRenderList();
+    } catch(e) {
+      mmErr('Upload failed: ' + e.message);
+    }
+  };
+
+  // ── Batching / list rendering ───────────────────────────────────────────
+  function mmBatches() {
+    const out = [];
+    for (let i = 0; i < MM.contacts.length; i += MM.batchSize) out.push(MM.contacts.slice(i, i + MM.batchSize));
+    return out;
+  }
+
+  function mmCurrentBatch() {
+    return mmBatches()[MM.batchIdx] || [];
+  }
+
+  window.mmRenderList = function() {
+    const batches = mmBatches();
+    if (MM.batchIdx >= batches.length) MM.batchIdx = Math.max(0, batches.length - 1);
+    const batch = batches[MM.batchIdx] || [];
+    const startIdx = MM.batchIdx * MM.batchSize;
+
+    const listEl = document.getElementById('mm-list');
+    listEl.innerHTML = batch.map((c, i) => {
+      const globalIdx = startIdx + i;
+      const statusIcon = c.status === 'ok' ? '<span style="color:var(--success)">✓</span>'
+                        : c.status === 'nomatch' ? '<span style="color:var(--warn,#d99a3f)" title="No matching Odoo contact">⚠</span>'
+                        : c.status === 'err' ? '<span style="color:var(--danger)" title="Error logging this contact">✗</span>' : '';
+      return `<label style="display:flex;align-items:center;gap:9px;padding:6px 8px;border-radius:6px;font-size:0.82rem;cursor:pointer" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background='transparent'">
+        <input type="checkbox" ${c.selected ? 'checked' : ''} onchange="mmToggleOne(${globalIdx})">
+        <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(c.name)} <span style="color:var(--muted)">&lt;${escHtml(c.email)}&gt;</span></span>
+        <span style="width:16px;text-align:center">${statusIcon}</span>
+      </label>`;
+    }).join('');
+
+    // Batch nav
+    const navEl = document.getElementById('mm-batch-nav');
+    if (batches.length > 1) {
+      navEl.innerHTML = `
+        <button class="btn btn-ghost" onclick="mmPrevBatch()" ${MM.batchIdx===0?'disabled':''} style="padding:4px 10px;font-size:0.74rem">‹ Prev</button>
+        <span style="font-size:0.76rem;color:var(--muted)">Batch ${MM.batchIdx+1} of ${batches.length}</span>
+        <button class="btn btn-ghost" onclick="mmNextBatch()" ${MM.batchIdx===batches.length-1?'disabled':''} style="padding:4px 10px;font-size:0.74rem">Next ›</button>`;
+    } else {
+      navEl.innerHTML = '';
+    }
+
+    const selCount = batch.filter(c => c.selected).length;
+    const countLine = document.getElementById('mm-count-line');
+    countLine.textContent = `${selCount} of ${batch.length} selected in this batch` +
+      (batches.length > 1 ? ` · ${MM.contacts.length} total across ${batches.length} batches (${MM.batchSize}/batch)` : '');
+  };
+
+  window.mmToggleOne = function(globalIdx) {
+    if (MM.contacts[globalIdx]) MM.contacts[globalIdx].selected = !MM.contacts[globalIdx].selected;
+    mmRenderList();
+  };
+
+  window.mmToggleAll = function(state) {
+    mmCurrentBatch().forEach(c => c.selected = state);
+    mmRenderList();
+  };
+
+  window.mmPrevBatch = function() { if (MM.batchIdx > 0) { MM.batchIdx--; mmRenderList(); } };
+  window.mmNextBatch = function() { if (MM.batchIdx < mmBatches().length - 1) { MM.batchIdx++; mmRenderList(); } };
+
+  // ── Compose actions ─────────────────────────────────────────────────────
+  window.mmCopyRecipients = async function() {
+    const selected = mmCurrentBatch().filter(c => c.selected);
+    if (!selected.length) { alert('Select at least one recipient in this batch first.'); return; }
+    const list = selected.map(c => c.email).join('; ');
+    const statusEl = document.getElementById('mm-compose-status');
+    try {
+      await navigator.clipboard.writeText(list);
+      if (statusEl) { statusEl.style.color = 'var(--success)'; statusEl.textContent = `✓ Copied ${selected.length} address${selected.length!==1?'es':''} — paste into Outlook's ${document.querySelector('input[name="mm-placement"]:checked')?.value.toUpperCase()||'BCC'} field`; }
+    } catch(e) {
+      if (statusEl) { statusEl.style.color = 'var(--danger)'; statusEl.textContent = 'Clipboard blocked — select and copy manually: ' + list; }
+    }
+  };
+
+  window.mmOpenMailto = function() {
+    const selected = mmCurrentBatch().filter(c => c.selected);
+    if (!selected.length) { alert('Select at least one recipient in this batch first.'); return; }
+    if (selected.length > 20) {
+      if (!confirm(`${selected.length} recipients is a lot for a single mailto link — Outlook may truncate or reject the list. Use "Copy recipient list" instead for batches this size.\n\nTry opening it anyway?`)) return;
+    }
+    const placement = document.querySelector('input[name="mm-placement"]:checked')?.value || 'bcc';
+    const subject = document.getElementById('mm-subject')?.value || '';
+    const body = document.getElementById('mm-body')?.value || '';
+    const list = selected.map(c => c.email).join(',');
+    const params = new URLSearchParams();
+    if (subject) params.set('subject', subject);
+    if (body) params.set('body', body);
+    if (placement === 'cc') params.set('cc', list);
+    else if (placement === 'bcc') params.set('bcc', list);
+    let mailto = 'mailto:' + (placement === 'to' ? encodeURIComponent(list).replace(/%2C/g,',') : '') + '?' + params.toString();
+    window.location.href = mailto;
+  };
+
+  // ── Activity due-date chips (mirrors lead-modal pattern) ────────────────
+  window.mmSelectActivityChip = function(el, days) {
+    document.querySelectorAll('#mm-date-chips .lm-chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    const dateInput = document.getElementById('mm-activity-date');
+    if (days === 'custom') {
+      dateInput.style.display = 'block';
+      dateInput.focus();
+    } else {
+      dateInput.style.display = 'none';
+      const d = new Date(); d.setDate(d.getDate() + parseInt(days));
+      dateInput.value = d.toISOString().split('T')[0];
+    }
+  };
+
+  function mmActivityDeadline() {
+    const active = document.querySelector('#mm-date-chips .lm-chip.active');
+    const days = active ? active.dataset.days : '0';
+    if (days === 'custom') return document.getElementById('mm-activity-date').value || new Date().toISOString().split('T')[0];
+    const d = new Date(); d.setDate(d.getDate() + parseInt(days));
+    return d.toISOString().split('T')[0];
+  }
+
+  // ── Log to Odoo + schedule follow-up ────────────────────────────────────
+  async function mmFindPartnerByEmail(email) {
+    let partners = await odooExecute(odooUid, 'res.partner', 'search_read',
+      [[['email', '=ilike', email]]], { fields: ['id', 'name'], limit: 1 });
+    if (!partners || !partners.length) {
+      partners = await odooExecute(odooUid, 'res.partner', 'search_read',
+        [[['email', 'ilike', email]]], { fields: ['id', 'name'], limit: 1 });
+    }
+    return (partners && partners.length) ? partners[0] : null;
+  }
+
+  // Strip HTML noise (br/p/div tags, decorative line breaks, pasted entities) down
+  // to a single clean line — the chatter note should read like a note, not markup.
+  function mmCleanBodyText(text) {
+    if (!text) return '';
+    let t = text;
+    t = t.replace(/&nbsp;/gi, ' ').replace(/&amp;/gi, '&').replace(/&quot;/gi, '"')
+         .replace(/&#39;|&apos;/gi, "'").replace(/&lt;/gi, '<').replace(/&gt;/gi, '>');
+    t = t.replace(/<[^>]*>/g, ' ');       // drop all tags (br, p, div, span...)
+    t = t.replace(/\s+/g, ' ').trim();    // collapse every line/paragraph break to one space
+    return t;
+  }
+
+  // Minimal HTML escaping for the note body — deliberately leaves quotes alone
+  // so they render as normal punctuation instead of &quot;.
+  function mmEscMin(s) {
+    return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  window.mmLogAndSchedule = async function() {
+    if (!odooUid) { alert('Connect to Odoo first (Steps 1-2).'); return; }
+    const selected = mmCurrentBatch().filter(c => c.selected);
+    if (!selected.length) { alert('Select at least one recipient in this batch first.'); return; }
+
+    const subject = document.getElementById('mm-subject')?.value?.trim() || '(no subject)';
+    const rawBody = document.getElementById('mm-body')?.value?.trim() || '';
+    const cleanBody = mmCleanBodyText(rawBody);
+    const typeId = parseInt(document.getElementById('mm-activity-type')?.value) || null;
+    const assignedUserId = parseInt(document.getElementById('mm-activity-user')?.value) || odooUid;
+    const date = mmActivityDeadline();
+    const note = document.getElementById('mm-activity-note')?.value?.trim() || `Follow up on marketing email: ${subject}`;
+
+    const btn = document.getElementById('mm-log-btn');
+    const progressEl = document.getElementById('mm-log-progress');
+    const resultsEl = document.getElementById('mm-log-results');
+    if (btn) btn.disabled = true;
+    resultsEl.innerHTML = '';
+
+    let defaultTypeId = typeId;
+    if (!defaultTypeId) {
+      try {
+        const typeIds = await odooExecute(odooUid, 'mail.activity.type', 'search', [[['category', '=', 'default']]]);
+        if (typeIds?.length) defaultTypeId = typeIds[0];
+      } catch(e) {}
+    }
+
+    let partnerModelId = null;
+    try {
+      const modelIds = await odooExecute(odooUid, 'ir.model', 'search', [[['model', '=', 'res.partner']]]);
+      partnerModelId = modelIds?.[0] || null;
+    } catch(e) {}
+
+    const noteHtml = `Marketing email sent: "${mmEscMin(subject)}"<br><br>${mmEscMin(cleanBody)}`;
+
+    let ok = 0, nomatch = 0, err = 0;
+    for (let i = 0; i < selected.length; i++) {
+      const c = selected[i];
+      if (progressEl) progressEl.textContent = `Processing ${i+1} of ${selected.length}…`;
+      const row = document.createElement('div');
+      row.style.cssText = 'font-size:0.76rem;color:var(--muted)';
+      try {
+        const partner = await mmFindPartnerByEmail(c.email);
+        if (!partner) {
+          c.status = 'nomatch'; nomatch++;
+          row.innerHTML = `⚠ ${escHtml(c.email)} — no matching Odoo contact`;
+        } else {
+          await odooExecute(odooUid, 'res.partner', 'message_post', [[partner.id]], {
+            body: noteHtml, message_type: 'comment', subtype_xmlid: 'mail.mt_note',
+          });
+          const actVals = {
+            res_model_id: partnerModelId, res_id: partner.id, user_id: assignedUserId,
+            date_deadline: date, summary: `Follow-up: ${subject}`, note,
+          };
+          if (defaultTypeId) actVals.activity_type_id = defaultTypeId;
+          await odooExecute(odooUid, 'mail.activity', 'create', [actVals]);
+          c.status = 'ok'; ok++;
+          row.innerHTML = `✓ ${escHtml(c.name)} — logged &amp; follow-up scheduled for ${date}`;
+        }
+      } catch(e) {
+        c.status = 'err'; err++;
+        row.innerHTML = `✗ ${escHtml(c.email)} — ${escHtml(e.message || 'error')}`;
+      }
+      resultsEl.appendChild(row);
+    }
+
+    if (btn) btn.disabled = false;
+    if (progressEl) progressEl.textContent = `Done — ${ok} logged, ${nomatch} no Odoo match, ${err} failed`;
+    mmRenderList();
+  };
+
 })();
 </script>
 
