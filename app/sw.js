@@ -1,6 +1,6 @@
 // OdooLink App Service Worker
 // Scope: /odoolink/app/
-const CACHE_NAME = 'odoolink-app-v14';
+const CACHE_NAME = 'odoolink-app-v15';
 const STATIC_ASSETS = [
   '/odoolink/app/',
   '/odoolink/app/index.html',
