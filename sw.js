@@ -1,6 +1,6 @@
 // OdooLink Landing Page Service Worker
 // Scope: /odoolink/ — does NOT handle /odoolink/app/ (app has its own SW)
-const CACHE_NAME = 'odoolink-landing-v2.1';
+const CACHE_NAME = 'odoolink-landing-v2.2';
 const STATIC_ASSETS = [
   '/odoolink/',
   '/odoolink/index.html',
