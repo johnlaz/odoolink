@@ -3,7 +3,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <meta name="oel-version" content="v14.4">
+  <meta name="oel-version" content="v15.4">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="mobile-web-app-capable" content="yes">
@@ -61,6 +61,30 @@
   [data-theme="light"] {
     --bg: #f7f6f2; --surface: #ffffff; --surface2: #f0ede8;
     --border: #ddd9d0; --accent: #b8892a; --accent-dim: rgba(184,137,42,0.08);
+    --text: #1a1a1a; --muted: #888; --danger: #d94040;
+    --success: #1e9e58; --warning: #b87800; --cyan: #0077aa; --logo-ink: #fff;
+  }
+  [data-theme="lime-light"] {
+    --bg: #f7f6f2; --surface: #ffffff; --surface2: #f0ede8;
+    --border: #ddd9d0; --accent: #5c7a1a; --accent-dim: rgba(92,122,26,0.08);
+    --text: #1a1a1a; --muted: #888; --danger: #d94040;
+    --success: #1e9e58; --warning: #b87800; --cyan: #0077aa; --logo-ink: #fff;
+  }
+  [data-theme="cyan-light"] {
+    --bg: #f7f6f2; --surface: #ffffff; --surface2: #f0ede8;
+    --border: #ddd9d0; --accent: #0a7ea6; --accent-dim: rgba(10,126,166,0.08);
+    --text: #1a1a1a; --muted: #888; --danger: #d94040;
+    --success: #1e9e58; --warning: #b87800; --cyan: #0077aa; --logo-ink: #fff;
+  }
+  [data-theme="ember-light"] {
+    --bg: #f7f6f2; --surface: #ffffff; --surface2: #f0ede8;
+    --border: #ddd9d0; --accent: #b8541f; --accent-dim: rgba(184,84,31,0.08);
+    --text: #1a1a1a; --muted: #888; --danger: #d94040;
+    --success: #1e9e58; --warning: #b87800; --cyan: #0077aa; --logo-ink: #fff;
+  }
+  [data-theme="violet-light"] {
+    --bg: #f7f6f2; --surface: #ffffff; --surface2: #f0ede8;
+    --border: #ddd9d0; --accent: #7c3fb8; --accent-dim: rgba(124,63,184,0.08);
     --text: #1a1a1a; --muted: #888; --danger: #d94040;
     --success: #1e9e58; --warning: #b87800; --cyan: #0077aa; --logo-ink: #fff;
   }
@@ -425,25 +449,16 @@
   .theme-dot[data-t="lime"]   { background: #c8f04e; }
   .theme-dot[data-t="cyan"]   { background: #00d8ff; }
   .theme-dot[data-t="ember"]  { background: #ff7c2a; }
-  .theme-dot[data-t="light"]  { background: #b8892a; }
   .theme-dot[data-t="violet"] { background: #c77dff; }
-  .theme-dot[data-t="custom"] { background: conic-gradient(#ff6b6b,#ff7c2a,#f0c84e,#4ef0a0,#00d8ff,#c77dff,#ff6b6b); }
 
-  /* ── Custom color picker ── */
-  #laz-color-picker {
-    display: none; position: absolute;
-    top: calc(100% + 8px); right: 0;
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 12px; padding: 12px; z-index: 500;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.3); width: 260px;
+  /* ── Dark/Light mode toggle (in settings) ── */
+  .theme-mode-toggle {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 12px; border-radius: 20px; border: 1px solid var(--border);
+    background: var(--surface2); color: var(--text); font-size: 0.78rem;
+    font-family: 'DM Sans', sans-serif; cursor: pointer; transition: border-color 0.15s;
   }
-  #laz-color-picker.open { display: block; }
-  .laz-color-swatch {
-    width: 26px; height: 26px; border-radius: 50%; cursor: pointer;
-    border: 2px solid transparent; transition: transform 0.12s, border-color 0.12s; flex-shrink: 0;
-  }
-  .laz-color-swatch:hover { transform: scale(1.2); }
-  .laz-color-swatch.active { border-color: var(--text); }
+  .theme-mode-toggle:hover { border-color: var(--accent); }
 
   /* ── Gear item (settings list item) ── */
   .gear-item {
@@ -972,6 +987,19 @@
         </svg>
       </div>
       <span class="sb-item-label">Bounces</span>
+    </div>
+
+    <div class="sb-item" id="nav-expenses" onclick="navTo('expenses')" title="Expenses — review, approve, and report on employee expense reports">
+      <div class="sb-item-icon">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <rect x="1.5" y="2" width="11" height="10" rx="1.5" stroke="currentColor" stroke-width="1.2"/>
+          <path d="M4 5h6M4 7.3h6M4 9.6h3.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+          <circle cx="10.5" cy="10.2" r="2.2" fill="var(--accent)"/>
+          <path d="M9.5 10.2l0.7 0.7 1.3-1.4" stroke="var(--surface)" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <span class="sb-item-label">Expenses</span>
+      <span class="sb-badge" id="badge-expenses"></span>
     </div>
 
     <div class="sb-item" id="nav-salestargeting" onclick="navTo('salestargeting')" title="Sales Targeting — build a rep target list from historical sales">
@@ -2755,6 +2783,46 @@ Support Team"></textarea>
       </div>
     </div>
 
+    <!-- ── EXPENSES ──────────────────────────────────────────────────────── -->
+    <div class="section-panel" id="panel-expenses">
+      <div class="section-scroll">
+
+        <div class="card" style="margin-bottom:14px">
+          <div class="card-title">💳 Expenses</div>
+          <div class="card-subtitle">Review, approve, and refuse employee expense reports straight from Odoo — with a spend breakdown by category.</div>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px">
+            <select id="exp-employee" onchange="expLoad()" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.82rem;outline:none;cursor:pointer">
+              <option value="">All employees</option>
+            </select>
+            <select id="exp-state" onchange="expLoad()" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.82rem;outline:none;cursor:pointer">
+              <option value="">All statuses</option>
+              <option value="submit">Needs Approval</option>
+              <option value="approve">Approved</option>
+              <option value="post">Posted</option>
+              <option value="done">Paid</option>
+              <option value="cancel">Refused</option>
+              <option value="draft">Draft (not submitted)</option>
+            </select>
+            <input type="month" id="exp-month" onchange="expLoad()" title="Filter by submission month" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.82rem;outline:none;cursor:pointer">
+            <div style="flex:1"></div>
+            <div id="exp-status" style="font-size:0.78rem;color:var(--muted)"></div>
+          </div>
+        </div>
+
+        <div id="exp-summary" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px"></div>
+
+        <div class="card" id="exp-category-card" style="margin-bottom:14px;display:none">
+          <div style="font-size:0.82rem;font-weight:500;margin-bottom:8px">Spend by Category</div>
+          <div id="exp-category-list" style="display:flex;flex-direction:column;gap:6px"></div>
+        </div>
+
+        <div id="exp-list" style="display:flex;flex-direction:column;gap:10px">
+          <div style="padding:16px;text-align:center;color:var(--muted);font-size:0.82rem">Connect to Odoo, then open this tab to load expense reports.</div>
+        </div>
+
+      </div>
+    </div>
+
     <!-- ── HELP ──────────────────────────────────────────────────────────── -->
     <div class="section-panel" id="panel-help">
       <div class="section-scroll" style="padding:20px 24px">
@@ -2762,9 +2830,9 @@ Support Team"></textarea>
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
           <div>
             <div style="font-family:'DM Serif Display',serif;font-size:1.3rem;color:var(--text)">OEL Command</div>
-            <div style="font-size:0.75rem;color:var(--muted);margin-top:2px">Quick Reference Guide · v14.4</div>
+            <div style="font-size:0.75rem;color:var(--muted);margin-top:2px">Quick Reference Guide · v15.4</div>
           </div>
-          <span style="font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace">v14.4</span>
+          <span style="font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace">v15.4</span>
         </div>
 
         <!-- Setup -->
@@ -2947,6 +3015,16 @@ Support Team"></textarea>
           </div>
         </div>
 
+        <!-- Expenses -->
+        <div class="card" style="margin-bottom:14px">
+          <div class="card-title">💳 Expenses</div>
+          <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
+            <p style="margin:0 0 4px">Pulls expense reports from Odoo's Expenses module. Filter by employee, status, and submission month. "Needs Approval" is the default view — your queue.</p>
+            <p style="margin:0 0 4px">Expand a report to see its line items and receipts. <strong style="color:var(--text)">✓ Approve</strong> and <strong style="color:var(--text)">✕ Refuse</strong> act directly on the Odoo record — refuse asks for a reason first.</p>
+            <p style="margin:0">The <strong style="color:var(--text)">Spend by Category</strong> card totals whatever's currently filtered, grouped by expense product/category.</p>
+          </div>
+        </div>
+
         <!-- Sales Targeting -->
         <div class="card" style="margin-bottom:14px">
           <div class="card-title">🎯 Sales Targeting</div>
@@ -2982,7 +3060,7 @@ Support Team"></textarea>
           <div class="card-title">📊 Reports</div>
           <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
             <p style="margin:0 0 4px"><strong style="color:var(--text)">Dashboard:</strong> 8 CRM cards + 4 accounting cards, click any for drill-down. ⚡ Daily AI Briefing summarizes pipeline, wins, due activities, stale deals. Quick reports: Aged AR · Top Customers (YTD) · Overdue Notices — print-ready.</p>
-            <p style="margin:0"><strong style="color:var(--text)">Sales Reporting:</strong> filter rental/sales orders by rep, order type, stage, and delivery month, sortable on every column. <strong style="color:var(--text)">Commission estimate</strong> toggle restricts to confirmed orders, switches to delivery-date filtering, and totals products-only revenue (services excluded) — the delivery-date field auto-detects from your Odoo schema and can be overridden in the dropdown if it guesses wrong.</p>
+            <p style="margin:0"><strong style="color:var(--text)">Sales Reporting:</strong> filter rental/sales orders by rep, order type, stage, and delivery month, sortable on every column. <strong style="color:var(--text)">Commission estimate</strong> toggle restricts to confirmed orders, switches to delivery-date filtering, and totals goods-only revenue by <strong style="color:var(--text)">product category</strong> (not product type) — use ⚙ Categories to mark which categories count as services, and the rate chips (5% / 7% / 10% / custom) to set the payout percentage. The delivery-date field auto-detects from your Odoo schema and can be overridden in the dropdown if it guesses wrong.</p>
           </div>
         </div>
 
@@ -2990,8 +3068,8 @@ Support Team"></textarea>
         <div class="card" style="margin-bottom:14px">
           <div class="card-title">🔧 Troubleshooting</div>
           <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
-            <p style="margin:0 0 4px"><strong style="color:var(--text)">App not updating after deploy:</strong> Hard refresh Ctrl+Shift+R. Service worker cache key = oel-v14.4.</p>
-            <p style="margin:0 0 4px"><strong style="color:var(--text)">Odoo calls failing:</strong> Confirm server.py is running on port 7842. Check status lights in Settings. All domains must be flat arrays for Odoo 19 — no nested | operators.</p>
+            <p style="margin:0 0 4px"><strong style="color:var(--text)">App not updating after deploy:</strong> Hard refresh Ctrl+Shift+R. Service worker cache key = oel-v15.4.</p>
+            <p style="margin:0 0 4px"><strong style="color:var(--text)">Odoo calls failing:</strong> Confirm server.py is running on port 7842. Check status lights in Settings. All domains must be flat arrays for Odoo 19 — no nested | operators. The header Connect button retries automatically (up to 3x) since the public CORS proxies it cycles through in Proxy mode can be individually flaky — "retry 1/2" in the status text is normal, not an error. If it still fails after retries, switch to Local Server mode in Settings.</p>
             <p style="margin:0 0 4px"><strong style="color:var(--text)">IMAP not working:</strong> Confirm imap_server.py is running on port 7843. Gmail requires an App Password. Turbify uses standard IMAP credentials.</p>
             <p style="margin:0 0 4px"><strong style="color:var(--text)">AI drafts failing:</strong> Check Groq API key in Settings. Verify model name — default is qwen/qwen3.6-27b.</p>
             <p style="margin:0"><strong style="color:var(--text)">Credentials lost:</strong> Use Export Credentials to save a JSON backup. Import on any device.</p>
@@ -2999,7 +3077,7 @@ Support Team"></textarea>
         </div>
 
         <div style="text-align:center;font-size:0.72rem;color:var(--muted);padding:12px 0">
-          OEL Command v14.4 · Built by Lazzaro · Powered by Groq AI + Odoo 19
+          OEL Command v15.4 · Built by Lazzaro · Powered by Groq AI + Odoo 19
         </div>
 
       </div>
@@ -3109,7 +3187,7 @@ Support Team"></textarea>
           <div class="card-title" style="font-family:'DM Serif Display',serif;font-size:1.2rem;margin-bottom:6px">Dashboard</div>
           <div class="card-subtitle" style="margin-bottom:16px">Pipeline, opportunities, and team performance from Odoo.</div>
           <div style="display:inline-flex;align-items:center;gap:6px;margin-bottom:8px">
-            <span style="font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace;box-shadow:0 0 8px rgba(201,168,76,0.35),0 0 20px rgba(201,168,76,0.12);animation:versionGlow 3s ease-in-out infinite alternate">OEL Command v14.4</span>
+            <span style="font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace;box-shadow:0 0 8px rgba(201,168,76,0.35),0 0 20px rgba(201,168,76,0.12);animation:versionGlow 3s ease-in-out infinite alternate">OEL Command v15.4</span>
             <span style="font-size:0.68rem;color:var(--muted)">Built by Lazzaro</span>
           </div>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px">
@@ -3233,13 +3311,24 @@ Support Team"></textarea>
               <select id="sr-delivery-field" onchange="srDeliveryFieldChanged()" title="Which Odoo field to treat as the delivery date — auto-detected, override if it's picking the wrong one" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;color:var(--muted);font-family:'DM Mono',monospace;font-size:0.74rem;outline:none;cursor:pointer;max-width:200px">
                 <option value="">Detecting delivery field…</option>
               </select>
-              <label style="display:flex;align-items:center;gap:5px;font-size:0.78rem;color:var(--muted);cursor:pointer;margin-left:4px" title="Confirmed orders only, products only (services excluded), grouped by the month they deliver — not the month they were created">
+              <label style="display:flex;align-items:center;gap:5px;font-size:0.78rem;color:var(--muted);cursor:pointer;margin-left:4px" title="Confirmed orders only, goods only (service categories excluded), grouped by the month they deliver — not the month they were created">
                 <input type="checkbox" id="sr-commission-mode" onchange="srToggleCommissionMode()" style="accent-color:var(--accent)">
                 Commission estimate
               </label>
             </div>
             <div id="sr-commission-hint" style="display:none;font-size:0.74rem;color:var(--muted);margin:-4px 0 10px;padding:6px 10px;background:var(--surface2);border-radius:6px">
-              Showing <strong style="color:var(--text)">confirmed</strong> orders only, filtered by <strong style="color:var(--text)">delivery date</strong> (not order date). "Products Only" excludes service-type line items — an approximation, not an exact commission figure.
+              Showing <strong style="color:var(--text)">confirmed</strong> orders only, filtered by <strong style="color:var(--text)">delivery date</strong> (not order date). Commission base excludes line items whose <strong style="color:var(--text)">product category</strong> is marked as a service below — an approximation, not an exact commission figure.
+            </div>
+            <div id="sr-commission-controls" style="display:none;align-items:center;gap:10px;flex-wrap:wrap;margin:-4px 0 10px">
+              <span style="font-size:0.74rem;color:var(--muted)">Commission rate:</span>
+              <div id="sr-rate-chips" style="display:flex;gap:6px">
+                <div class="lm-chip" data-rate="5" onclick="srSelectRate(this,5)">5%</div>
+                <div class="lm-chip" data-rate="7" onclick="srSelectRate(this,7)">7%</div>
+                <div class="lm-chip" data-rate="10" onclick="srSelectRate(this,10)">10%</div>
+                <div class="lm-chip" data-rate="custom" onclick="srSelectRate(this,'custom')">Custom</div>
+              </div>
+              <input type="number" id="sr-rate-custom" min="0" max="100" step="0.5" placeholder="%" style="display:none;width:64px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-family:'DM Mono',monospace;font-size:0.78rem;outline:none" onchange="srCustomRateChanged()">
+              <button class="btn btn-ghost" onclick="srOpenCategoryConfig()" title="Choose which product categories count as services and are excluded from the commission base" style="padding:4px 10px;font-size:0.74rem;margin-left:auto">⚙ Categories…</button>
             </div>
             <div id="sr-field-warning" style="display:none;font-size:0.74rem;color:var(--warning);margin:-4px 0 10px;padding:6px 10px;background:rgba(255,180,60,0.1);border:1px solid rgba(255,180,60,0.3);border-radius:6px"></div>
             <div id="sr-summary" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px"></div>
@@ -3992,23 +4081,15 @@ Thank you</textarea>
         <div style="margin-bottom:16px">
           <div style="font-size:0.72rem;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px">Theme</div>
           <div class="theme-switcher">
-            <div class="theme-dot active" data-t="gold" onclick="setTheme('gold')" title="Gold"></div>
-            <div class="theme-dot" data-t="lime" onclick="setTheme('lime')" title="Lime"></div>
-            <div class="theme-dot" data-t="cyan" onclick="setTheme('cyan')" title="Cyan"></div>
-            <div class="theme-dot" data-t="ember" onclick="setTheme('ember')" title="Ember"></div>
-            <div class="theme-dot" data-t="violet" onclick="setTheme('violet')" title="Violet"></div>
-            <div class="theme-dot" data-t="light" onclick="setTheme('light')" title="Light"></div>
-            <div class="theme-dot" data-t="custom" onclick="toggleLazColorPicker()" title="Custom" style="position:relative">
-              <div id="laz-color-picker">
-                <div style="font-size:0.72rem;color:var(--muted);margin-bottom:8px;font-weight:500">Custom accent color</div>
-                <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px" id="laz-swatch-row"></div>
-                <div style="display:flex;gap:8px;align-items:center">
-                  <input type="color" id="laz-hex-input" style="width:36px;height:28px;border:none;background:none;cursor:pointer;padding:0" oninput="lazHexPreview(this.value)" onchange="lazApplyCustomColor(this.value)">
-                  <input type="text" id="laz-hex-text" placeholder="#c9a84c" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:5px 8px;color:var(--text);font-family:'DM Mono',monospace;font-size:0.78rem;outline:none" oninput="lazHexPreview(this.value)" onchange="lazApplyCustomColor(this.value)">
-                  <button onclick="lazApplyCustomColor(document.getElementById('laz-hex-text').value)" style="background:var(--accent);color:var(--bg);border:none;border-radius:6px;padding:5px 10px;cursor:pointer;font-size:0.75rem;font-family:'DM Sans',sans-serif">Apply</button>
-                </div>
-              </div>
-            </div>
+            <div class="theme-dot active" data-t="gold" onclick="setThemeAccent('gold')" title="Gold"></div>
+            <div class="theme-dot" data-t="lime" onclick="setThemeAccent('lime')" title="Lime"></div>
+            <div class="theme-dot" data-t="cyan" onclick="setThemeAccent('cyan')" title="Cyan"></div>
+            <div class="theme-dot" data-t="ember" onclick="setThemeAccent('ember')" title="Ember"></div>
+            <div class="theme-dot" data-t="violet" onclick="setThemeAccent('violet')" title="Violet"></div>
+            <div style="flex:1;min-width:8px"></div>
+            <button id="theme-mode-toggle-btn" class="theme-mode-toggle" onclick="toggleThemeMode()" title="Switch between dark and light background">
+              <span id="theme-mode-icon">🌙</span> <span id="theme-mode-label">Dark</span>
+            </button>
           </div>
         </div>
 
@@ -4054,7 +4135,7 @@ Thank you</textarea>
         <div style="font-size:0.72rem;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px">Sidebar Order</div>
         <button class="gear-item" onclick="openSidebarOrderModal()">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 4h10M2 7h10M2 10h10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
-          Reorder sidebar items
+          Reorder sidebar sections
         </button>
 
         <div class="divider"></div>
@@ -7204,8 +7285,7 @@ function exportCredentials() {
     connMode:     localStorage.getItem('odoo_conn_mode') || 'proxy',
     docLibrary:   JSON.parse(localStorage.getItem('oel_doc_library') || '[]'),
     compactMode:  localStorage.getItem('oelCompact') === '1',
-    customAccent: localStorage.getItem('oelCustomAccent') || '',
-    sidebarOrder: (() => { try { return JSON.parse(localStorage.getItem('oel_sidebar_order')||'[]'); } catch(e){ return []; } })(),
+    sidebarOrder: (() => { try { return JSON.parse(localStorage.getItem('oel_sidebar_section_order')||'[]'); } catch(e){ return []; } })(),
 
     // ── Quote Manager / Quote Builder templates ───
     qmTemplates: (typeof _qmTemplates !== 'undefined') ? _qmTemplates : [],
@@ -7373,21 +7453,17 @@ function importCredentials(eventOrElement) {
 
       // ── Sidebar order ─────────────────────────────
       if (Array.isArray(data.sidebarOrder) && data.sidebarOrder.length) {
-        localStorage.setItem('oel_sidebar_order', JSON.stringify(data.sidebarOrder));
+        localStorage.setItem('oel_sidebar_section_order', JSON.stringify(data.sidebarOrder));
         if (typeof applySidebarOrder === 'function') applySidebarOrder();
         imported.push('sidebar layout');
       }
 
-      // ── Compact mode & custom accent ───────────────
+      // ── Compact mode ────────────────────────────────
       if (typeof data.compactMode === 'boolean') {
         localStorage.setItem('oelCompact', data.compactMode ? '1' : '0');
         if (typeof _oelCompact !== 'undefined') { _oelCompact = data.compactMode; }
         if (typeof oelApplyCompact === 'function') oelApplyCompact();
         imported.push('compact mode');
-      }
-      if (data.customAccent && typeof lazApplyCustomColor === 'function') {
-        lazApplyCustomColor(data.customAccent);
-        imported.push('custom accent color');
       }
 
       // ── Quote Manager templates ────────────────────
@@ -8432,13 +8508,118 @@ function srDeliveryFieldChanged() {
   srLoad();
 }
 
+let _srCommissionRate = parseFloat(localStorage.getItem('oel_sr_commission_rate')) || 10;
+let _srCategoriesSeen = []; // [{id,name}] populated each time commission mode renders
+
+function srInitRateChips() {
+  const chips = document.querySelectorAll('#sr-rate-chips .lm-chip');
+  const customInput = document.getElementById('sr-rate-custom');
+  const isPreset = [5,7,10].includes(_srCommissionRate);
+  chips.forEach(c => {
+    const r = c.dataset.rate;
+    c.classList.toggle('active', isPreset ? (parseFloat(r) === _srCommissionRate) : (r === 'custom'));
+  });
+  if (customInput) {
+    if (!isPreset) { customInput.style.display = 'inline-block'; customInput.value = _srCommissionRate; }
+    else { customInput.style.display = 'none'; }
+  }
+}
+
+function srSelectRate(el, rate) {
+  document.querySelectorAll('#sr-rate-chips .lm-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  const customInput = document.getElementById('sr-rate-custom');
+  if (rate === 'custom') {
+    customInput.style.display = 'inline-block';
+    customInput.focus();
+    const v = parseFloat(customInput.value);
+    if (!isNaN(v)) _srCommissionRate = v;
+  } else {
+    customInput.style.display = 'none';
+    _srCommissionRate = rate;
+  }
+  localStorage.setItem('oel_sr_commission_rate', String(_srCommissionRate));
+  if (document.getElementById('sr-commission-mode')?.checked && _srOrders?.length) srRenderCommission();
+}
+
+function srCustomRateChanged() {
+  const v = parseFloat(document.getElementById('sr-rate-custom')?.value);
+  if (isNaN(v)) return;
+  _srCommissionRate = v;
+  localStorage.setItem('oel_sr_commission_rate', String(_srCommissionRate));
+  if (document.getElementById('sr-commission-mode')?.checked && _srOrders?.length) srRenderCommission();
+}
+
+// ── Product-category commission config ──────────────────────────────────
+// Map of { [categoryId]: true|false } — true means "excluded (service)".
+// Categories not yet in the map fall back to a name heuristic (/service/i).
+function srCategoryMap() {
+  try { return JSON.parse(localStorage.getItem('oel_sr_category_commission') || '{}'); } catch(e) { return {}; }
+}
+function srIsCategoryExcluded(id, name) {
+  const map = srCategoryMap();
+  if (id != null && Object.prototype.hasOwnProperty.call(map, id)) return !!map[id];
+  return /service/i.test(name || '');
+}
+
+function srOpenCategoryConfig() {
+  const existing = document.getElementById('sr-category-modal');
+  if (existing) existing.remove();
+  if (!_srCategoriesSeen.length) { alert('Run the commission estimate at least once first — categories are pulled from the current results.'); return; }
+
+  const rows = _srCategoriesSeen.map(cat => {
+    const checked = srIsCategoryExcluded(cat.id, cat.name);
+    return `<label style="display:flex;align-items:center;gap:9px;padding:7px 4px;font-size:0.82rem;cursor:pointer;border-bottom:1px solid var(--border)">
+      <input type="checkbox" data-cat-id="${cat.id}" ${checked ? 'checked' : ''}>
+      <span style="flex:1">${escHtml(cat.name)}</span>
+      <span style="font-size:0.68rem;color:var(--muted)">${checked ? 'service — excluded' : 'goods — commissionable'}</span>
+    </label>`;
+  }).join('');
+
+  const modal = document.createElement('div');
+  modal.id = 'sr-category-modal';
+  modal.className = 'modal-overlay';
+  modal.style.cssText = 'display:flex';
+  modal.innerHTML = `
+    <div class="modal" style="max-width:460px">
+      <div class="modal-header">
+        <div class="modal-header-text">
+          <div class="record">Commission Categories</div>
+          <div class="contact">Check any category that should be treated as a service and excluded from the commission base</div>
+        </div>
+        <button class="modal-close" onclick="document.getElementById('sr-category-modal').remove()">✕</button>
+      </div>
+      <div class="modal-body" style="display:flex;flex-direction:column;max-height:400px;overflow-y:auto">
+        ${rows}
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="document.getElementById('sr-category-modal').remove()">Cancel</button>
+        <button class="btn btn-primary" onclick="srSaveCategoryConfig()">Save</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+}
+
+function srSaveCategoryConfig() {
+  const map = srCategoryMap();
+  document.querySelectorAll('#sr-category-modal [data-cat-id]').forEach(input => {
+    map[input.dataset.catId] = input.checked;
+  });
+  localStorage.setItem('oel_sr_category_commission', JSON.stringify(map));
+  document.getElementById('sr-category-modal')?.remove();
+  if (_srOrders?.length) srRenderCommission();
+}
+
 function srToggleCommissionMode() {
   const on        = document.getElementById('sr-commission-mode')?.checked;
   const stageSel  = document.getElementById('sr-stage');
   const monthEl   = document.getElementById('sr-month');
   const hint      = document.getElementById('sr-commission-hint');
+  const controls  = document.getElementById('sr-commission-controls');
   if (stageSel) { stageSel.disabled = !!on; if (on) stageSel.value = 'confirmed'; }
   if (hint) hint.style.display = on ? 'block' : 'none';
+  if (controls) controls.style.display = on ? 'flex' : 'none';
+  if (on) srInitRateChips();
   if (on && monthEl && !monthEl.value) {
     const d = new Date();
     monthEl.value = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
@@ -8560,6 +8741,7 @@ function srRenderList() {
 
   const totalAmt = _srOrders.reduce(function(s,o){ return s + (o.amount_total||0); }, 0);
   if (summaryEl) {
+    summaryEl.style.gridTemplateColumns = 'repeat(3,1fr)';
     summaryEl.innerHTML =
       '<div class="laz-stat-card"><div class="laz-stat-label">Orders</div><div class="laz-stat-value">' + _srOrders.length + '</div><div class="laz-stat-sub">matching filters</div></div>' +
       '<div class="laz-stat-card"><div class="laz-stat-label">Total Value</div><div class="laz-stat-value accent">' + srFmt(totalAmt) + '</div><div class="laz-stat-sub">order totals</div></div>' +
@@ -8615,34 +8797,48 @@ async function srRenderCommission() {
     );
 
     const productIds = Array.from(new Set((lines||[]).filter(function(l){ return l.product_id; }).map(function(l){ return l.product_id[0]; })));
-    const serviceIds = {};
+    const productCategById = {}; // productId -> {id, name}
     if (productIds.length) {
       const products = await odooExecute(odooUid, 'product.product', 'search_read',
-        [[['id','in', productIds]]], { fields: ['id','type'], limit: productIds.length }
+        [[['id','in', productIds]]], { fields: ['id','categ_id'], limit: productIds.length }
       );
-      (products||[]).forEach(function(p){ if (p.type === 'service') serviceIds[p.id] = true; });
+      (products||[]).forEach(function(p){
+        productCategById[p.id] = p.categ_id ? { id: p.categ_id[0], name: p.categ_id[1] } : { id: null, name: 'Uncategorized' };
+      });
     }
 
-    const productTotalByOrder = {};
+    // Unique categories seen this run, for the config modal
+    const catSeen = {};
+    Object.values(productCategById).forEach(function(c){ if (c.id != null) catSeen[c.id] = c.name; });
+    _srCategoriesSeen = Object.keys(catSeen).map(function(id){ return { id: parseInt(id), name: catSeen[id] }; })
+      .sort(function(a,b){ return a.name.localeCompare(b.name); });
+
+    const goodsTotalByOrder = {};
     (lines||[]).forEach(function(l) {
       const oid = Array.isArray(l.order_id) ? l.order_id[0] : l.order_id;
-      const isService = l.product_id && serviceIds[l.product_id[0]];
-      if (!isService) productTotalByOrder[oid] = (productTotalByOrder[oid]||0) + (l.price_subtotal||0);
+      const cat = l.product_id ? productCategById[l.product_id[0]] : null;
+      const excluded = cat ? srIsCategoryExcluded(cat.id, cat.name) : false;
+      if (!excluded) goodsTotalByOrder[oid] = (goodsTotalByOrder[oid]||0) + (l.price_subtotal||0);
     });
 
-    let grandProductTotal = 0, grandOrderTotal = 0;
+    let grandGoodsTotal = 0, grandOrderTotal = 0;
     const rows = _srOrders.map(function(o) {
-      const pTotal = productTotalByOrder[o.id] || 0;
-      grandProductTotal += pTotal;
-      grandOrderTotal   += (o.amount_total||0);
-      return { o: o, productTotal: pTotal };
+      const goodsTotal = goodsTotalByOrder[o.id] || 0;
+      grandGoodsTotal += goodsTotal;
+      grandOrderTotal += (o.amount_total||0);
+      return { o: o, goodsTotal: goodsTotal };
     });
+
+    const rate = _srCommissionRate || 0;
+    const grandCommission = grandGoodsTotal * (rate/100);
 
     if (summaryEl) {
       summaryEl.innerHTML =
         '<div class="laz-stat-card"><div class="laz-stat-label">Confirmed Orders</div><div class="laz-stat-value">' + _srOrders.length + '</div><div class="laz-stat-sub">delivering this month</div></div>' +
         '<div class="laz-stat-card"><div class="laz-stat-label">Order Total</div><div class="laz-stat-value">' + srFmt(grandOrderTotal) + '</div><div class="laz-stat-sub">incl. services</div></div>' +
-        '<div class="laz-stat-card"><div class="laz-stat-label">Approx. Commission Base</div><div class="laz-stat-value accent">' + srFmt(grandProductTotal) + '</div><div class="laz-stat-sub">products only</div></div>';
+        '<div class="laz-stat-card"><div class="laz-stat-label">Commission Base</div><div class="laz-stat-value accent">' + srFmt(grandGoodsTotal) + '</div><div class="laz-stat-sub">goods only, by category</div></div>' +
+        '<div class="laz-stat-card"><div class="laz-stat-label">Commission Payout</div><div class="laz-stat-value accent">' + srFmt(grandCommission) + '</div><div class="laz-stat-sub">at ' + rate + '%</div></div>';
+      summaryEl.style.gridTemplateColumns = 'repeat(4,1fr)';
     }
 
     const body = rows.map(function(r) {
@@ -8650,12 +8846,14 @@ async function srRenderCommission() {
       const partner = (o.partner_id && o.partner_id[1]) ? escHtml(o.partner_id[1]) : '—';
       const rep     = (o.user_id && o.user_id[1]) ? escHtml(o.user_id[1]) : '—';
       const date    = o._deliveryDate ? String(o._deliveryDate).slice(0,10) : '—';
+      const commission = r.goodsTotal * (rate/100);
       return '<tr><td style="padding:5px 8px;font-size:0.78rem;color:var(--text)">' + escHtml(o.name||'') + '</td>'
            + '<td style="padding:5px 8px;font-size:0.78rem;color:var(--muted)">' + partner + '</td>'
            + '<td style="padding:5px 8px;font-size:0.78rem;color:var(--muted)">' + rep + '</td>'
            + '<td style="padding:5px 8px;font-size:0.78rem;color:var(--muted)">' + date + '</td>'
            + '<td style="padding:5px 8px;font-size:0.78rem;color:var(--muted);font-family:monospace;text-align:right">' + srFmt(o.amount_total) + '</td>'
-           + '<td style="padding:5px 8px;font-size:0.78rem;color:var(--accent);font-family:monospace;text-align:right">' + srFmt(r.productTotal) + '</td></tr>';
+           + '<td style="padding:5px 8px;font-size:0.78rem;color:var(--text);font-family:monospace;text-align:right">' + srFmt(r.goodsTotal) + '</td>'
+           + '<td style="padding:5px 8px;font-size:0.78rem;color:var(--accent);font-family:monospace;text-align:right">' + srFmt(commission) + '</td></tr>';
     }).join('');
 
     resultsEl.innerHTML = '<table style="width:100%;border-collapse:collapse">'
@@ -8665,7 +8863,8 @@ async function srRenderCommission() {
       + '<th style="padding:6px 8px;font-size:0.7rem;color:var(--muted);font-weight:500;text-align:left">Rep</th>'
       + '<th style="padding:6px 8px;font-size:0.7rem;color:var(--muted);font-weight:500;text-align:left">Delivery Date</th>'
       + '<th style="padding:6px 8px;font-size:0.7rem;color:var(--muted);font-weight:500;text-align:right">Order Total</th>'
-      + '<th style="padding:6px 8px;font-size:0.7rem;color:var(--muted);font-weight:500;text-align:right">Products Only</th>'
+      + '<th style="padding:6px 8px;font-size:0.7rem;color:var(--muted);font-weight:500;text-align:right">Goods Only</th>'
+      + '<th style="padding:6px 8px;font-size:0.7rem;color:var(--muted);font-weight:500;text-align:right">Commission (' + rate + '%)</th>'
       + '</tr></thead><tbody>' + body + '</tbody></table>';
 
   } catch(e) {
@@ -8693,11 +8892,12 @@ const OEL_SEARCH_INDEX = [
   { id:'discuss',      label:'Discuss',           keywords:'message colleague quick message log note odoo discuss chat with a coworker' },
   { id:'support',      label:'Support',           keywords:'remote support launch remote tools session invite client help desk fix a client issue' },
   { id:'bounces',      label:'Bounce Manager',    keywords:'undeliverable bounced email list clear reschedule activities bad email address' },
+  { id:'expenses',     label:'Expenses',          keywords:'expense report receipts approve refuse reimburse employee spend hr expense sheet payment approval queue reporting by category' },
   { id:'salestargeting', label:'Sales Targeting', keywords:'historical sales lookup quickbooks quarterly target list rep focus lapsed dormant customers reactivate prospecting quarter' },
   { id:'dataexplorer', label:'Data Explorer',     keywords:'upload quickbooks export customer list sync review data import spreadsheet' },
   { id:'docs',         label:'Documents',         keywords:'w9 coi contract document library files attach paperwork' },
   { id:'reports',      label:'Reports',           keywords:'dashboard pipeline sales report commission rep stage revenue accounting aged ar top customers overdue invoices sales reporting' },
-  { id:'help',         label:'Help',              keywords:'help guide troubleshooting quick reference setup how does this work' },
+  { id:'help',         label:'Help',              keywords:'help guide troubleshooting quick reference setup how does this work connect connection failed failing retry cors proxy odoo not connecting' },
 ];
 
 function oelTrackNavVisit(section) {
@@ -12064,9 +12264,10 @@ window.addEventListener('DOMContentLoaded', () => {
   loadCredentials();
   const savedMode = localStorage.getItem('odoo_conn_mode') || 'proxy';
   setConnectionMode(savedMode);
-  const savedTheme = localStorage.getItem('oelTheme') || 'lime';
+  const VALID_THEMES = ['gold','lime','cyan','ember','violet','light','lime-light','cyan-light','ember-light','violet-light'];
+  let savedTheme = localStorage.getItem('oelTheme') || 'lime';
+  if (!VALID_THEMES.includes(savedTheme)) savedTheme = 'lime'; // catches the retired 'custom' theme too
   setTheme(savedTheme, true);
-  if (savedTheme === 'custom') lazLoadCustomColor();
   // Load lead capture specs and IMAP creds on every startup — not just when tab is visited
   if (typeof loadLeadSpecs  === 'function') loadLeadSpecs();
   if (typeof loadImapCreds  === 'function') loadImapCreds();
@@ -12078,14 +12279,35 @@ window.addEventListener('DOMContentLoaded', () => {
   // Re-apply sidebar order after all init is complete (prevents race with nav render)
   setTimeout(function(){ if (typeof window.applySidebarOrder === 'function') window.applySidebarOrder(); }, 100);
 });
+
+// ── Theme — 5 accent colors × dark/light mode ────────────────────────────
 const THEME_COLORS = {
-  lime: '#c8f04e', cyan: '#00d8ff', ember: '#ff7c2a', light: '#6c47ff', violet: '#c77dff'
+  gold: '#c9a84c', lime: '#c8f04e', cyan: '#00d8ff', ember: '#ff7c2a', violet: '#c77dff',
+  light: '#b8892a', 'lime-light': '#5c7a1a', 'cyan-light': '#0a7ea6', 'ember-light': '#b8541f', 'violet-light': '#7c3fb8',
 };
+
+function themeAccentOf(t) {
+  if (!t || t === 'light') return 'gold';
+  return t.endsWith('-light') ? t.slice(0, -6) : t;
+}
+function themeIsLight(t) {
+  return t === 'light' || (t || '').endsWith('-light');
+}
+function themeIdFor(accent, isLight) {
+  if (!isLight) return accent;
+  return accent === 'gold' ? 'light' : accent + '-light';
+}
+
 function setTheme(t, silent) {
-  document.documentElement.setAttribute('data-theme', t);
+  document.body.setAttribute('data-theme', t);
   document.querySelectorAll('.theme-dot').forEach(d => {
-    d.classList.toggle('active', d.dataset.t === t);
+    d.classList.toggle('active', d.dataset.t === themeAccentOf(t));
   });
+  const isLight = themeIsLight(t);
+  const icon = document.getElementById('theme-mode-icon');
+  const label = document.getElementById('theme-mode-label');
+  if (icon) icon.textContent = isLight ? '☀️' : '🌙';
+  if (label) label.textContent = isLight ? 'Light' : 'Dark';
   const mc = document.getElementById('meta-theme-color');
   if (mc) mc.setAttribute('content', THEME_COLORS[t] || '#c8f04e');
   if (!silent) {
@@ -12093,123 +12315,16 @@ function setTheme(t, silent) {
   }
 }
 
-// ── Laz Mode custom color picker ─────────────────────────────────────────────
-
-const LAZ_COLOR_SWATCHES = [
-  // Greens
-  '#c8f04e','#a8e63c','#69d14f','#4ef0a0','#00e676',
-  // Blues / Cyans
-  '#00d8ff','#29b6f6','#448aff','#5c6bc0','#40c4ff',
-  // Purples / Pinks
-  '#c77dff','#e040fb','#ff4081','#f48fb1','#ce93d8',
-  // Reds / Oranges
-  '#ff6b6b','#ff7c2a','#ffa726','#ffca28','#f0c84e',
-  // Whites / Silvers
-  '#ffffff','#e0e0e0','#b0bec5','#90a4ae','#78909c',
-];
-
-function lazShowCustomDot(show) {
-  const dot = document.getElementById('custom-color-dot');
-  if (dot) dot.style.display = show ? 'block' : 'none';
-  if (!show) closeLazColorPicker();
+// Pick an accent color, keeping whichever dark/light mode is currently active
+function setThemeAccent(accent) {
+  const current = localStorage.getItem('oelTheme') || 'gold';
+  setTheme(themeIdFor(accent, themeIsLight(current)));
 }
 
-function toggleLazColorPicker(e) {
-  if (e) e.stopPropagation();
-  const picker = document.getElementById('laz-color-picker');
-  if (!picker) return;
-  const isOpen = picker.style.display !== 'none';
-  if (isOpen) { picker.style.display = 'none'; return; }
-
-  // Build swatches
-  const container = document.getElementById('laz-color-swatches');
-  const saved = localStorage.getItem('oelCustomAccent') || '';
-  if (container) {
-    container.innerHTML = LAZ_COLOR_SWATCHES.map(col =>
-      `<div class="laz-color-swatch${saved===col?' active':''}" style="background:${col}" title="${col}"
-        onclick="lazPickSwatch('${col}')"></div>`
-    ).join('');
-  }
-
-  // Pre-fill hex input with current custom color
-  const hex = document.getElementById('laz-hex-input');
-  const preview = document.getElementById('laz-hex-preview');
-  if (hex) hex.value = saved || '';
-  if (preview) preview.style.background = saved || 'transparent';
-
-  picker.style.display = 'block';
-
-  // Close on outside click
-  setTimeout(() => document.addEventListener('click', closeLazColorPickerOutside, {once:true}), 0);
-}
-
-function closeLazColorPicker() {
-  const p = document.getElementById('laz-color-picker');
-  if (p) p.style.display = 'none';
-}
-
-function closeLazColorPickerOutside(e) {
-  const p = document.getElementById('laz-color-picker');
-  const dot = document.getElementById('custom-color-dot');
-  if (p && !p.contains(e.target) && e.target !== dot) closeLazColorPicker();
-}
-
-function lazPickSwatch(color) {
-  // Update active state
-  document.querySelectorAll('.laz-color-swatch').forEach(s => {
-    s.classList.toggle('active', s.style.background === color || s.title === color);
-  });
-  const hex = document.getElementById('laz-hex-input');
-  const preview = document.getElementById('laz-hex-preview');
-  if (hex) hex.value = color;
-  if (preview) preview.style.background = color;
-  lazApplyCustomColor(color);
-}
-
-function lazHexPreview(val) {
-  const preview = document.getElementById('laz-hex-preview');
-  if (!preview) return;
-  const clean = val.startsWith('#') ? val : '#' + val;
-  if (/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(clean)) {
-    preview.style.background = clean;
-  }
-}
-
-function lazApplyCustomColor(color) {
-  const hex = document.getElementById('laz-hex-input');
-  const raw = color || (hex?.value || '').trim();
-  const clean = raw.startsWith('#') ? raw : '#' + raw;
-  if (!/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(clean)) {
-    if (hex) hex.style.borderColor = 'var(--danger)';
-    return;
-  }
-  if (hex) hex.style.borderColor = 'var(--border)';
-
-  // Apply as CSS variable override
-  document.documentElement.style.setProperty('--accent', clean);
-  // Compute dim version (10% opacity)
-  const r = parseInt(clean.slice(1,3)||'00',16);
-  const g = parseInt(clean.slice(3,5)||'00',16);
-  const b = parseInt(clean.slice(5,7)||'00',16);
-  document.documentElement.style.setProperty('--accent-dim', `rgba(${r},${g},${b},0.12)`);
-
-  // Save
-  localStorage.setItem('oelCustomAccent', clean);
-  localStorage.setItem('oelTheme', 'custom');
-
-  // Mark custom dot as active
-  document.querySelectorAll('.theme-dot').forEach(d => d.classList.toggle('active', d.dataset.t === 'custom'));
-  const dot = document.getElementById('custom-color-dot');
-  if (dot) dot.style.background = clean;
-
-  closeLazColorPicker();
-}
-
-function lazLoadCustomColor() {
-  const saved = localStorage.getItem('oelCustomAccent');
-  if (saved && localStorage.getItem('oelTheme') === 'custom') {
-    lazApplyCustomColor(saved);
-  }
+// Flip dark/light, keeping whichever accent color is currently active
+function toggleThemeMode() {
+  const current = localStorage.getItem('oelTheme') || 'gold';
+  setTheme(themeIdFor(themeAccentOf(current), !themeIsLight(current)));
 }
 
 
@@ -12929,7 +13044,6 @@ function promptLazUnlock() {
   if (pw === LAZ_PASSWORD) {
     lazModeUnlocked = true;
     document.getElementById('laz-gear-label').textContent = '⚡ Laz Mode — open';
-    lazShowCustomDot(true);
     document.getElementById('laz-gear-btn').style.color = 'var(--accent)';
     document.getElementById('laz-step-line').style.display = '';
     document.getElementById('laz-step-item').style.display = '';
@@ -13034,8 +13148,29 @@ window.oelConnectNow = async function() {
 
   window.odooConfig = { url: url.replace(/\/+$/, ''), database: db, username: usr, api_key: key };
 
-  try {
-    window.odooUid = await odooAuthenticate();
+  // The public CORS proxies this app cycles through are individually flaky —
+  // a single pass through all of them sometimes comes up empty even with
+  // good credentials. Retrying the whole pass a couple more times, close
+  // together, is what happening to land on Discuss was already doing for you
+  // silently in the background. Doing it here means you don't need the
+  // detour — one click should now behave the same way.
+  const MAX_ATTEMPTS = 3;
+  let lastErr = null;
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    try {
+      window.odooUid = await odooAuthenticate();
+      lastErr = null;
+      break;
+    } catch(e) {
+      lastErr = e;
+      if (attempt < MAX_ATTEMPTS) {
+        if (txt) txt.textContent = `Connecting… (retry ${attempt}/${MAX_ATTEMPTS - 1})`;
+        await new Promise(r => setTimeout(r, 900));
+      }
+    }
+  }
+
+  if (!lastErr) {
     if (dot) dot.style.background = 'var(--success)';
     if (txt) txt.textContent = 'Odoo connected';
     if (btn) btn.style.display = 'none';
@@ -13044,11 +13179,16 @@ window.oelConnectNow = async function() {
     if (typeof populateUserDropdown === 'function') populateUserDropdown();
     if (typeof rebuildUserSelect === 'function') rebuildUserSelect();
     if (typeof qmPopulateUsers === 'function') qmPopulateUsers();
+    // Prime the Discuss inbox in the background too — this used to be the thing
+    // that made everything else "just work" once you happened to visit that tab.
+    if (typeof discussLoad === 'function' && document.getElementById('discuss-list')) {
+      discussLoad().catch(() => {});
+    }
     // Auto-load dashboard if on reports
     if (document.getElementById('panel-reports')?.classList.contains('active')) {
       if (typeof lazDashboardLoad === 'function') setTimeout(lazDashboardLoad, 200);
     }
-  } catch(e) {
+  } else {
     if (dot) dot.style.background = 'var(--danger)';
     if (txt) txt.textContent = 'Failed — check settings';
     if (btn) { btn.textContent = 'Retry'; btn.disabled = false; }
@@ -23296,46 +23436,71 @@ window.inboxTab = function(tab) {
 
 
 // ── Sidebar Order ──────────────────────────────────────────────
+// Reorders whole sections (DAILY, QUOTING, PIPELINE, etc.) as blocks — the
+// section label and every item inside it always move together, so labels
+// and dividers never disappear the way they did with item-level reordering.
 (function() {
-  var KEY = 'oel_sidebar_order';
-  var DEFAULTS = [
-    ['nav-inbox','Inbox'],['nav-leads','Lead Capture'],['nav-activities','Activities'],
-    ['nav-quotedesk','Request Desk'],['nav-smartbuilder','Smart Builder'],['nav-quotes','Quotes'],['nav-templates','Templates'],
-    ['nav-prospect','Prospecting'],['nav-catchup','Dormant Contacts'],['nav-vendor','Vendor Outreach'],
-    ['nav-projects','Projects'],['nav-discuss','Discuss'],['nav-support','Support'],
-    ['nav-bounces','Bounces'],['nav-salestargeting','Sales Targeting'],['nav-dataexplorer','Data Explorer'],['nav-docs','Documents'],
-    ['nav-reports','Reports'],['nav-help','Help']
+  var KEY = 'oel_sidebar_section_order';
+  var LEGACY_KEY = 'oel_sidebar_order'; // old item-level format — no longer compatible, cleaned up below
+
+  var SECTIONS = [
+    { key:'daily',    label:'DAILY',        items:['nav-inbox','nav-leads','nav-activities'] },
+    { key:'quoting',  label:'QUOTING',      items:['nav-quotedesk','nav-smartbuilder','nav-quotes','nav-templates'] },
+    { key:'pipeline', label:'PIPELINE',     items:['nav-prospect','nav-catchup','nav-vendor','nav-massmail'] },
+    { key:'work',     label:'WORK & COMMS', items:['nav-projects','nav-discuss','nav-support'] },
+    { key:'utils',    label:'UTILITIES',    items:['nav-bounces','nav-expenses','nav-salestargeting','nav-dataexplorer','nav-docs'] },
+    { key:'reports',  label:'REPORTS',      items:['nav-reports','nav-help'] },
   ];
 
+  // Captured once, in authored DOM order, before any reordering ever runs —
+  // this is the source of truth for which divider trails which section.
+  var refs = {};
+  (function captureRefs() {
+    var labelNodes = document.querySelectorAll('#sidebar nav.sb-nav .sb-section-label');
+    labelNodes.forEach(function(labelEl) {
+      var text = labelEl.textContent.trim();
+      var sec = null;
+      for (var i = 0; i < SECTIONS.length; i++) { if (SECTIONS[i].label === text) { sec = SECTIONS[i]; break; } }
+      if (!sec) return;
+      var itemEls = sec.items.map(function(id){ return document.getElementById(id); }).filter(Boolean);
+      var lastItem = itemEls[itemEls.length - 1];
+      var dividerEl = (lastItem && lastItem.nextElementSibling && lastItem.nextElementSibling.classList.contains('sb-divider'))
+        ? lastItem.nextElementSibling : null;
+      refs[sec.key] = { labelEl: labelEl, itemEls: itemEls, dividerEl: dividerEl };
+    });
+  })();
+
   function load() { try { return JSON.parse(localStorage.getItem(KEY)) || null; } catch(e) { return null; } }
-  function save(ids) { localStorage.setItem(KEY, JSON.stringify(ids)); }
-  function defaultIds() { return DEFAULTS.map(function(d){return d[0];}); }
-  function labelFor(id) { for(var i=0;i<DEFAULTS.length;i++){if(DEFAULTS[i][0]===id)return DEFAULTS[i][1];} return id; }
+  function save(keys) { localStorage.setItem(KEY, JSON.stringify(keys)); }
+  function defaultKeys() { return SECTIONS.map(function(s){ return s.key; }); }
+  function labelFor(key) { for (var i = 0; i < SECTIONS.length; i++) { if (SECTIONS[i].key === key) return SECTIONS[i].label; } return key; }
 
   function applyOrder() {
+    // The old per-item order format can't be reapplied under this scheme — drop it once.
+    if (localStorage.getItem(LEGACY_KEY)) localStorage.removeItem(LEGACY_KEY);
+
     var saved = load();
     if (!saved || !saved.length) return;
     var nav = document.querySelector('#sidebar nav.sb-nav');
     var settingsEl = document.getElementById('nav-settings');
     if (!nav || !settingsEl) return;
-    // The divider immediately before nav-settings is our anchor
-    var anchor = settingsEl.previousElementSibling;
-    if (!anchor || anchor.parentNode !== nav) {
-      // fallback: just use settingsEl itself as anchor
-      anchor = settingsEl;
-    }
-    var ordered = [];
-    for(var i=0;i<saved.length;i++){var el=document.getElementById(saved[i]);if(el)ordered.push(el);}
-    for(var j=0;j<DEFAULTS.length;j++){var el2=document.getElementById(DEFAULTS[j][0]);if(el2&&ordered.indexOf(el2)<0)ordered.push(el2);}
-    for(var k=0;k<ordered.length;k++){nav.insertBefore(ordered[k],anchor);}
-    nav.querySelectorAll('.sb-section-label').forEach(function(l){l.style.display='none';});
-    nav.querySelectorAll('.sb-divider').forEach(function(d){ if (d !== anchor) d.style.display='none'; });
+
+    var order = saved.filter(function(k){ return refs[k]; });
+    defaultKeys().forEach(function(k){ if (order.indexOf(k) < 0) order.push(k); });
+
+    order.forEach(function(key) {
+      var r = refs[key];
+      if (!r) return;
+      nav.insertBefore(r.labelEl, settingsEl);
+      r.itemEls.forEach(function(el){ nav.insertBefore(el, settingsEl); });
+      if (r.dividerEl) nav.insertBefore(r.dividerEl, settingsEl);
+    });
   }
 
   function buildModal() {
     var existing = document.getElementById('sbo-modal');
     if (existing) existing.parentNode.removeChild(existing);
-    var saved = load() || defaultIds();
+    var saved = load() || defaultKeys();
 
     var overlay = document.createElement('div');
     overlay.id = 'sbo-modal';
@@ -23350,13 +23515,17 @@ window.inboxTab = function(tab) {
     header.style.cssText = 'padding:12px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center';
     var title = document.createElement('span');
     title.style.cssText = 'font-size:0.85rem;font-weight:600;color:var(--text)';
-    title.textContent = 'Reorder Sidebar';
+    title.textContent = 'Reorder Sidebar Sections';
     var closeBtn = document.createElement('button');
     closeBtn.textContent = '✕';
     closeBtn.style.cssText = 'background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;padding:2px 6px';
     closeBtn.addEventListener('click', function(){ overlay.remove(); });
     header.appendChild(title);
     header.appendChild(closeBtn);
+
+    var hint = document.createElement('div');
+    hint.style.cssText = 'padding:8px 16px 0;font-size:0.72rem;color:var(--muted);line-height:1.5';
+    hint.textContent = 'Whole sections move together — items stay grouped under their title.';
 
     var listWrap = document.createElement('div');
     listWrap.style.cssText = 'padding:10px 12px;max-height:380px;overflow-y:auto;display:flex;flex-direction:column;gap:4px';
@@ -23376,7 +23545,7 @@ window.inboxTab = function(tab) {
         if (idx === saved.length-1) dnBtn.style.opacity = '0.2';
         dnBtn.addEventListener('click', function(){ sboMove(idx,1); });
         var label = document.createElement('span');
-        label.style.cssText = 'flex:1;font-size:0.8rem;color:var(--text)';
+        label.style.cssText = 'flex:1;font-size:0.78rem;font-weight:500;letter-spacing:0.04em;color:var(--text)';
         label.textContent = labelFor(saved[idx]);
         row.appendChild(upBtn); row.appendChild(dnBtn); row.appendChild(label);
         listWrap.appendChild(row);
@@ -23395,13 +23564,13 @@ window.inboxTab = function(tab) {
     doneBtn.addEventListener('click', function(){ overlay.remove(); });
     footer.appendChild(resetBtn);
     footer.appendChild(doneBtn);
-    panel.appendChild(header); panel.appendChild(listWrap); panel.appendChild(footer);
+    panel.appendChild(header); panel.appendChild(hint); panel.appendChild(listWrap); panel.appendChild(footer);
     overlay.appendChild(panel);
     document.body.appendChild(overlay);
   }
 
   function sboMove(idx, dir) {
-    var saved = load() || defaultIds();
+    var saved = load() || defaultKeys();
     var newIdx = idx + dir;
     if (newIdx < 0 || newIdx >= saved.length) return;
     var tmp = saved[idx]; saved[idx] = saved[newIdx]; saved[newIdx] = tmp;
@@ -23409,16 +23578,8 @@ window.inboxTab = function(tab) {
   }
 
   function sboReset() {
-    localStorage.removeItem(KEY);
-    var nav = document.querySelector('#sidebar nav.sb-nav');
-    var settingsEl = document.getElementById('nav-settings');
-    if (nav && settingsEl) {
-      var anchor = settingsEl.previousElementSibling;
-      if (!anchor || anchor.parentNode !== nav) anchor = settingsEl;
-      for(var i=0;i<DEFAULTS.length;i++){var el=document.getElementById(DEFAULTS[i][0]);if(el)nav.insertBefore(el,anchor);}
-      nav.querySelectorAll('.sb-section-label').forEach(function(l){l.style.display='';});
-      nav.querySelectorAll('.sb-divider').forEach(function(d){d.style.display='';});
-    }
+    save(defaultKeys());
+    applyOrder();
     buildModal();
   }
 
@@ -23461,6 +23622,7 @@ window.navTo = function(section) {
     massmail:   {panel:'panel-massmail',   title:'Mass Mail',       hasSrc:false},
     docs:       {panel:'panel-docs',       title:'Documents',       hasSrc:false},
     bounces:    {panel:'panel-bounces',     title:'Bounce Manager',  hasSrc:false},
+    expenses:   {panel:'panel-expenses',    title:'Expenses',        hasSrc:false},
     dataexplorer:{panel:'panel-dataexplorer',title:'Data Explorer',   hasSrc:false},
     salestargeting:{panel:'panel-salestargeting',title:'Sales Targeting', hasSrc:false},
     help:       {panel:'panel-help',        title:'Help & Guide',    hasSrc:false},
@@ -23484,6 +23646,7 @@ window.navTo = function(section) {
   if (section === 'catchup') setTimeout(() => { if (typeof cuInit === 'function') cuInit(); }, 200);
   if (section === 'vendor') setTimeout(() => { if (typeof voLoadTracker === 'function') voLoadTracker(); }, 200);
   if (section === 'massmail') setTimeout(() => { if (typeof mmInit === 'function') mmInit(); }, 200);
+  if (section === 'expenses') setTimeout(() => { if (typeof expInit === 'function') expInit(); }, 200);
 };
 
 window.toggleSidebar = function() {
@@ -23635,11 +23798,7 @@ window._scanOdooInbox = async function() {
   }
 };
 
-window.setTheme = function(t) {
-  document.body.setAttribute('data-theme', t);
-  localStorage.setItem('oelTheme', t);
-  document.querySelectorAll('.theme-dot').forEach(d => d.classList.toggle('active', d.dataset.t === t));
-};
+window.setTheme = setTheme; // keep the canonical implementation (see Theme init block) reachable via window.*
 
 
 // ── Sidebar toggle ────────────────────────────────────────────────────────
@@ -23778,14 +23937,7 @@ function closeSettings() {
   document.getElementById('settings-overlay').classList.remove('open');
 }
 
-// ── Theme ─────────────────────────────────────────────────────────────────
-function setTheme(t) {
-  document.body.setAttribute('data-theme', t);
-  localStorage.setItem('oelTheme', t);
-  document.querySelectorAll('.theme-dot').forEach(d => {
-    d.classList.toggle('active', d.dataset.t === t);
-  });
-}
+// (Theme is initialized once, near the top of this script — see the Theme init block.)
 
 // ── Status lights sync (mirror sb lights to settings) ────────────────────
 const _origSetLight = window.oelSetLight;
@@ -27484,6 +27636,497 @@ document.addEventListener('DOMContentLoaded', hslInit);
     if (btn) btn.disabled = false;
     if (progressEl) progressEl.textContent = `Done — ${ok} logged, ${nomatch} no Odoo match, ${err} failed`;
     mmRenderList();
+  };
+
+})();
+</script>
+
+<!-- ── Expenses ──────────────────────────────────────────────────────────── -->
+<script>
+(function(){
+
+  // Odoo 19 restructured Expenses to work directly on hr.expense records —
+  // there's no hr.expense.sheet model anymore. Everything here targets
+  // hr.expense directly, and the state codes/labels are discovered live
+  // from fields_get rather than hardcoded, so this doesn't break again if
+  // the exact codes differ from instance to instance.
+
+  let EXP = { rows: [], attachmentsByExpense: {} };
+  let _expEmployees = [];
+  let _expModuleAvailable = null;  // null = unchecked, true, false (confirmed missing/unreachable)
+  let _expStateOptions = null;     // [[code,label], ...] discovered from hr.expense's state field
+  let _expSubmittedCode = null;    // best-guess code for "awaiting approval", derived from the above
+  let _expFieldSet = null;         // Set of real field names on hr.expense, discovered live
+  let _expDateField = null;        // whichever of date/expense_date/accounting_date actually exists
+
+  function expFmt(n) { return '$' + (n||0).toLocaleString('en-US', {maximumFractionDigits:2}); }
+
+  // ── Live field discovery — Odoo 19 renamed/removed several hr.expense
+  // fields from older versions (unit_amount included), so we only ever ask
+  // for fields confirmed to exist rather than a fixed guessed list.
+  async function expDiscoverFields() {
+    if (_expFieldSet) return _expFieldSet;
+    try {
+      const fields = await odooExecute(odooUid, 'hr.expense', 'fields_get', [], { attributes: [] });
+      _expFieldSet = new Set(Object.keys(fields || {}));
+    } catch(e) {
+      _expFieldSet = new Set(); // discovery failed — caller falls back to a conservative field list
+    }
+    _expDateField = ['date','expense_date','accounting_date'].find(f => _expFieldSet.has(f)) || null;
+    return _expFieldSet;
+  }
+
+  function expIsMissingModelError(msg) {
+    return /doesn.?t exist|does not exist|invalid model|access.*(right|denied)|not allowed/i.test(msg || '');
+  }
+
+  // ── Diagnostics (surfaced only if hr.expense itself is unreachable) ─────
+  async function expRunDiagnostics() {
+    const result = { moduleState: null, models: [], access: [] };
+    try {
+      const mods = await odooExecute(odooUid, 'ir.module.module', 'search_read',
+        [[['name','=','hr_expense']]], { fields: ['name','state'], limit: 1 });
+      result.moduleState = (mods && mods[0]) ? mods[0].state : 'no "hr_expense" row found in ir.module.module';
+    } catch(e) { result.moduleState = 'check failed: ' + e.message; }
+
+    try {
+      result.models = await odooExecute(odooUid, 'ir.model', 'search_read',
+        [[['model','like','expense']]], { fields: ['model','name'], limit: 20 });
+    } catch(e) { result.models = []; }
+
+    try {
+      result.access = await odooExecute(odooUid, 'ir.model.access', 'search_read',
+        [[['model_id.model','=','hr.expense']]], { fields: ['name','group_id','perm_read'], limit: 20 });
+    } catch(e) { result.access = []; }
+
+    return result;
+  }
+
+  async function expShowModuleMissingBanner() {
+    const listEl = document.getElementById('exp-list');
+    const summaryEl = document.getElementById('exp-summary');
+    const catCard = document.getElementById('exp-category-card');
+    if (summaryEl) summaryEl.innerHTML = '';
+    if (catCard) catCard.style.display = 'none';
+    if (!listEl) return;
+    listEl.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:0.85rem"><div class="dot spin" style="display:inline-block;margin-right:6px"></div>Checking what Odoo actually has…</div>';
+
+    const diag = await expRunDiagnostics();
+
+    const modelRows = diag.models.length
+      ? diag.models.map(m => `<div style="display:flex;justify-content:space-between;gap:10px;padding:4px 0;border-bottom:1px solid var(--border)"><span style="font-family:monospace;font-size:0.76rem;color:var(--text)">${escHtml(m.model)}</span><span style="font-size:0.76rem;color:var(--muted)">${escHtml(m.name||'')}</span></div>`).join('')
+      : '<div style="font-size:0.78rem;color:var(--muted)">No models with "expense" in the name are visible to this API user.</div>';
+
+    const accessRows = diag.access.length
+      ? diag.access.map(a => `<div style="font-size:0.76rem;color:var(--text);padding:2px 0">${escHtml(a.name)} — read: ${a.perm_read ? '✓' : '✗'}</div>`).join('')
+      : '<div style="font-size:0.78rem;color:var(--muted)">No access-rule rows found for hr.expense covering this user\'s groups.</div>';
+
+    listEl.innerHTML = `<div style="padding:20px;color:var(--muted);font-size:0.82rem;line-height:1.7">
+      <div style="color:var(--text);font-weight:500;margin-bottom:10px">Can't reach hr.expense on this Odoo instance</div>
+      <div style="margin-bottom:12px"><strong style="color:var(--text)">hr_expense module state:</strong> ${escHtml(String(diag.moduleState))}</div>
+      <div style="margin-bottom:6px"><strong style="color:var(--text)">Models with "expense" visible to this API user:</strong></div>
+      <div style="background:var(--surface2);border-radius:8px;padding:8px 12px;margin-bottom:12px">${modelRows}</div>
+      <div style="margin-bottom:6px"><strong style="color:var(--text)">Access rules for hr.expense:</strong></div>
+      <div style="background:var(--surface2);border-radius:8px;padding:8px 12px;margin-bottom:14px">${accessRows}</div>
+      <div style="margin-bottom:14px">If <code style="background:var(--surface2);padding:1px 6px;border-radius:4px">hr.expense</code> is missing from the models list above, the API user's access group can't see it — check <strong style="color:var(--text)">Settings → Users</strong> for the account tied to this API key. Otherwise, screenshot this panel and I'll dig further.</div>
+      <button class="btn btn-primary" onclick="expRetryModuleCheck()" style="padding:7px 16px;font-size:0.8rem">↻ Try Again</button>
+    </div>`;
+  }
+
+  window.expRetryModuleCheck = function() {
+    _expModuleAvailable = null;
+    _expStateOptions = null;
+    _expFieldSet = null;
+    expInit();
+  };
+
+  async function expCheckModuleAvailable() {
+    if (_expModuleAvailable !== null) return _expModuleAvailable;
+    try {
+      await odooExecute(odooUid, 'hr.expense', 'search_count', [[]]);
+      _expModuleAvailable = true;
+    } catch(e) {
+      _expModuleAvailable = expIsMissingModelError(e.message) ? false : null;
+    }
+    return _expModuleAvailable;
+  }
+
+  // ── Live state-field discovery — no hardcoded state codes ───────────────
+  async function expDiscoverStates() {
+    if (_expStateOptions) return _expStateOptions;
+    try {
+      const fields = await odooExecute(odooUid, 'hr.expense', 'fields_get', [], { attributes: ['selection'] });
+      const sel = fields && fields.state && fields.state.selection;
+      _expStateOptions = Array.isArray(sel) ? sel : [];
+    } catch(e) {
+      _expStateOptions = [];
+    }
+    // Best-guess which code represents "submitted, awaiting approval"
+    const submitted = _expStateOptions.find(([code, label]) => /report|submit|approv/i.test(label) && !/approved/i.test(label));
+    _expSubmittedCode = submitted ? submitted[0] : (_expStateOptions.find(([c]) => c === 'reported') ? 'reported' : null);
+    return _expStateOptions;
+  }
+
+  function expStateLabel(code) {
+    const found = (_expStateOptions || []).find(([c]) => c === code);
+    return found ? found[1] : (code || '—');
+  }
+  function expStateColor(code) {
+    const label = expStateLabel(code).toLowerCase();
+    if (/refus/.test(label)) return 'var(--danger)';
+    if (/approv/.test(label)) return 'var(--accent)';
+    if (/paid|done|post/.test(label)) return 'var(--success)';
+    if (/report|submit/.test(label)) return 'var(--warning, #d99a3f)';
+    return 'var(--muted)'; // draft / to report / etc.
+  }
+  function expIsPendingCode(code) {
+    return code === _expSubmittedCode;
+  }
+
+  window.expInit = async function() {
+    if (!odooUid) {
+      const listEl = document.getElementById('exp-list');
+      if (listEl) listEl.innerHTML = '<div style="padding:16px;text-align:center;color:var(--muted);font-size:0.82rem">Connect to Odoo first (Steps 1-2).</div>';
+      return;
+    }
+    const available = await expCheckModuleAvailable();
+    if (available === false) { expShowModuleMissingBanner(); return; }
+    await expDiscoverStates();
+    await expDiscoverFields();
+    expPopulateStateFilter();
+    if (!_expEmployees.length) {
+      try {
+        _expEmployees = await odooExecute(odooUid, 'hr.employee', 'search_read', [[]], { fields: ['id','name'], limit: 500 });
+        _expEmployees.sort((a,b) => a.name.localeCompare(b.name));
+        const sel = document.getElementById('exp-employee');
+        if (sel) {
+          sel.innerHTML = '<option value="">All employees</option>' +
+            _expEmployees.map(e => `<option value="${e.id}">${escHtml(e.name)}</option>`).join('');
+        }
+      } catch(e) {}
+    }
+    expUpdateBadge();
+    expLoad();
+  };
+
+  function expPopulateStateFilter() {
+    const sel = document.getElementById('exp-state');
+    if (!sel || !_expStateOptions || !_expStateOptions.length) return; // keep static fallback options if discovery failed
+    const current = sel.value;
+    sel.innerHTML = '<option value="">All statuses</option>' +
+      _expStateOptions.map(([code, label]) => `<option value="${escHtml(code)}">${escHtml(label)}</option>`).join('');
+    if (current && _expStateOptions.some(([c]) => c === current)) sel.value = current;
+  }
+
+  window.expUpdateBadge = async function() {
+    if (!odooUid || _expModuleAvailable === false) return;
+    try {
+      if (!_expSubmittedCode) await expDiscoverStates();
+      if (!_expSubmittedCode) return;
+      const count = await odooExecute(odooUid, 'hr.expense', 'search_count', [[['state','=', _expSubmittedCode]]]);
+      const badge = document.getElementById('badge-expenses');
+      if (badge) {
+        badge.textContent = count > 0 ? String(count) : '';
+        badge.style.display = count > 0 ? '' : 'none';
+      }
+    } catch(e) {
+      if (expIsMissingModelError(e.message)) _expModuleAvailable = false;
+    }
+  };
+
+  window.expLoad = async function() {
+    const listEl = document.getElementById('exp-list');
+    const summaryEl = document.getElementById('exp-summary');
+    const statusEl = document.getElementById('exp-status');
+    if (!odooUid) { if (listEl) listEl.innerHTML = '<div style="padding:16px;text-align:center;color:var(--muted);font-size:0.82rem">Connect to Odoo first</div>'; return; }
+    if (_expModuleAvailable === false) { expShowModuleMissingBanner(); return; }
+    if (listEl) listEl.innerHTML = '<div style="padding:16px;text-align:center;color:var(--muted);font-size:0.82rem"><div class="dot spin" style="display:inline-block;margin-right:6px"></div>Loading…</div>';
+    if (statusEl) statusEl.textContent = '';
+
+    const empId = document.getElementById('exp-employee')?.value || '';
+    const state = document.getElementById('exp-state')?.value;
+    const month = document.getElementById('exp-month')?.value || '';
+
+    const domain = [];
+    if (empId) domain.push(['employee_id','=', parseInt(empId)]);
+    if (state) domain.push(['state','=', state]);
+
+    try {
+      if (!_expFieldSet) await expDiscoverFields();
+      const wantedFields = ['name','employee_id','product_id','total_amount','state','description','create_date'];
+      if (_expDateField) wantedFields.push(_expDateField);
+      const fields = _expFieldSet && _expFieldSet.size
+        ? Array.from(new Set(wantedFields.filter(f => _expFieldSet.has(f))))
+        : wantedFields; // discovery failed — use the conservative list as-is (no unit_amount/quantity, so it's safe either way)
+
+      let rows = await odooExecute(odooUid, 'hr.expense', 'search_read', [domain], {
+        fields, limit: 1000, order: 'create_date desc'
+      });
+      rows = rows || [];
+      rows.forEach(r => { r._displayDate = (_expDateField && r[_expDateField]) || r.create_date || false; });
+
+      if (month) {
+        const parts = month.split('-');
+        const y = parseInt(parts[0]), m = parseInt(parts[1]);
+        const startStr = y + '-' + String(m).padStart(2,'0') + '-01';
+        const nextY = (m === 12) ? y+1 : y;
+        const nextM = (m === 12) ? 1 : m+1;
+        const endStr = nextY + '-' + String(nextM).padStart(2,'0') + '-01';
+        rows = rows.filter(r => {
+          const d = String(r.create_date||'').slice(0,10);
+          return d >= startStr && d < endStr;
+        });
+      }
+
+      EXP.rows = rows;
+
+      if (!rows.length) {
+        if (summaryEl) summaryEl.innerHTML = '';
+        document.getElementById('exp-category-card').style.display = 'none';
+        if (listEl) listEl.innerHTML = '<div style="padding:16px;text-align:center;color:var(--muted);font-size:0.82rem">No expenses match these filters</div>';
+        return;
+      }
+
+      // Attachments — lightweight metadata only (no binary yet)
+      const expenseIds = rows.map(r => r.id);
+      const attByExpense = {};
+      try {
+        const atts = await odooExecute(odooUid, 'ir.attachment', 'search_read',
+          [[['res_model','=','hr.expense'],['res_id','in', expenseIds]]],
+          { fields: ['id','name','res_id','mimetype'], limit: 2000 }
+        );
+        (atts||[]).forEach(a => { (attByExpense[a.res_id] = attByExpense[a.res_id] || []).push(a); });
+      } catch(e) {}
+      EXP.attachmentsByExpense = attByExpense;
+
+      expRenderSummary();
+      expRenderCategoryBreakdown();
+      expRenderList();
+
+    } catch(e) {
+      if (expIsMissingModelError(e.message)) {
+        _expModuleAvailable = false;
+        expShowModuleMissingBanner();
+      } else {
+        if (listEl) listEl.innerHTML = '<div style="padding:16px;text-align:center;color:var(--danger);font-size:0.82rem">Error: ' + escHtml(e.message) + '</div>';
+        if (summaryEl) summaryEl.innerHTML = '';
+      }
+    }
+  };
+
+  function expRenderSummary() {
+    const summaryEl = document.getElementById('exp-summary');
+    if (!summaryEl) return;
+    const rows = EXP.rows;
+    const total = rows.reduce((s,r) => s + (r.total_amount||0), 0);
+    const pending = rows.filter(r => expIsPendingCode(r.state));
+    const pendingTotal = pending.reduce((s,r) => s + (r.total_amount||0), 0);
+    summaryEl.innerHTML =
+      '<div class="laz-stat-card"><div class="laz-stat-label">Expenses</div><div class="laz-stat-value">' + rows.length + '</div><div class="laz-stat-sub">matching filters</div></div>' +
+      '<div class="laz-stat-card"><div class="laz-stat-label">Total Amount</div><div class="laz-stat-value accent">' + expFmt(total) + '</div><div class="laz-stat-sub">all matching</div></div>' +
+      '<div class="laz-stat-card"><div class="laz-stat-label">Avg Expense</div><div class="laz-stat-value">' + expFmt(rows.length ? total/rows.length : 0) + '</div><div class="laz-stat-sub">per line</div></div>' +
+      '<div class="laz-stat-card"><div class="laz-stat-label">Needs Approval</div><div class="laz-stat-value' + (pending.length ? ' warning' : '') + '">' + pending.length + '</div><div class="laz-stat-sub">' + expFmt(pendingTotal) + '</div></div>';
+  }
+
+  function expRenderCategoryBreakdown() {
+    const card = document.getElementById('exp-category-card');
+    const listEl = document.getElementById('exp-category-list');
+    if (!card || !listEl) return;
+    const totals = {};
+    EXP.rows.forEach(r => {
+      const cat = (r.product_id && r.product_id[1]) ? r.product_id[1] : 'Uncategorized';
+      totals[cat] = (totals[cat]||0) + (r.total_amount||0);
+    });
+    const entries = Object.entries(totals).sort((a,b) => b[1]-a[1]);
+    if (!entries.length) { card.style.display = 'none'; return; }
+    card.style.display = 'block';
+    const max = entries[0][1] || 1;
+    listEl.innerHTML = entries.map(([name, amt]) => {
+      const pct = Math.max(4, Math.round((amt/max)*100));
+      return `<div style="display:flex;align-items:center;gap:10px">
+        <div style="width:140px;font-size:0.78rem;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0">${escHtml(name)}</div>
+        <div style="flex:1;background:var(--surface2);border-radius:4px;height:8px;overflow:hidden"><div style="width:${pct}%;height:100%;background:var(--accent);border-radius:4px"></div></div>
+        <div style="width:80px;text-align:right;font-size:0.78rem;font-family:monospace;color:var(--muted)">${expFmt(amt)}</div>
+      </div>`;
+    }).join('');
+  }
+
+  function expRenderList() {
+    const listEl = document.getElementById('exp-list');
+    if (!listEl) return;
+    listEl.innerHTML = EXP.rows.map(r => expRowCard(r)).join('');
+  }
+
+  function expRowCard(r) {
+    const emp = (r.employee_id && r.employee_id[1]) ? escHtml(r.employee_id[1]) : '—';
+    const cat = (r.product_id && r.product_id[1]) ? escHtml(r.product_id[1]) : 'Uncategorized';
+    const date = r._displayDate ? String(r._displayDate).slice(0,10) : '—';
+    const color = expStateColor(r.state);
+    const label = expStateLabel(r.state);
+    const canAct = expIsPendingCode(r.state);
+    const atts = EXP.attachmentsByExpense[r.id] || [];
+    const receiptBtns = atts.map(a => `<button class="btn btn-ghost" onclick="expViewReceipt(${a.id})" title="${escHtml(a.name||'Receipt')}" style="padding:3px 9px;font-size:0.72rem">🧾</button>`).join(' ');
+
+    return `<div class="card" style="padding:14px 16px">
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <div style="flex:1;min-width:180px">
+          <div style="font-size:0.86rem;font-weight:500;color:var(--text)">${escHtml(r.name||r.description||'Expense')}</div>
+          <div style="font-size:0.76rem;color:var(--muted);margin-top:2px">${emp} · ${cat} · ${date}</div>
+        </div>
+        <span style="font-size:0.68rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;padding:3px 10px;border-radius:20px;border:1px solid ${color};color:${color}">${escHtml(label)}</span>
+        <div style="font-family:monospace;font-size:0.92rem;color:var(--text);min-width:80px;text-align:right">${expFmt(r.total_amount)}</div>
+        <div>${receiptBtns}</div>
+        ${canAct ? `<button class="btn btn-primary" onclick="expApprove(${r.id})" style="padding:5px 14px;font-size:0.76rem">✓ Approve</button>
+        <button class="btn btn-ghost" onclick="expOpenRefuseModal(${r.id})" style="padding:5px 14px;font-size:0.76rem;color:var(--danger);border-color:rgba(220,80,80,0.4)">✕ Refuse</button>` : ''}
+      </div>
+    </div>`;
+  }
+
+  window.expViewReceipt = async function(attachmentId) {
+    const existing = document.getElementById('exp-receipt-modal');
+    if (existing) existing.remove();
+    const modal = document.createElement('div');
+    modal.id = 'exp-receipt-modal';
+    modal.className = 'modal-overlay';
+    modal.style.cssText = 'display:flex';
+    modal.innerHTML = `<div class="modal" style="max-width:520px">
+      <div class="modal-header">
+        <div class="modal-header-text"><div class="record">Receipt</div></div>
+        <button class="modal-close" onclick="document.getElementById('exp-receipt-modal').remove()">✕</button>
+      </div>
+      <div class="modal-body" id="exp-receipt-body" style="text-align:center">
+        <div class="dot spin" style="display:inline-block;margin-right:6px"></div>Loading receipt…
+      </div>
+    </div>`;
+    document.body.appendChild(modal);
+
+    try {
+      const att = await odooExecute(odooUid, 'ir.attachment', 'read', [[attachmentId]], { fields: ['name','mimetype','datas'] });
+      const rec = att && att[0];
+      const bodyEl = document.getElementById('exp-receipt-body');
+      if (!rec || !rec.datas) { if (bodyEl) bodyEl.innerHTML = '<div style="color:var(--muted);font-size:0.82rem">Couldn\'t load this receipt.</div>'; return; }
+      const mime = rec.mimetype || 'application/octet-stream';
+      const dataUri = `data:${mime};base64,${rec.datas}`;
+      if (mime.startsWith('image/')) {
+        if (bodyEl) bodyEl.innerHTML = `<img src="${dataUri}" style="max-width:100%;border-radius:8px" alt="${escHtml(rec.name||'Receipt')}">`;
+      } else {
+        if (bodyEl) bodyEl.innerHTML = `<a href="${dataUri}" download="${escHtml(rec.name||'receipt')}" class="btn btn-primary" style="display:inline-block;padding:8px 18px;font-size:0.82rem">Download ${escHtml(rec.name||'receipt')}</a>`;
+      }
+    } catch(e) {
+      const bodyEl = document.getElementById('exp-receipt-body');
+      if (bodyEl) bodyEl.innerHTML = '<div style="color:var(--danger);font-size:0.82rem">Error: ' + escHtml(e.message) + '</div>';
+    }
+  };
+
+  // ── Approve / Refuse — hr.expense direct methods, with graceful fallbacks ──
+  // Odoo 19 renamed the old *_expense_sheets action methods; exact names aren't
+  // introspectable over XML-RPC, so we try the most likely candidates in order
+  // before falling back to writing the state field directly.
+  function expApprovedCode() {
+    const found = (_expStateOptions || []).find(([c,l]) => /approv/i.test(l));
+    return found ? found[0] : 'approved';
+  }
+  function expRefusedCode() {
+    const found = (_expStateOptions || []).find(([c,l]) => /refus/i.test(l));
+    return found ? found[0] : 'refused';
+  }
+
+  async function expTryApprove(expenseId) {
+    const candidates = ['action_approve_expenses', 'action_approve', 'approve_expenses'];
+    for (const method of candidates) {
+      try { await odooExecute(odooUid, 'hr.expense', method, [[expenseId]], {}); return; } catch(e) {}
+    }
+    await odooExecute(odooUid, 'hr.expense', 'write', [[expenseId], { state: expApprovedCode() }]);
+  }
+
+  async function expTryRefuse(expenseId, reason) {
+    // Wizard flow first — hr.expense.refuse.wizard is confirmed to exist on this instance
+    try {
+      const wizardId = await odooExecute(odooUid, 'hr.expense.refuse.wizard', 'create', [{}], {
+        context: { active_ids: [expenseId], active_model: 'hr.expense' }
+      });
+      const id = Array.isArray(wizardId) ? wizardId[0] : wizardId;
+      if (reason) { try { await odooExecute(odooUid, 'hr.expense.refuse.wizard', 'write', [[id], { reason }]); } catch(e) {} }
+      const wizardMethods = ['action_refuse', 'button_refuse'];
+      for (const method of wizardMethods) {
+        try {
+          await odooExecute(odooUid, 'hr.expense.refuse.wizard', method, [[id]], {
+            context: { active_ids: [expenseId], active_model: 'hr.expense' }
+          });
+          return;
+        } catch(e) {}
+      }
+    } catch(e) {}
+
+    // Direct action methods on hr.expense
+    const candidates = ['action_refuse_expenses', 'action_refuse'];
+    for (const method of candidates) {
+      try { await odooExecute(odooUid, 'hr.expense', method, [[expenseId], reason || ''], {}); return; } catch(e) {}
+    }
+
+    // Last resort: direct write + note
+    await odooExecute(odooUid, 'hr.expense', 'write', [[expenseId], { state: expRefusedCode() }]);
+    try {
+      await odooExecute(odooUid, 'hr.expense', 'message_post', [[expenseId]], {
+        body: 'Refused' + (reason ? ': ' + escHtml(reason) : ''), message_type: 'comment', subtype_xmlid: 'mail.mt_note',
+      });
+    } catch(e) {}
+  }
+
+  window.expApprove = async function(expenseId) {
+    if (!confirm('Approve this expense?')) return;
+    const statusEl = document.getElementById('exp-status');
+    try {
+      if (statusEl) statusEl.textContent = 'Approving…';
+      await expTryApprove(expenseId);
+      if (statusEl) { statusEl.style.color = 'var(--success)'; statusEl.textContent = '✓ Approved'; }
+      expUpdateBadge();
+      expLoad();
+    } catch(e) {
+      if (statusEl) { statusEl.style.color = 'var(--danger)'; statusEl.textContent = 'Error: ' + e.message; }
+    }
+  };
+
+  window.expOpenRefuseModal = function(expenseId) {
+    const existing = document.getElementById('exp-refuse-modal');
+    if (existing) existing.remove();
+    const modal = document.createElement('div');
+    modal.id = 'exp-refuse-modal';
+    modal.className = 'modal-overlay';
+    modal.style.cssText = 'display:flex';
+    modal.innerHTML = `<div class="modal" style="max-width:420px">
+      <div class="modal-header">
+        <div class="modal-header-text"><div class="record">Refuse Expense</div></div>
+        <button class="modal-close" onclick="document.getElementById('exp-refuse-modal').remove()">✕</button>
+      </div>
+      <div class="modal-body" style="display:flex;flex-direction:column;gap:12px">
+        <div class="form-group">
+          <label>Reason</label>
+          <textarea id="exp-refuse-reason" rows="3" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.83rem;outline:none;resize:vertical" placeholder="Missing receipt, wrong category, over policy limit…"></textarea>
+        </div>
+        <div id="exp-refuse-status" style="font-size:0.78rem;color:var(--muted)"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="document.getElementById('exp-refuse-modal').remove()">Cancel</button>
+        <button class="btn btn-primary" onclick="expConfirmRefuse(${expenseId})" style="border-color:var(--danger);color:var(--danger)">Refuse Expense</button>
+      </div>
+    </div>`;
+    document.body.appendChild(modal);
+    document.getElementById('exp-refuse-reason')?.focus();
+  };
+
+  window.expConfirmRefuse = async function(expenseId) {
+    const reason = document.getElementById('exp-refuse-reason')?.value?.trim() || '';
+    const statusEl = document.getElementById('exp-refuse-status');
+    try {
+      if (statusEl) statusEl.textContent = 'Refusing…';
+      await expTryRefuse(expenseId, reason);
+      document.getElementById('exp-refuse-modal')?.remove();
+      expUpdateBadge();
+      expLoad();
+    } catch(e) {
+      if (statusEl) { statusEl.style.color = 'var(--danger)'; statusEl.textContent = 'Error: ' + e.message; }
+    }
   };
 
 })();
