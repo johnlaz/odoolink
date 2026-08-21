@@ -3,7 +3,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <meta name="oel-version" content="v15.4">
+  <meta name="oel-version" content="v15.5">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="mobile-web-app-capable" content="yes">
@@ -2789,35 +2789,80 @@ Support Team"></textarea>
 
         <div class="card" style="margin-bottom:14px">
           <div class="card-title">💳 Expenses</div>
-          <div class="card-subtitle">Review, approve, and refuse employee expense reports straight from Odoo — with a spend breakdown by category.</div>
-          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px">
-            <select id="exp-employee" onchange="expLoad()" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.82rem;outline:none;cursor:pointer">
-              <option value="">All employees</option>
-            </select>
-            <select id="exp-state" onchange="expLoad()" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.82rem;outline:none;cursor:pointer">
-              <option value="">All statuses</option>
-              <option value="submit">Needs Approval</option>
-              <option value="approve">Approved</option>
-              <option value="post">Posted</option>
-              <option value="done">Paid</option>
-              <option value="cancel">Refused</option>
-              <option value="draft">Draft (not submitted)</option>
-            </select>
-            <input type="month" id="exp-month" onchange="expLoad()" title="Filter by submission month" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.82rem;outline:none;cursor:pointer">
-            <div style="flex:1"></div>
-            <div id="exp-status" style="font-size:0.78rem;color:var(--muted)"></div>
+          <div class="card-subtitle">Review, approve, and refuse employee expense reports and vendor bills straight from Odoo — with spend breakdowns.</div>
+          <div style="display:flex;gap:8px;margin-top:14px">
+            <div class="lm-chip active" id="exp-tab-employee" onclick="expSwitchTab('employee')" style="padding:6px 16px;border-radius:20px;font-size:0.8rem">Employee Expenses</div>
+            <div class="lm-chip" id="exp-tab-vendor" onclick="expSwitchTab('vendor')" style="padding:6px 16px;border-radius:20px;font-size:0.8rem">Vendor Bills</div>
           </div>
         </div>
 
-        <div id="exp-summary" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px"></div>
+        <!-- ── Employee Expenses view ─────────────────────────────────────── -->
+        <div id="exp-view-employee">
 
-        <div class="card" id="exp-category-card" style="margin-bottom:14px;display:none">
-          <div style="font-size:0.82rem;font-weight:500;margin-bottom:8px">Spend by Category</div>
-          <div id="exp-category-list" style="display:flex;flex-direction:column;gap:6px"></div>
+          <div class="card" style="margin-bottom:14px">
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+              <select id="exp-employee" onchange="expLoad()" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.82rem;outline:none;cursor:pointer">
+                <option value="">All employees</option>
+              </select>
+              <select id="exp-state" onchange="expLoad()" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.82rem;outline:none;cursor:pointer">
+                <option value="">All statuses</option>
+                <option value="submit">Needs Approval</option>
+                <option value="approve">Approved</option>
+                <option value="post">Posted</option>
+                <option value="done">Paid</option>
+                <option value="cancel">Refused</option>
+                <option value="draft">Draft (not submitted)</option>
+              </select>
+              <input type="month" id="exp-month" onchange="expLoad()" title="Filter by submission month" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.82rem;outline:none;cursor:pointer">
+              <div style="flex:1"></div>
+              <div id="exp-status" style="font-size:0.78rem;color:var(--muted)"></div>
+            </div>
+          </div>
+
+          <div id="exp-summary" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px"></div>
+
+          <div class="card" id="exp-category-card" style="margin-bottom:14px;display:none">
+            <div style="font-size:0.82rem;font-weight:500;margin-bottom:8px">Spend by Category</div>
+            <div id="exp-category-list" style="display:flex;flex-direction:column;gap:6px"></div>
+          </div>
+
+          <div id="exp-list" style="display:flex;flex-direction:column;gap:10px">
+            <div style="padding:16px;text-align:center;color:var(--muted);font-size:0.82rem">Connect to Odoo, then open this tab to load expense reports.</div>
+          </div>
+
         </div>
 
-        <div id="exp-list" style="display:flex;flex-direction:column;gap:10px">
-          <div style="padding:16px;text-align:center;color:var(--muted);font-size:0.82rem">Connect to Odoo, then open this tab to load expense reports.</div>
+        <!-- ── Vendor Bills view ──────────────────────────────────────────── -->
+        <div id="exp-view-vendor" style="display:none">
+
+          <div class="card" style="margin-bottom:14px">
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+              <select id="vb-vendor" onchange="vbLoad()" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.82rem;outline:none;cursor:pointer">
+                <option value="">All vendors</option>
+              </select>
+              <select id="vb-state" onchange="vbLoad()" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.82rem;outline:none;cursor:pointer">
+                <option value="">All statuses</option>
+              </select>
+              <select id="vb-payment" onchange="vbLoad()" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.82rem;outline:none;cursor:pointer">
+                <option value="">All payment states</option>
+              </select>
+              <input type="month" id="vb-month" onchange="vbLoad()" title="Filter by bill date" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.82rem;outline:none;cursor:pointer">
+              <div style="flex:1"></div>
+              <div id="vb-status" style="font-size:0.78rem;color:var(--muted)"></div>
+            </div>
+          </div>
+
+          <div id="vb-summary" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px"></div>
+
+          <div class="card" id="vb-vendor-card" style="margin-bottom:14px;display:none">
+            <div style="font-size:0.82rem;font-weight:500;margin-bottom:8px">Spend by Vendor</div>
+            <div id="vb-vendor-list" style="display:flex;flex-direction:column;gap:6px"></div>
+          </div>
+
+          <div id="vb-list" style="display:flex;flex-direction:column;gap:10px">
+            <div style="padding:16px;text-align:center;color:var(--muted);font-size:0.82rem">Connect to Odoo, then open this tab to load vendor bills.</div>
+          </div>
+
         </div>
 
       </div>
@@ -2830,9 +2875,9 @@ Support Team"></textarea>
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
           <div>
             <div style="font-family:'DM Serif Display',serif;font-size:1.3rem;color:var(--text)">OEL Command</div>
-            <div style="font-size:0.75rem;color:var(--muted);margin-top:2px">Quick Reference Guide · v15.4</div>
+            <div style="font-size:0.75rem;color:var(--muted);margin-top:2px">Quick Reference Guide · v15.5</div>
           </div>
-          <span style="font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace">v15.4</span>
+          <span style="font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace">v15.5</span>
         </div>
 
         <!-- Setup -->
@@ -3019,9 +3064,9 @@ Support Team"></textarea>
         <div class="card" style="margin-bottom:14px">
           <div class="card-title">💳 Expenses</div>
           <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
-            <p style="margin:0 0 4px">Pulls expense reports from Odoo's Expenses module. Filter by employee, status, and submission month. "Needs Approval" is the default view — your queue.</p>
-            <p style="margin:0 0 4px">Expand a report to see its line items and receipts. <strong style="color:var(--text)">✓ Approve</strong> and <strong style="color:var(--text)">✕ Refuse</strong> act directly on the Odoo record — refuse asks for a reason first.</p>
-            <p style="margin:0">The <strong style="color:var(--text)">Spend by Category</strong> card totals whatever's currently filtered, grouped by expense product/category.</p>
+            <p style="margin:0 0 4px"><strong style="color:var(--text)">Employee Expenses</strong> pulls expense reports from Odoo. Filter by employee, status, and month. Each row shows receipts and, when it's awaiting approval, <strong style="color:var(--text)">✓ Approve</strong> / <strong style="color:var(--text)">✕ Refuse</strong> buttons that act directly on the Odoo record — refuse asks for a reason first.</p>
+            <p style="margin:0 0 4px"><strong style="color:var(--text)">Vendor Bills</strong> (second tab) pulls from Accounting/Invoicing — every bill a vendor has sent in, filterable by vendor, status, payment state, and month. Draft bills get a <strong style="color:var(--text)">✓ Validate &amp; Post</strong> button; attachments open the same way as expense receipts.</p>
+            <p style="margin:0">Both views total whatever's currently filtered — <strong style="color:var(--text)">Spend by Category</strong> for expenses, <strong style="color:var(--text)">Spend by Vendor</strong> for bills.</p>
           </div>
         </div>
 
@@ -3068,7 +3113,7 @@ Support Team"></textarea>
         <div class="card" style="margin-bottom:14px">
           <div class="card-title">🔧 Troubleshooting</div>
           <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
-            <p style="margin:0 0 4px"><strong style="color:var(--text)">App not updating after deploy:</strong> Hard refresh Ctrl+Shift+R. Service worker cache key = oel-v15.4.</p>
+            <p style="margin:0 0 4px"><strong style="color:var(--text)">App not updating after deploy:</strong> Hard refresh Ctrl+Shift+R. Service worker cache key = oel-v15.5.</p>
             <p style="margin:0 0 4px"><strong style="color:var(--text)">Odoo calls failing:</strong> Confirm server.py is running on port 7842. Check status lights in Settings. All domains must be flat arrays for Odoo 19 — no nested | operators. The header Connect button retries automatically (up to 3x) since the public CORS proxies it cycles through in Proxy mode can be individually flaky — "retry 1/2" in the status text is normal, not an error. If it still fails after retries, switch to Local Server mode in Settings.</p>
             <p style="margin:0 0 4px"><strong style="color:var(--text)">IMAP not working:</strong> Confirm imap_server.py is running on port 7843. Gmail requires an App Password. Turbify uses standard IMAP credentials.</p>
             <p style="margin:0 0 4px"><strong style="color:var(--text)">AI drafts failing:</strong> Check Groq API key in Settings. Verify model name — default is qwen/qwen3.6-27b.</p>
@@ -3077,7 +3122,7 @@ Support Team"></textarea>
         </div>
 
         <div style="text-align:center;font-size:0.72rem;color:var(--muted);padding:12px 0">
-          OEL Command v15.4 · Built by Lazzaro · Powered by Groq AI + Odoo 19
+          OEL Command v15.5 · Built by Lazzaro · Powered by Groq AI + Odoo 19
         </div>
 
       </div>
@@ -3187,7 +3232,7 @@ Support Team"></textarea>
           <div class="card-title" style="font-family:'DM Serif Display',serif;font-size:1.2rem;margin-bottom:6px">Dashboard</div>
           <div class="card-subtitle" style="margin-bottom:16px">Pipeline, opportunities, and team performance from Odoo.</div>
           <div style="display:inline-flex;align-items:center;gap:6px;margin-bottom:8px">
-            <span style="font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace;box-shadow:0 0 8px rgba(201,168,76,0.35),0 0 20px rgba(201,168,76,0.12);animation:versionGlow 3s ease-in-out infinite alternate">OEL Command v15.4</span>
+            <span style="font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace;box-shadow:0 0 8px rgba(201,168,76,0.35),0 0 20px rgba(201,168,76,0.12);animation:versionGlow 3s ease-in-out infinite alternate">OEL Command v15.5</span>
             <span style="font-size:0.68rem;color:var(--muted)">Built by Lazzaro</span>
           </div>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px">
@@ -8892,7 +8937,7 @@ const OEL_SEARCH_INDEX = [
   { id:'discuss',      label:'Discuss',           keywords:'message colleague quick message log note odoo discuss chat with a coworker' },
   { id:'support',      label:'Support',           keywords:'remote support launch remote tools session invite client help desk fix a client issue' },
   { id:'bounces',      label:'Bounce Manager',    keywords:'undeliverable bounced email list clear reschedule activities bad email address' },
-  { id:'expenses',     label:'Expenses',          keywords:'expense report receipts approve refuse reimburse employee spend hr expense sheet payment approval queue reporting by category' },
+  { id:'expenses',     label:'Expenses',          keywords:'expense report receipts approve refuse reimburse employee spend payment approval queue reporting by category vendor bills accounts payable ap invoice validate post new bills' },
   { id:'salestargeting', label:'Sales Targeting', keywords:'historical sales lookup quickbooks quarterly target list rep focus lapsed dormant customers reactivate prospecting quarter' },
   { id:'dataexplorer', label:'Data Explorer',     keywords:'upload quickbooks export customer list sync review data import spreadsheet' },
   { id:'docs',         label:'Documents',         keywords:'w9 coi contract document library files attach paperwork' },
@@ -27783,6 +27828,25 @@ document.addEventListener('DOMContentLoaded', hslInit);
     return code === _expSubmittedCode;
   }
 
+  window.expSwitchTab = function(tab) {
+    const empView = document.getElementById('exp-view-employee');
+    const vendView = document.getElementById('exp-view-vendor');
+    const empTab = document.getElementById('exp-tab-employee');
+    const vendTab = document.getElementById('exp-tab-vendor');
+    if (tab === 'vendor') {
+      if (empView) empView.style.display = 'none';
+      if (vendView) vendView.style.display = 'block';
+      if (empTab) empTab.classList.remove('active');
+      if (vendTab) vendTab.classList.add('active');
+      if (typeof vbInit === 'function') vbInit();
+    } else {
+      if (vendView) vendView.style.display = 'none';
+      if (empView) empView.style.display = 'block';
+      if (vendTab) vendTab.classList.remove('active');
+      if (empTab) empTab.classList.add('active');
+    }
+  };
+
   window.expInit = async function() {
     if (!odooUid) {
       const listEl = document.getElementById('exp-list');
@@ -27819,18 +27883,25 @@ document.addEventListener('DOMContentLoaded', hslInit);
   }
 
   window.expUpdateBadge = async function() {
-    if (!odooUid || _expModuleAvailable === false) return;
-    try {
-      if (!_expSubmittedCode) await expDiscoverStates();
-      if (!_expSubmittedCode) return;
-      const count = await odooExecute(odooUid, 'hr.expense', 'search_count', [[['state','=', _expSubmittedCode]]]);
-      const badge = document.getElementById('badge-expenses');
-      if (badge) {
-        badge.textContent = count > 0 ? String(count) : '';
-        badge.style.display = count > 0 ? '' : 'none';
+    if (!odooUid) return;
+    let total = 0;
+    if (_expModuleAvailable !== false) {
+      try {
+        if (!_expSubmittedCode) await expDiscoverStates();
+        if (_expSubmittedCode) {
+          total += await odooExecute(odooUid, 'hr.expense', 'search_count', [[['state','=', _expSubmittedCode]]]);
+        }
+      } catch(e) {
+        if (expIsMissingModelError(e.message)) _expModuleAvailable = false;
       }
-    } catch(e) {
-      if (expIsMissingModelError(e.message)) _expModuleAvailable = false;
+    }
+    if (typeof vbNeedsReviewCount === 'function') {
+      try { total += await vbNeedsReviewCount(); } catch(e) {}
+    }
+    const badge = document.getElementById('badge-expenses');
+    if (badge) {
+      badge.textContent = total > 0 ? String(total) : '';
+      badge.style.display = total > 0 ? '' : 'none';
     }
   };
 
@@ -28124,6 +28195,369 @@ document.addEventListener('DOMContentLoaded', hslInit);
       document.getElementById('exp-refuse-modal')?.remove();
       expUpdateBadge();
       expLoad();
+    } catch(e) {
+      if (statusEl) { statusEl.style.color = 'var(--danger)'; statusEl.textContent = 'Error: ' + e.message; }
+    }
+  };
+
+})();
+</script>
+
+<!-- ── Vendor Bills (Expenses tab, Vendor Bills sub-view) ──────────────────── -->
+<script>
+(function(){
+
+  // Vendor bills live on account.move with move_type='in_invoice'. Field names
+  // here are long-standing core Odoo fields (very unlikely to drift the way
+  // hr.expense did), but we still discover fields/state labels live rather
+  // than hardcode, to stay consistent with the rest of this tab and avoid
+  // repeating the same class of bug if something differs on this instance.
+
+  let VB = { rows: [], attachmentsByBill: {} };
+  let _vbVendors = [];
+  let _vbModuleAvailable = null;
+  let _vbFieldSet = null;
+  let _vbDateField = null;       // invoice_date / date, whichever exists
+  let _vbStateOptions = null;    // [[code,label]] for account.move 'state'
+  let _vbPaymentOptions = null;  // [[code,label]] for account.move 'payment_state'
+
+  function vbFmt(n) { return '$' + (n||0).toLocaleString('en-US', {maximumFractionDigits:2}); }
+
+  function vbIsMissingModelError(msg) {
+    return /doesn.?t exist|does not exist|invalid model|access.*(right|denied)|not allowed/i.test(msg || '');
+  }
+
+  async function vbCheckModuleAvailable() {
+    if (_vbModuleAvailable !== null) return _vbModuleAvailable;
+    try {
+      await odooExecute(odooUid, 'account.move', 'search_count', [[['move_type','=','in_invoice']]]);
+      _vbModuleAvailable = true;
+    } catch(e) {
+      _vbModuleAvailable = vbIsMissingModelError(e.message) ? false : null;
+    }
+    return _vbModuleAvailable;
+  }
+
+  async function vbDiscoverFields() {
+    if (_vbFieldSet) return _vbFieldSet;
+    try {
+      const fields = await odooExecute(odooUid, 'account.move', 'fields_get', [], { attributes: [] });
+      _vbFieldSet = new Set(Object.keys(fields || {}));
+    } catch(e) {
+      _vbFieldSet = new Set();
+    }
+    _vbDateField = ['invoice_date','date'].find(f => _vbFieldSet.has(f)) || null;
+    return _vbFieldSet;
+  }
+
+  async function vbDiscoverStates() {
+    if (_vbStateOptions) return { state: _vbStateOptions, payment: _vbPaymentOptions };
+    try {
+      const fields = await odooExecute(odooUid, 'account.move', 'fields_get', [], { attributes: ['selection'] });
+      _vbStateOptions = Array.isArray(fields?.state?.selection) ? fields.state.selection : [];
+      _vbPaymentOptions = Array.isArray(fields?.payment_state?.selection) ? fields.payment_state.selection : [];
+    } catch(e) {
+      _vbStateOptions = []; _vbPaymentOptions = [];
+    }
+    return { state: _vbStateOptions, payment: _vbPaymentOptions };
+  }
+
+  function vbStateLabel(code) {
+    const found = (_vbStateOptions || []).find(([c]) => c === code);
+    return found ? found[1] : (code || '—');
+  }
+  function vbPaymentLabel(code) {
+    if (!code) return '—';
+    const found = (_vbPaymentOptions || []).find(([c]) => c === code);
+    return found ? found[1] : code;
+  }
+  function vbStateColor(code) {
+    if (code === 'draft') return 'var(--warning, #d99a3f)';
+    if (code === 'cancel') return 'var(--muted)';
+    return 'var(--muted)'; // posted — color comes from payment state instead
+  }
+  function vbPaymentColor(code) {
+    const label = vbPaymentLabel(code).toLowerCase();
+    if (/^paid|in payment/.test(label)) return 'var(--success)';
+    if (/partial/.test(label)) return 'var(--warning, #d99a3f)';
+    if (/reversed/.test(label)) return 'var(--muted)';
+    if (/not paid/.test(label)) return 'var(--danger)';
+    return 'var(--muted)';
+  }
+
+  window.vbNeedsReviewCount = async function() {
+    if (!odooUid) return 0;
+    const available = await vbCheckModuleAvailable();
+    if (available === false) return 0;
+    try {
+      return await odooExecute(odooUid, 'account.move', 'search_count',
+        [[['move_type','=','in_invoice'], ['state','=','draft']]]);
+    } catch(e) { return 0; }
+  };
+
+  async function vbShowModuleMissingBanner() {
+    const listEl = document.getElementById('vb-list');
+    const summaryEl = document.getElementById('vb-summary');
+    const vendCard = document.getElementById('vb-vendor-card');
+    if (summaryEl) summaryEl.innerHTML = '';
+    if (vendCard) vendCard.style.display = 'none';
+    if (!listEl) return;
+    listEl.innerHTML = `<div style="padding:20px;text-align:center;color:var(--muted);font-size:0.85rem;line-height:1.7">
+      <div style="font-size:1.5rem;margin-bottom:8px">📪</div>
+      <div style="color:var(--text);font-weight:500;margin-bottom:4px">Can't reach account.move on this Odoo instance</div>
+      <div>This is the core Accounting/Invoicing model — if this fails, it's almost always an access-rights gap on the API user rather than a missing app. Check <strong style="color:var(--text)">Settings → Users</strong> for the account tied to this API key.</div>
+      <button class="btn btn-primary" onclick="vbRetryModuleCheck()" style="padding:7px 16px;font-size:0.8rem;margin-top:12px">↻ Try Again</button>
+    </div>`;
+  }
+
+  window.vbRetryModuleCheck = function() {
+    _vbModuleAvailable = null;
+    vbInit();
+  };
+
+  window.vbInit = async function() {
+    if (!odooUid) {
+      const listEl = document.getElementById('vb-list');
+      if (listEl) listEl.innerHTML = '<div style="padding:16px;text-align:center;color:var(--muted);font-size:0.82rem">Connect to Odoo first (Steps 1-2).</div>';
+      return;
+    }
+    const available = await vbCheckModuleAvailable();
+    if (available === false) { vbShowModuleMissingBanner(); return; }
+    await vbDiscoverStates();
+    await vbDiscoverFields();
+    vbPopulateFilters();
+    if (!_vbVendors.length) {
+      try {
+        _vbVendors = await odooExecute(odooUid, 'res.partner', 'search_read',
+          [[['supplier_rank','>', 0]]], { fields: ['id','name'], limit: 500 });
+        _vbVendors.sort((a,b) => a.name.localeCompare(b.name));
+        const sel = document.getElementById('vb-vendor');
+        if (sel) {
+          sel.innerHTML = '<option value="">All vendors</option>' +
+            _vbVendors.map(v => `<option value="${v.id}">${escHtml(v.name)}</option>`).join('');
+        }
+      } catch(e) {}
+    }
+    vbLoad();
+  };
+
+  function vbPopulateFilters() {
+    const stateSel = document.getElementById('vb-state');
+    if (stateSel && _vbStateOptions && _vbStateOptions.length) {
+      const cur = stateSel.value;
+      stateSel.innerHTML = '<option value="">All statuses</option>' +
+        _vbStateOptions.map(([code,label]) => `<option value="${escHtml(code)}">${escHtml(label)}</option>`).join('');
+      if (cur) stateSel.value = cur;
+    }
+    const paySel = document.getElementById('vb-payment');
+    if (paySel && _vbPaymentOptions && _vbPaymentOptions.length) {
+      const cur = paySel.value;
+      paySel.innerHTML = '<option value="">All payment states</option>' +
+        _vbPaymentOptions.map(([code,label]) => `<option value="${escHtml(code)}">${escHtml(label)}</option>`).join('');
+      if (cur) paySel.value = cur;
+    }
+  }
+
+  window.vbLoad = async function() {
+    const listEl = document.getElementById('vb-list');
+    const summaryEl = document.getElementById('vb-summary');
+    const statusEl = document.getElementById('vb-status');
+    if (!odooUid) { if (listEl) listEl.innerHTML = '<div style="padding:16px;text-align:center;color:var(--muted);font-size:0.82rem">Connect to Odoo first</div>'; return; }
+    if (_vbModuleAvailable === false) { vbShowModuleMissingBanner(); return; }
+    if (listEl) listEl.innerHTML = '<div style="padding:16px;text-align:center;color:var(--muted);font-size:0.82rem"><div class="dot spin" style="display:inline-block;margin-right:6px"></div>Loading…</div>';
+    if (statusEl) statusEl.textContent = '';
+
+    const vendorId = document.getElementById('vb-vendor')?.value || '';
+    const state = document.getElementById('vb-state')?.value || '';
+    const payment = document.getElementById('vb-payment')?.value || '';
+    const month = document.getElementById('vb-month')?.value || '';
+
+    const domain = [['move_type','=','in_invoice']];
+    if (vendorId) domain.push(['partner_id','=', parseInt(vendorId)]);
+    if (state) domain.push(['state','=', state]);
+    if (payment) domain.push(['payment_state','=', payment]);
+
+    try {
+      if (!_vbFieldSet) await vbDiscoverFields();
+      const wantedFields = ['name','partner_id','amount_total','amount_residual','state','payment_state','ref','create_date'];
+      if (_vbDateField) wantedFields.push(_vbDateField);
+      if (_vbFieldSet.has('invoice_date_due')) wantedFields.push('invoice_date_due');
+      const fields = _vbFieldSet.size
+        ? Array.from(new Set(wantedFields.filter(f => _vbFieldSet.has(f))))
+        : wantedFields;
+
+      let rows = await odooExecute(odooUid, 'account.move', 'search_read', [domain], {
+        fields, limit: 1000, order: 'create_date desc'
+      });
+      rows = rows || [];
+      rows.forEach(r => { r._displayDate = (_vbDateField && r[_vbDateField]) || r.create_date || false; });
+
+      if (month) {
+        const parts = month.split('-');
+        const y = parseInt(parts[0]), m = parseInt(parts[1]);
+        const startStr = y + '-' + String(m).padStart(2,'0') + '-01';
+        const nextY = (m === 12) ? y+1 : y;
+        const nextM = (m === 12) ? 1 : m+1;
+        const endStr = nextY + '-' + String(nextM).padStart(2,'0') + '-01';
+        rows = rows.filter(r => {
+          const d = String(r._displayDate||'').slice(0,10);
+          return d >= startStr && d < endStr;
+        });
+      }
+
+      VB.rows = rows;
+
+      if (!rows.length) {
+        if (summaryEl) summaryEl.innerHTML = '';
+        document.getElementById('vb-vendor-card').style.display = 'none';
+        if (listEl) listEl.innerHTML = '<div style="padding:16px;text-align:center;color:var(--muted);font-size:0.82rem">No vendor bills match these filters</div>';
+        return;
+      }
+
+      const billIds = rows.map(r => r.id);
+      const attByBill = {};
+      try {
+        const atts = await odooExecute(odooUid, 'ir.attachment', 'search_read',
+          [[['res_model','=','account.move'],['res_id','in', billIds]]],
+          { fields: ['id','name','res_id','mimetype'], limit: 2000 }
+        );
+        (atts||[]).forEach(a => { (attByBill[a.res_id] = attByBill[a.res_id] || []).push(a); });
+      } catch(e) {}
+      VB.attachmentsByBill = attByBill;
+
+      vbRenderSummary();
+      vbRenderVendorBreakdown();
+      vbRenderList();
+
+    } catch(e) {
+      if (vbIsMissingModelError(e.message)) {
+        _vbModuleAvailable = false;
+        vbShowModuleMissingBanner();
+      } else {
+        if (listEl) listEl.innerHTML = '<div style="padding:16px;text-align:center;color:var(--danger);font-size:0.82rem">Error: ' + escHtml(e.message) + '</div>';
+        if (summaryEl) summaryEl.innerHTML = '';
+      }
+    }
+  };
+
+  function vbRenderSummary() {
+    const summaryEl = document.getElementById('vb-summary');
+    if (!summaryEl) return;
+    const rows = VB.rows;
+    const total = rows.reduce((s,r) => s + (r.amount_total||0), 0);
+    const unpaid = rows.reduce((s,r) => s + (r.amount_residual||0), 0);
+    const needsReview = rows.filter(r => r.state === 'draft');
+    summaryEl.innerHTML =
+      '<div class="laz-stat-card"><div class="laz-stat-label">Bills</div><div class="laz-stat-value">' + rows.length + '</div><div class="laz-stat-sub">matching filters</div></div>' +
+      '<div class="laz-stat-card"><div class="laz-stat-label">Total Amount</div><div class="laz-stat-value accent">' + vbFmt(total) + '</div><div class="laz-stat-sub">all matching</div></div>' +
+      '<div class="laz-stat-card"><div class="laz-stat-label">Unpaid</div><div class="laz-stat-value' + (unpaid > 0 ? ' warning' : '') + '">' + vbFmt(unpaid) + '</div><div class="laz-stat-sub">outstanding balance</div></div>' +
+      '<div class="laz-stat-card"><div class="laz-stat-label">Needs Review</div><div class="laz-stat-value' + (needsReview.length ? ' warning' : '') + '">' + needsReview.length + '</div><div class="laz-stat-sub">draft bills</div></div>';
+  }
+
+  function vbRenderVendorBreakdown() {
+    const card = document.getElementById('vb-vendor-card');
+    const listEl = document.getElementById('vb-vendor-list');
+    if (!card || !listEl) return;
+    const totals = {};
+    VB.rows.forEach(r => {
+      const vendor = (r.partner_id && r.partner_id[1]) ? r.partner_id[1] : 'Unknown vendor';
+      totals[vendor] = (totals[vendor]||0) + (r.amount_total||0);
+    });
+    const entries = Object.entries(totals).sort((a,b) => b[1]-a[1]).slice(0, 12);
+    if (!entries.length) { card.style.display = 'none'; return; }
+    card.style.display = 'block';
+    const max = entries[0][1] || 1;
+    listEl.innerHTML = entries.map(([name, amt]) => {
+      const pct = Math.max(4, Math.round((amt/max)*100));
+      return `<div style="display:flex;align-items:center;gap:10px">
+        <div style="width:160px;font-size:0.78rem;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0">${escHtml(name)}</div>
+        <div style="flex:1;background:var(--surface2);border-radius:4px;height:8px;overflow:hidden"><div style="width:${pct}%;height:100%;background:var(--accent);border-radius:4px"></div></div>
+        <div style="width:80px;text-align:right;font-size:0.78rem;font-family:monospace;color:var(--muted)">${vbFmt(amt)}</div>
+      </div>`;
+    }).join('');
+  }
+
+  function vbRenderList() {
+    const listEl = document.getElementById('vb-list');
+    if (!listEl) return;
+    listEl.innerHTML = VB.rows.map(r => vbRowCard(r)).join('');
+  }
+
+  function vbRowCard(r) {
+    const vendor = (r.partner_id && r.partner_id[1]) ? escHtml(r.partner_id[1]) : 'Unknown vendor';
+    const date = r._displayDate ? String(r._displayDate).slice(0,10) : '—';
+    const due = r.invoice_date_due ? String(r.invoice_date_due).slice(0,10) : null;
+    const stateColor = vbStateColor(r.state);
+    const stateLbl = vbStateLabel(r.state);
+    const payColor = vbPaymentColor(r.payment_state);
+    const payLbl = vbPaymentLabel(r.payment_state);
+    const atts = VB.attachmentsByBill[r.id] || [];
+    const receiptBtns = atts.map(a => `<button class="btn btn-ghost" onclick="vbViewAttachment(${a.id})" title="${escHtml(a.name||'Attachment')}" style="padding:3px 9px;font-size:0.72rem">🧾</button>`).join(' ');
+    const canPost = r.state === 'draft';
+
+    return `<div class="card" style="padding:14px 16px">
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <div style="flex:1;min-width:200px">
+          <div style="font-size:0.86rem;font-weight:500;color:var(--text)">${escHtml(r.name||r.ref||'Vendor Bill')}</div>
+          <div style="font-size:0.76rem;color:var(--muted);margin-top:2px">${vendor} · ${date}${due ? ' · due ' + due : ''}</div>
+        </div>
+        <span style="font-size:0.68rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;padding:3px 10px;border-radius:20px;border:1px solid ${stateColor};color:${stateColor}">${escHtml(stateLbl)}</span>
+        ${r.state !== 'draft' ? `<span style="font-size:0.68rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;padding:3px 10px;border-radius:20px;border:1px solid ${payColor};color:${payColor}">${escHtml(payLbl)}</span>` : ''}
+        <div style="text-align:right;min-width:90px">
+          <div style="font-family:monospace;font-size:0.92rem;color:var(--text)">${vbFmt(r.amount_total)}</div>
+          ${r.amount_residual > 0 && r.amount_residual !== r.amount_total ? `<div style="font-family:monospace;font-size:0.7rem;color:var(--warning, #d99a3f)">${vbFmt(r.amount_residual)} due</div>` : ''}
+        </div>
+        <div>${receiptBtns}</div>
+        ${canPost ? `<button class="btn btn-primary" onclick="vbValidatePost(${r.id})" style="padding:5px 14px;font-size:0.76rem">✓ Validate &amp; Post</button>` : ''}
+      </div>
+    </div>`;
+  }
+
+  window.vbViewAttachment = async function(attachmentId) {
+    const existing = document.getElementById('vb-attachment-modal');
+    if (existing) existing.remove();
+    const modal = document.createElement('div');
+    modal.id = 'vb-attachment-modal';
+    modal.className = 'modal-overlay';
+    modal.style.cssText = 'display:flex';
+    modal.innerHTML = `<div class="modal" style="max-width:520px">
+      <div class="modal-header">
+        <div class="modal-header-text"><div class="record">Bill Attachment</div></div>
+        <button class="modal-close" onclick="document.getElementById('vb-attachment-modal').remove()">✕</button>
+      </div>
+      <div class="modal-body" id="vb-attachment-body" style="text-align:center">
+        <div class="dot spin" style="display:inline-block;margin-right:6px"></div>Loading…
+      </div>
+    </div>`;
+    document.body.appendChild(modal);
+
+    try {
+      const att = await odooExecute(odooUid, 'ir.attachment', 'read', [[attachmentId]], { fields: ['name','mimetype','datas'] });
+      const rec = att && att[0];
+      const bodyEl = document.getElementById('vb-attachment-body');
+      if (!rec || !rec.datas) { if (bodyEl) bodyEl.innerHTML = '<div style="color:var(--muted);font-size:0.82rem">Couldn\'t load this attachment.</div>'; return; }
+      const mime = rec.mimetype || 'application/octet-stream';
+      const dataUri = `data:${mime};base64,${rec.datas}`;
+      if (mime.startsWith('image/')) {
+        if (bodyEl) bodyEl.innerHTML = `<img src="${dataUri}" style="max-width:100%;border-radius:8px" alt="${escHtml(rec.name||'Attachment')}">`;
+      } else {
+        if (bodyEl) bodyEl.innerHTML = `<a href="${dataUri}" download="${escHtml(rec.name||'attachment')}" class="btn btn-primary" style="display:inline-block;padding:8px 18px;font-size:0.82rem">Download ${escHtml(rec.name||'attachment')}</a>`;
+      }
+    } catch(e) {
+      const bodyEl = document.getElementById('vb-attachment-body');
+      if (bodyEl) bodyEl.innerHTML = '<div style="color:var(--danger);font-size:0.82rem">Error: ' + escHtml(e.message) + '</div>';
+    }
+  };
+
+  window.vbValidatePost = async function(billId) {
+    if (!confirm('Validate and post this bill? This locks it into your books.')) return;
+    const statusEl = document.getElementById('vb-status');
+    try {
+      if (statusEl) statusEl.textContent = 'Posting…';
+      await odooExecute(odooUid, 'account.move', 'action_post', [[billId]], {});
+      if (statusEl) { statusEl.style.color = 'var(--success)'; statusEl.textContent = '✓ Posted'; }
+      if (typeof expUpdateBadge === 'function') expUpdateBadge();
+      vbLoad();
     } catch(e) {
       if (statusEl) { statusEl.style.color = 'var(--danger)'; statusEl.textContent = 'Error: ' + e.message; }
     }
