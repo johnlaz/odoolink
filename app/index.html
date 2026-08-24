@@ -3,7 +3,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <meta name="oel-version" content="v15.5">
+  <meta name="oel-version" content="v15.7">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="mobile-web-app-capable" content="yes">
@@ -1748,7 +1748,13 @@
         <div id="act-panel-connect" class="sub-panel active">
   <div class="card" id="step-2">
     <div class="card-title">Connect &amp; scan activities</div>
-    <div class="card-subtitle">Authenticates with Odoo and fetches your due activities. Credentials are saved from Settings.</div>
+    <div class="card-subtitle">Authenticates with Odoo and fetches due activities. Credentials are saved from Settings.</div>
+    <div class="field" style="margin-bottom:14px;max-width:320px">
+      <label>Catching up on activities for</label>
+      <select id="act-rep-select" onchange="actRescanForRep()" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.83rem;outline:none;cursor:pointer">
+        <option value="">Me</option>
+      </select>
+    </div>
     <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
       <button class="btn btn-primary" onclick="goToStep2()" id="act-connect-btn" style="gap:6px">
         <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M1 6.5A5.5 5.5 0 1012 6.5 5.5 5.5 0 001 6.5zM9 6.5H4M6.5 4L9 6.5 6.5 9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"></path></svg>
@@ -2875,9 +2881,9 @@ Support Team"></textarea>
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
           <div>
             <div style="font-family:'DM Serif Display',serif;font-size:1.3rem;color:var(--text)">OEL Command</div>
-            <div style="font-size:0.75rem;color:var(--muted);margin-top:2px">Quick Reference Guide · v15.5</div>
+            <div style="font-size:0.75rem;color:var(--muted);margin-top:2px">Quick Reference Guide · v15.7</div>
           </div>
-          <span style="font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace">v15.5</span>
+          <span style="font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace">v15.7</span>
         </div>
 
         <!-- Setup -->
@@ -2931,8 +2937,9 @@ Support Team"></textarea>
         <div class="card" style="margin-bottom:14px">
           <div class="card-title">⚡ Activities</div>
           <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
-            <p style="margin:0 0 4px">Scans your Odoo activities due today and AI-drafts a follow-up email per contact using deal context and last chatter note.</p>
+            <p style="margin:0 0 4px">Scans due Odoo activities and AI-drafts a follow-up email per contact using deal context and last chatter note. <strong style="color:var(--text)">"Catching up on activities for"</strong> defaults to you, but you can pick any rep on your team — switching it re-scans for that person without a full reconnect.</p>
             <p style="margin:0 0 4px"><strong style="color:var(--text)">Draft tab:</strong> shows a "Start drafting" trigger when opened manually, or auto-starts when arriving from Connect. Per card: Review & edit (full modal) · ✉ Draft email · 📋 Log note · Skip.</p>
+            <p style="margin:0 0 4px"><strong style="color:var(--text)">📋 Log note</strong> posts the drafted subject/body straight to that record's Odoo chatter as a note — handy for catching up someone else's activities: they'll see the draft waiting in Odoo to review and send themselves, without you touching their inbox.</p>
             <p style="margin:0"><strong style="color:var(--text)">Follow-up Tracker:</strong> Shows leads pushed from Lead Capture that have no scheduled activity. Requires Odoo connection.</p>
           </div>
         </div>
@@ -3113,7 +3120,7 @@ Support Team"></textarea>
         <div class="card" style="margin-bottom:14px">
           <div class="card-title">🔧 Troubleshooting</div>
           <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
-            <p style="margin:0 0 4px"><strong style="color:var(--text)">App not updating after deploy:</strong> Hard refresh Ctrl+Shift+R. Service worker cache key = oel-v15.5.</p>
+            <p style="margin:0 0 4px"><strong style="color:var(--text)">App not updating after deploy:</strong> Hard refresh Ctrl+Shift+R. Service worker cache key = oel-v15.7.</p>
             <p style="margin:0 0 4px"><strong style="color:var(--text)">Odoo calls failing:</strong> Confirm server.py is running on port 7842. Check status lights in Settings. All domains must be flat arrays for Odoo 19 — no nested | operators. The header Connect button retries automatically (up to 3x) since the public CORS proxies it cycles through in Proxy mode can be individually flaky — "retry 1/2" in the status text is normal, not an error. If it still fails after retries, switch to Local Server mode in Settings.</p>
             <p style="margin:0 0 4px"><strong style="color:var(--text)">IMAP not working:</strong> Confirm imap_server.py is running on port 7843. Gmail requires an App Password. Turbify uses standard IMAP credentials.</p>
             <p style="margin:0 0 4px"><strong style="color:var(--text)">AI drafts failing:</strong> Check Groq API key in Settings. Verify model name — default is qwen/qwen3.6-27b.</p>
@@ -3122,7 +3129,7 @@ Support Team"></textarea>
         </div>
 
         <div style="text-align:center;font-size:0.72rem;color:var(--muted);padding:12px 0">
-          OEL Command v15.5 · Built by Lazzaro · Powered by Groq AI + Odoo 19
+          OEL Command v15.7 · Built by Lazzaro · Powered by Groq AI + Odoo 19
         </div>
 
       </div>
@@ -3232,7 +3239,7 @@ Support Team"></textarea>
           <div class="card-title" style="font-family:'DM Serif Display',serif;font-size:1.2rem;margin-bottom:6px">Dashboard</div>
           <div class="card-subtitle" style="margin-bottom:16px">Pipeline, opportunities, and team performance from Odoo.</div>
           <div style="display:inline-flex;align-items:center;gap:6px;margin-bottom:8px">
-            <span style="font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace;box-shadow:0 0 8px rgba(201,168,76,0.35),0 0 20px rgba(201,168,76,0.12);animation:versionGlow 3s ease-in-out infinite alternate">OEL Command v15.5</span>
+            <span style="font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace;box-shadow:0 0 8px rgba(201,168,76,0.35),0 0 20px rgba(201,168,76,0.12);animation:versionGlow 3s ease-in-out infinite alternate">OEL Command v15.7</span>
             <span style="font-size:0.68rem;color:var(--muted)">Built by Lazzaro</span>
           </div>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px">
@@ -6536,9 +6543,102 @@ async function odooExecute(uid, model, method, args, kwargs) {
 // ─── Connect & Fetch ──────────────────────────────────────
 let odooUid = null;
 
+const DRAFT_BTN_DEFAULT_HTML = 'Draft emails <svg width="14" height="14" viewBox="0 0 14 14"><path d="M3 7h8M7 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>';
+
+// Every run of connectAndFetch/actRescanForRep starts by putting this button back
+// to its known-good default — previously, a failed or empty run would leave it
+// disabled/hidden permanently for the rest of the session, even after a
+// successful reconnect. That was the actual bug behind "Draft won't click."
+function actResetDraftButton() {
+  const btn = document.getElementById('btn-proceed-draft');
+  if (!btn) return;
+  btn.classList.remove('hidden');
+  btn.disabled = false;
+  btn.innerHTML = DRAFT_BTN_DEFAULT_HTML;
+}
+
+// Populates the "Catching up on activities for" dropdown with your team —
+// safe to call repeatedly, only fetches once per session.
+async function actPopulateRepSelect() {
+  const sel = document.getElementById('act-rep-select');
+  if (!sel || !odooUid || sel.dataset.loaded === '1') return;
+  try {
+    let users = odooUsers;
+    if (!users || !users.length) {
+      users = await odooExecute(odooUid, 'res.users', 'search_read', [[['active','=',true]]], { fields: ['id','name'], limit: 300 });
+      users.sort((a,b) => a.name.localeCompare(b.name));
+      odooUsers = users;
+    }
+    const meLabel = (users.find(u => u.id === odooUid) || {}).name || 'Me';
+    sel.innerHTML = `<option value="">Me (${escHtml(meLabel)})</option>` +
+      users.filter(u => u.id !== odooUid).map(u => `<option value="${u.id}">${escHtml(u.name)}</option>`).join('');
+    sel.dataset.loaded = '1';
+  } catch(e) {}
+}
+
+// Switching the rep dropdown re-fetches for that rep without a full reconnect —
+// only runs the "fetch due activities" half, not re-authentication.
+async function actRescanForRep() {
+  if (!odooUid) return; // not connected yet — user needs to hit "Connect & scan" first
+  await actFetchDueActivities();
+}
+
+async function actFetchDueActivities() {
+  const log = document.getElementById('connect-log');
+  log.innerHTML = '';
+  actResetDraftButton();
+  document.getElementById('step2-actions').classList.add('hidden');
+
+  function addLog(type, msg) {
+    const line = document.createElement('div');
+    line.className = `status-line ${type}`;
+    const dotClass = type === 'ok' ? 'ok' : type === 'err' ? 'err' : type === 'warn' ? 'warn' : 'info';
+    line.innerHTML = `<div class="dot ${type === 'loading' ? 'spin' : dotClass}"></div><div>${msg}</div>`;
+    log.appendChild(line);
+    return line;
+  }
+
+  const sel = document.getElementById('act-rep-select');
+  const targetUserId = parseInt(sel?.value) || odooUid;
+  const targetLabel = (sel?.value && sel.selectedOptions?.[0]) ? sel.selectedOptions[0].textContent : 'you';
+
+  const today = new Date().toISOString().split('T')[0];
+  const l2 = addLog('loading', `Fetching due activities for ${targetLabel}…`);
+  try {
+    activities = await odooExecute(odooUid, 'mail.activity', 'search_read', [[
+      ['user_id', '=', targetUserId],
+      ['date_deadline', '<=', today]
+    ]], {
+      fields: ['res_model', 'res_id', 'summary', 'note', 'date_deadline', 'activity_type_id']
+    });
+    draftedEmails = []; // invalidate any previously drafted batch — it was for a different scan
+    l2.className = 'status-line ok';
+    l2.querySelector('.dot').className = 'dot ok';
+    l2.querySelector('div:last-child').textContent = `Found ${activities.length} due activit${activities.length === 1 ? 'y' : 'ies'} for ${targetLabel}`;
+  } catch(e) {
+    l2.className = 'status-line err';
+    l2.querySelector('.dot').className = 'dot err';
+    l2.querySelector('div:last-child').textContent = `Failed to fetch activities: ${e.message}`;
+    document.getElementById('step2-actions').classList.remove('hidden');
+    document.getElementById('btn-proceed-draft').classList.add('hidden');
+    return;
+  }
+
+  document.getElementById('step2-actions').classList.remove('hidden');
+
+  if (activities.length === 0) {
+    addLog('warn', `No activities due today for ${targetLabel} — nothing to process.`);
+    document.getElementById('btn-proceed-draft').disabled = true;
+    document.getElementById('btn-proceed-draft').textContent = 'No activities due';
+  } else {
+    addLog('info', `Ready to draft ${activities.length} email${activities.length > 1 ? 's' : ''} with Groq.`);
+  }
+}
+
 async function connectAndFetch() {
   const log = document.getElementById('connect-log');
   log.innerHTML = '';
+  actResetDraftButton();
   document.getElementById('step2-actions').classList.add('hidden');
 
   function addLog(type, msg) {
@@ -6557,6 +6657,7 @@ async function connectAndFetch() {
     l1.querySelector('.dot').className = 'dot ok';
     l1.querySelector('div:last-child').textContent = `Authenticated as UID ${odooUid}`;
     loadActivityTypes(); // pre-cache for lead modal
+    actPopulateRepSelect();
   } catch(e) {
     l1.className = 'status-line err';
     l1.querySelector('.dot').className = 'dot err';
@@ -6566,36 +6667,7 @@ async function connectAndFetch() {
     return;
   }
 
-  const today = new Date().toISOString().split('T')[0];
-  const l2 = addLog('loading', 'Fetching due activities…');
-  try {
-    activities = await odooExecute(odooUid, 'mail.activity', 'search_read', [[
-      ['user_id', '=', odooUid],
-      ['date_deadline', '<=', today]
-    ]], {
-      fields: ['res_model', 'res_id', 'summary', 'note', 'date_deadline', 'activity_type_id']
-    });
-    l2.className = 'status-line ok';
-    l2.querySelector('.dot').className = 'dot ok';
-    l2.querySelector('div:last-child').textContent = `Found ${activities.length} due activit${activities.length === 1 ? 'y' : 'ies'}`;
-  } catch(e) {
-    l2.className = 'status-line err';
-    l2.querySelector('.dot').className = 'dot err';
-    l2.querySelector('div:last-child').textContent = `Failed to fetch activities: ${e.message}`;
-    document.getElementById('step2-actions').classList.remove('hidden');
-    document.getElementById('btn-proceed-draft').classList.add('hidden');
-    return;
-  }
-
-  document.getElementById('step2-actions').classList.remove('hidden');
-
-  if (activities.length === 0) {
-    addLog('warn', 'No activities due today — nothing to process.');
-    document.getElementById('btn-proceed-draft').disabled = true;
-    document.getElementById('btn-proceed-draft').textContent = 'No activities due';
-  } else {
-    addLog('info', `Ready to draft ${activities.length} email${activities.length > 1 ? 's' : ''} with Groq.`);
-  }
+  await actFetchDueActivities();
 }
 
 // ─── Draft emails ─────────────────────────────────────────
@@ -24797,6 +24869,9 @@ document.addEventListener('DOMContentLoaded', function() {
       closeSettings();
     }
   });
+}); // closes the document.addEventListener('DOMContentLoaded', ...) opened above —
+    // this was previously missing, which silently trapped every function below
+    // (inboxTab, actTab, and more) inside this callback instead of the global scope.
 
 // ── Inbox sub-tab switcher ────────────────────────────────────────────────
 function inboxTab(tab) {
@@ -24876,7 +24951,6 @@ window.persTab = function(tab) {
 
 // navTo side-effects handled inline
 
-});
 </script>
 
 <div id="quick-compose-modal" class="modal-overlay hidden">
