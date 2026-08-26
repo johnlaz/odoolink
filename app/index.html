@@ -3,7 +3,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <meta name="oel-version" content="v15.7">
+  <meta name="oel-version" content="v15.16">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="mobile-web-app-capable" content="yes">
@@ -1749,11 +1749,23 @@
   <div class="card" id="step-2">
     <div class="card-title">Connect &amp; scan activities</div>
     <div class="card-subtitle">Authenticates with Odoo and fetches due activities. Credentials are saved from Settings.</div>
-    <div class="field" style="margin-bottom:14px;max-width:320px">
-      <label>Catching up on activities for</label>
-      <select id="act-rep-select" onchange="actRescanForRep()" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.83rem;outline:none;cursor:pointer">
-        <option value="">Me</option>
-      </select>
+    <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px">
+      <div class="field" style="max-width:320px;flex:1;min-width:200px">
+        <label>Catching up on activities for</label>
+        <select id="act-rep-select" onchange="actRescanForRep()" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.83rem;outline:none;cursor:pointer">
+          <option value="">Me</option>
+        </select>
+      </div>
+      <div class="field" style="max-width:180px">
+        <label>Draft how many</label>
+        <select id="act-draft-limit" onchange="actRescanForRep()" title="Oldest overdue first. You can always re-scan for more once you've cleared this batch." style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.83rem;outline:none;cursor:pointer">
+          <option value="10">First 10</option>
+          <option value="25">First 25</option>
+          <option value="50">First 50</option>
+          <option value="100">First 100</option>
+          <option value="0" selected>All due</option>
+        </select>
+      </div>
     </div>
     <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
       <button class="btn btn-primary" onclick="goToStep2()" id="act-connect-btn" style="gap:6px">
@@ -1792,6 +1804,14 @@
       </button>
     </div>
 
+    <div id="draft-stop-row" class="btn-row hidden" style="margin-bottom:16px">
+      <div></div>
+      <button class="btn btn-ghost" id="draft-stop-btn" onclick="actStopDrafting()" style="gap:6px;color:var(--danger);border-color:rgba(220,80,80,0.4)">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="2" y="2" width="8" height="8" rx="1" fill="currentColor"></rect></svg>
+        Stop — keep what's drafted so far
+      </button>
+    </div>
+
     <div class="progress-bar-wrap">
       <div class="progress-bar-fill" id="draft-progress" style="width:0%"></div>
     </div>
@@ -1817,6 +1837,25 @@
       Nothing is sent automatically. You control every email.
     </div>
 
+    <div class="card" id="act-bulk-toolbar" style="margin-bottom:14px;display:none">
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <label style="display:flex;align-items:center;gap:6px;font-size:0.82rem;color:var(--muted);cursor:pointer">
+          <input type="checkbox" id="act-select-all" onchange="actToggleSelectAll(this.checked)" style="accent-color:var(--accent);width:15px;height:15px">
+          Select all
+        </label>
+        <span id="act-selected-count" style="font-size:0.78rem;color:var(--muted)">0 selected</span>
+        <div style="flex:1"></div>
+        <button class="btn btn-ghost" onclick="actExportReport()" title="Downloads a standalone HTML report of the selected drafts — no login or network needed to open it. Hand it to the rep to copy subject/body into their own email." style="padding:7px 14px;font-size:0.82rem;gap:6px">📄 Export report</button>
+        <button class="btn btn-ghost" onclick="actCopyReportText()" title="Copies a plain-text version of the selected drafts to your clipboard, ready to paste straight into an email body" style="padding:7px 14px;font-size:0.82rem;gap:6px">📋 Copy as text</button>
+        <button class="btn btn-primary" id="act-bulk-log-btn" onclick="actBulkLog()" title="Posts the drafted note, marks the original activity done, and schedules a follow-up on each selected record — no emails opened" style="padding:7px 16px;font-size:0.82rem;gap:6px">📋 Log &amp; follow up — selected</button>
+      </div>
+      <label style="display:flex;align-items:center;gap:6px;font-size:0.78rem;color:var(--muted);cursor:pointer;margin-top:10px" title="Turn off when catching up someone else's activities — leaves their activity exactly as scheduled so they see it normally, with the drafted email waiting as a note">
+        <input type="checkbox" id="act-also-followup" checked onchange="actUpdateLogButtonLabels()" style="accent-color:var(--accent);width:14px;height:14px">
+        Also mark the original activity done &amp; schedule a follow-up
+      </label>
+      <div id="act-bulk-status" style="font-size:0.78rem;color:var(--muted);margin-top:8px"></div>
+    </div>
+
     <div id="email-list"></div>
 
     <div class="btn-row">
@@ -1824,13 +1863,9 @@
       <button class="btn btn-ghost" onclick="setStep(5)" style="margin-left:auto">
         Lead Capture →
       </button>
-      <button class="btn btn-success" onclick="openAllEmails()">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 4l5 4 5-4M2 4h10v7H2z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-        Send all without editing
-      </button>
+    </div>
     </div>
   </div>
-        </div>
         <div id="act-panel-tracker" class="sub-panel">
           <div class="card">
             <div class="card-title">Follow-up Tracker</div>
@@ -2881,9 +2916,9 @@ Support Team"></textarea>
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
           <div>
             <div style="font-family:'DM Serif Display',serif;font-size:1.3rem;color:var(--text)">OEL Command</div>
-            <div style="font-size:0.75rem;color:var(--muted);margin-top:2px">Quick Reference Guide · v15.7</div>
+            <div style="font-size:0.75rem;color:var(--muted);margin-top:2px">Quick Reference Guide · v15.16</div>
           </div>
-          <span style="font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace">v15.7</span>
+          <span style="font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace">v15.16</span>
         </div>
 
         <!-- Setup -->
@@ -2937,12 +2972,15 @@ Support Team"></textarea>
         <div class="card" style="margin-bottom:14px">
           <div class="card-title">⚡ Activities</div>
           <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
-            <p style="margin:0 0 4px">Scans due Odoo activities and AI-drafts a follow-up email per contact using deal context and last chatter note. <strong style="color:var(--text)">"Catching up on activities for"</strong> defaults to you, but you can pick any rep on your team — switching it re-scans for that person without a full reconnect.</p>
-            <p style="margin:0 0 4px"><strong style="color:var(--text)">Draft tab:</strong> shows a "Start drafting" trigger when opened manually, or auto-starts when arriving from Connect. Per card: Review & edit (full modal) · ✉ Draft email · 📋 Log note · Skip.</p>
-            <p style="margin:0 0 4px"><strong style="color:var(--text)">📋 Log note</strong> posts the drafted subject/body straight to that record's Odoo chatter as a note — handy for catching up someone else's activities: they'll see the draft waiting in Odoo to review and send themselves, without you touching their inbox.</p>
+            <p style="margin:0 0 4px">Scans due Odoo activities and AI-drafts a follow-up email per contact using deal context and last chatter note. <strong style="color:var(--text)">"Catching up on activities for"</strong> defaults to you, but you can pick any rep on your team — switching it re-scans for that person without a full reconnect. <strong style="color:var(--text)">"Draft how many"</strong> caps the batch (oldest overdue first) so a rep with a huge backlog doesn't force one long run — the scan log tells you the true total so you know whether to raise it. A <strong style="color:var(--text)">Stop</strong> button appears while drafting is in progress and keeps whatever's already been drafted.</p>
+            <p style="margin:0 0 4px"><strong style="color:var(--text)">Send tab:</strong> checkboxes on every card plus a bulk toolbar up top — Select all, a live count, and a bulk log button. Per card: Review &amp; edit (full modal — actually opens your mail client and logs) · ✉ Draft email (Quick Compose via IMAP) · 📋 Log (bulk or one at a time) · Skip (excludes it from bulk actions).</p>
+            <p style="margin:0 0 4px"><strong style="color:var(--text)">"Also mark the original activity done & schedule a follow-up"</strong> toggle controls what logging actually does — on (default) it posts the note, completes the original activity, and schedules the next one. Turn it off when catching up <em>someone else's</em> activities: it then just posts the drafted email as a note and leaves their activity exactly as scheduled, so they see it due normally in Odoo with the draft waiting to review and send themselves.</p>
+            <p style="margin:0 0 4px"><strong style="color:var(--text)">📄 Export report</strong> downloads a standalone HTML file of the selected drafts — no login or Odoo connection needed to open it. Each entry shows contact, subject, and body in a click-to-select box, ready to hand to a rep who copies each one into their own email. <strong style="color:var(--text)">📋 Copy as text</strong> puts a plain-text version straight on your clipboard instead, for pasting directly into an email body. Both respect the current selection, same as the log buttons.</p>
+            <p style="margin:0 0 4px">🔍 <strong style="color:var(--text)">Verify</strong> on a card shows the raw, unfiltered chatter messages actually on that Odoo record — useful for confirming whether a note genuinely posted when something seems off.</p>
             <p style="margin:0"><strong style="color:var(--text)">Follow-up Tracker:</strong> Shows leads pushed from Lead Capture that have no scheduled activity. Requires Odoo connection.</p>
           </div>
         </div>
+
 
         <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);font-weight:500;margin:20px 0 10px 2px">Quoting</div>
 
@@ -3120,7 +3158,7 @@ Support Team"></textarea>
         <div class="card" style="margin-bottom:14px">
           <div class="card-title">🔧 Troubleshooting</div>
           <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
-            <p style="margin:0 0 4px"><strong style="color:var(--text)">App not updating after deploy:</strong> Hard refresh Ctrl+Shift+R. Service worker cache key = oel-v15.7.</p>
+            <p style="margin:0 0 4px"><strong style="color:var(--text)">App not updating after deploy:</strong> Hard refresh Ctrl+Shift+R. Service worker cache key = oel-v15.16.</p>
             <p style="margin:0 0 4px"><strong style="color:var(--text)">Odoo calls failing:</strong> Confirm server.py is running on port 7842. Check status lights in Settings. All domains must be flat arrays for Odoo 19 — no nested | operators. The header Connect button retries automatically (up to 3x) since the public CORS proxies it cycles through in Proxy mode can be individually flaky — "retry 1/2" in the status text is normal, not an error. If it still fails after retries, switch to Local Server mode in Settings.</p>
             <p style="margin:0 0 4px"><strong style="color:var(--text)">IMAP not working:</strong> Confirm imap_server.py is running on port 7843. Gmail requires an App Password. Turbify uses standard IMAP credentials.</p>
             <p style="margin:0 0 4px"><strong style="color:var(--text)">AI drafts failing:</strong> Check Groq API key in Settings. Verify model name — default is qwen/qwen3.6-27b.</p>
@@ -3129,7 +3167,7 @@ Support Team"></textarea>
         </div>
 
         <div style="text-align:center;font-size:0.72rem;color:var(--muted);padding:12px 0">
-          OEL Command v15.7 · Built by Lazzaro · Powered by Groq AI + Odoo 19
+          OEL Command v15.16 · Built by Lazzaro · Powered by Groq AI + Odoo 19
         </div>
 
       </div>
@@ -3239,7 +3277,7 @@ Support Team"></textarea>
           <div class="card-title" style="font-family:'DM Serif Display',serif;font-size:1.2rem;margin-bottom:6px">Dashboard</div>
           <div class="card-subtitle" style="margin-bottom:16px">Pipeline, opportunities, and team performance from Odoo.</div>
           <div style="display:inline-flex;align-items:center;gap:6px;margin-bottom:8px">
-            <span style="font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace;box-shadow:0 0 8px rgba(201,168,76,0.35),0 0 20px rgba(201,168,76,0.12);animation:versionGlow 3s ease-in-out infinite alternate">OEL Command v15.7</span>
+            <span style="font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace;box-shadow:0 0 8px rgba(201,168,76,0.35),0 0 20px rgba(201,168,76,0.12);animation:versionGlow 3s ease-in-out infinite alternate">OEL Command v15.16</span>
             <span style="font-size:0.68rem;color:var(--muted)">Built by Lazzaro</span>
           </div>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px">
@@ -6220,24 +6258,87 @@ async function actLogNote(idx) {
   if (badge) { badge.textContent = 'logging…'; badge.style.background = 'rgba(201,168,76,0.15)'; }
 
   try {
-    const noteText = '<strong>Draft email prepared:</strong><br>'
-      + '<strong>Subject:</strong> ' + escHtml(em.subject) + '<br>'
-      + escHtml(em.body).replace(/\n/g,'<br>');
-
-    await odooExecute(odooUid, em.res_model, 'message_post', [[em.res_id]], {
-      body:           noteText,
-      message_type:   'comment',
-      subtype_xmlid:  'mail.mt_note',
-    });
-
+    // "Also mark activity done & schedule follow-up" toggle governs which path
+    // runs — full (note + activity done + follow-up) or note-only, which
+    // leaves the original activity exactly as scheduled. Note-only is for
+    // catching up someone else's activities: they still see it due normally,
+    // with the drafted email waiting as a note to review and send themselves.
+    if (actLoggingModeIsFull()) {
+      await logToOdoo(em, em.subject, em.body, null, null, false, em.followUpDays || followUpDays);
+    } else {
+      await logNoteOnly(em);
+    }
     if (badge) { badge.textContent = 'logged ✓'; badge.style.background = 'rgba(100,200,100,0.15)'; badge.style.color = 'var(--success)'; }
     const card = document.getElementById('email-card-' + idx);
     if (card) card.style.opacity = '0.6';
   } catch(e) {
     if (badge) { badge.textContent = 'error'; badge.style.background = 'rgba(220,50,50,0.15)'; }
-    alert('Log note failed: ' + e.message);
+    alert('Log failed: ' + e.message);
   }
 }
+
+// Bypasses Odoo's chatter UI entirely and shows the raw, unfiltered messages
+// currently on a record — the ground truth our own "verified" logging checks
+// against. If a note we believe we posted isn't in this list, it genuinely
+// isn't there; if it IS in this list but not visible in Odoo's chatter, that's
+// an Odoo-side display/filter issue, not a logging failure.
+async function actVerifyRecord(idx) {
+  const em = draftedEmails[idx];
+  if (!em) return;
+  if (!odooUid) { alert('Connect to Odoo first'); return; }
+
+  const existing = document.getElementById('act-verify-modal');
+  if (existing) existing.remove();
+  const modal = document.createElement('div');
+  modal.id = 'act-verify-modal';
+  modal.className = 'modal-overlay';
+  modal.style.cssText = 'display:flex';
+  modal.innerHTML = `<div class="modal" style="max-width:560px">
+    <div class="modal-header">
+      <div class="modal-header-text">
+        <div class="record">Raw chatter on ${escHtml(em.res_model)}#${em.res_id}</div>
+        <div class="contact">Unfiltered — straight from mail.message, bypassing Odoo's chatter UI</div>
+      </div>
+      <button class="modal-close" onclick="document.getElementById('act-verify-modal').remove()">✕</button>
+    </div>
+    <div class="modal-body" id="act-verify-body" style="max-height:420px;overflow-y:auto">
+      <div style="text-align:center;color:var(--muted);font-size:0.82rem;padding:16px"><div class="dot spin" style="display:inline-block;margin-right:6px"></div>Fetching…</div>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+
+  try {
+    const msgs = await odooExecute(odooUid, 'mail.message', 'search_read', [[
+      ['res_id', '=', em.res_id], ['model', '=', em.res_model]
+    ]], { fields: ['id', 'date', 'author_id', 'message_type', 'subtype_id', 'body'], order: 'id desc', limit: 8 });
+
+    const bodyEl = document.getElementById('act-verify-body');
+    if (!bodyEl) return;
+
+    if (!msgs || !msgs.length) {
+      bodyEl.innerHTML = '<div style="padding:16px;text-align:center;color:var(--danger);font-size:0.85rem">No messages at all exist on this record — genuinely empty, not a display filter issue.</div>';
+      return;
+    }
+
+    bodyEl.innerHTML = msgs.map(m => {
+      const author = Array.isArray(m.author_id) ? m.author_id[1] : '—';
+      const subtype = Array.isArray(m.subtype_id) ? m.subtype_id[1] : '(none)';
+      const snippet = stripHtml(m.body || '').slice(0, 200) || '(empty body)';
+      return `<div style="padding:10px 0;border-bottom:1px solid var(--border);font-size:0.8rem">
+        <div style="display:flex;gap:10px;color:var(--muted);font-size:0.72rem;margin-bottom:4px">
+          <span>ID ${m.id}</span><span>${escHtml(String(m.date || ''))}</span><span>${escHtml(author)}</span>
+          <span>type: ${escHtml(m.message_type || '—')}</span><span>subtype: ${escHtml(subtype)}</span>
+        </div>
+        <div style="color:var(--text);white-space:pre-wrap">${escHtml(snippet)}</div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    const bodyEl = document.getElementById('act-verify-body');
+    if (bodyEl) bodyEl.innerHTML = `<div style="padding:16px;text-align:center;color:var(--danger);font-size:0.85rem">Fetch failed: ${escHtml(e.message)}</div>`;
+  }
+}
+
+
 
 function goToStep4() { navTo('activities'); actTab('send'); renderEmailList(); }
 
@@ -6601,20 +6702,29 @@ async function actFetchDueActivities() {
   const sel = document.getElementById('act-rep-select');
   const targetUserId = parseInt(sel?.value) || odooUid;
   const targetLabel = (sel?.value && sel.selectedOptions?.[0]) ? sel.selectedOptions[0].textContent : 'you';
+  const limitSel = document.getElementById('act-draft-limit');
+  const limit = parseInt(limitSel?.value) || 0; // 0 = all
 
   const today = new Date().toISOString().split('T')[0];
   const l2 = addLog('loading', `Fetching due activities for ${targetLabel}…`);
   try {
-    activities = await odooExecute(odooUid, 'mail.activity', 'search_read', [[
-      ['user_id', '=', targetUserId],
-      ['date_deadline', '<=', today]
-    ]], {
-      fields: ['res_model', 'res_id', 'summary', 'note', 'date_deadline', 'activity_type_id']
-    });
+    const domain = [['user_id', '=', targetUserId], ['date_deadline', '<=', today]];
+    const totalCount = await odooExecute(odooUid, 'mail.activity', 'search_count', [domain]);
+
+    const readOpts = {
+      fields: ['res_model', 'res_id', 'summary', 'note', 'date_deadline', 'activity_type_id'],
+      order: 'date_deadline asc', // oldest overdue first — the ones that most need attention
+    };
+    if (limit) readOpts.limit = limit;
+
+    activities = await odooExecute(odooUid, 'mail.activity', 'search_read', [domain], readOpts);
     draftedEmails = []; // invalidate any previously drafted batch — it was for a different scan
     l2.className = 'status-line ok';
     l2.querySelector('.dot').className = 'dot ok';
-    l2.querySelector('div:last-child').textContent = `Found ${activities.length} due activit${activities.length === 1 ? 'y' : 'ies'} for ${targetLabel}`;
+    const scopeNote = (limit && totalCount > activities.length)
+      ? ` (oldest ${activities.length} of ${totalCount} total — raise "Draft how many" for more)`
+      : '';
+    l2.querySelector('div:last-child').textContent = `Found ${activities.length} due activit${activities.length === 1 ? 'y' : 'ies'} for ${targetLabel}${scopeNote}`;
   } catch(e) {
     l2.className = 'status-line err';
     l2.querySelector('.dot').className = 'dot err';
@@ -6671,13 +6781,26 @@ async function connectAndFetch() {
 }
 
 // ─── Draft emails ─────────────────────────────────────────
+let _draftAbortRequested = false;
+
+function actStopDrafting() {
+  _draftAbortRequested = true;
+  const btn = document.getElementById('draft-stop-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Stopping…'; }
+}
+
 async function draftAllEmails() {
   draftedEmails = [];
+  _draftAbortRequested = false;
   const log = document.getElementById('draft-log');
   log.innerHTML = '';
   document.getElementById('step3-actions').classList.add('hidden');
   const triggerRow = document.getElementById('draft-trigger-row');
   if (triggerRow) triggerRow.classList.add('hidden');
+  const stopRow = document.getElementById('draft-stop-row');
+  const stopBtn = document.getElementById('draft-stop-btn');
+  if (stopBtn) { stopBtn.disabled = false; stopBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="2" y="2" width="8" height="8" rx="1" fill="currentColor"></rect></svg> Stop — keep what\'s drafted so far'; }
+  if (stopRow) stopRow.classList.remove('hidden');
 
   const subtitle = document.getElementById('draft-subtitle');
   const progress = document.getElementById('draft-progress');
@@ -6695,10 +6818,15 @@ async function draftAllEmails() {
     if (subtitle) subtitle.textContent = 'No activities found — connect and scan first';
     addLog('warn', 'No activities loaded. Go to the Connect tab and click "Connect & scan" first.');
     document.getElementById('step3-actions').classList.remove('hidden');
+    if (stopRow) stopRow.classList.add('hidden');
     return;
   }
 
   for (let i = 0; i < activities.length; i++) {
+    if (_draftAbortRequested) {
+      addLog('warn', `Stopped — drafted ${draftedEmails.length} of ${activities.length}. What's drafted so far is ready to review.`);
+      break;
+    }
     const act = activities[i];
     const pct = Math.round((i / activities.length) * 100);
     progress.style.width = pct + '%';
@@ -6739,6 +6867,8 @@ async function draftAllEmails() {
         description: record.description || '',
         activity_summary: act.summary || 'Follow up',
         activity_notes: act.note || '',
+        activity_due: act.date_deadline || '',
+        today: new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }),
         history: history
       };
 
@@ -6781,13 +6911,21 @@ async function draftAllEmails() {
     }
 
     // Pace requests — wait 4s between drafts to stay under TPM limit
+    // (interruptible: Stop takes effect within ~200ms instead of waiting out the full pause)
     if (i < activities.length - 1) {
-      await new Promise(r => setTimeout(r, 4000));
+      const waitUntil = Date.now() + 4000;
+      while (Date.now() < waitUntil) {
+        if (_draftAbortRequested) break;
+        await new Promise(r => setTimeout(r, 200));
+      }
     }
   } // end for loop
 
   progress.style.width = '100%';
-  subtitle.textContent = `Done — ${draftedEmails.length} email${draftedEmails.length !== 1 ? 's' : ''} ready.`;
+  subtitle.textContent = _draftAbortRequested
+    ? `Stopped — ${draftedEmails.length} email${draftedEmails.length !== 1 ? 's' : ''} ready.`
+    : `Done — ${draftedEmails.length} email${draftedEmails.length !== 1 ? 's' : ''} ready.`;
+  if (stopRow) stopRow.classList.add('hidden');
   document.getElementById('step3-actions').classList.remove('hidden');
 }
 
@@ -6867,8 +7005,13 @@ async function draftEmail(ctx) {
   const history = (ctx.history || '').trim() || 'No previous messages found.';
   const notes = (ctx.activity_notes || '').trim() || 'None';
   const desc = (ctx.description || '').trim() || 'None';
+  const today = ctx.today || new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  const activityDue = (ctx.activity_due || '').trim() || 'Not set';
 
   const prompt = `You are a professional email assistant. Draft a follow-up email based on CRM activity data.
+
+=== TODAY'S DATE ===
+${today}
 
 Analyze the conversation history carefully. Match the tone and style of previous messages. Write a natural, professional email that moves the relationship forward.
 
@@ -6887,17 +7030,21 @@ ${desc}
 === CURRENT ACTIVITY ===
 Summary: ${ctx.activity_summary}
 Notes: ${notes}
+This activity's due date: ${activityDue}
 
-=== CONVERSATION HISTORY (chronological) ===
+=== CONVERSATION HISTORY (chronological, each entry dated) ===
 ${history}
 
 === INSTRUCTIONS ===
-1. Determine the appropriate follow-up type (check-in, proposal follow-up, meeting request, etc.)
-2. Reference relevant details from the conversation history naturally
-3. Include a clear call-to-action
-4. Keep it concise — no more than 3-4 short paragraphs
-5. Use the contact's actual name — do NOT use placeholder text
-6. Do NOT include a signature block
+1. Use TODAY'S DATE above to reason about every other date in this data — the expected closing date, the activity due date, and any dates mentioned in the conversation history or notes. Figure out whether each is in the past or the future relative to today before you write anything about it.
+2. If a referenced date, order, delivery, or event has already passed, write as someone following up AFTER it — ask how it went, confirm it's handled, or check on next steps. Do NOT ask if it's "still happening," "going to happen," or "on track" for something that has already occurred.
+3. If the expected closing date has already passed and the deal doesn't appear closed, don't just ask "are we still closing on schedule" — acknowledge the date has passed and ask for a real status update.
+4. Determine the appropriate follow-up type given the above (check-in, proposal follow-up, post-event wrap-up, meeting request, etc.)
+5. Reference relevant details from the conversation history naturally
+6. Include a clear call-to-action
+7. Keep it concise — no more than 3-4 short paragraphs
+8. Use the contact's actual name — do NOT use placeholder text
+9. Do NOT include a signature block
 
 Format EXACTLY like this (nothing before SUBJECT:):
 
@@ -6957,14 +7104,20 @@ function parseEmailResponse(text) {
 // ─── Render email list ────────────────────────────────────
 function renderEmailList() {
   const container = document.getElementById('email-list');
+  const toolbar = document.getElementById('act-bulk-toolbar');
   container.innerHTML = '';
 
   if (draftedEmails.length === 0) {
     container.innerHTML = '<div style="text-align:center;color:var(--muted);padding:30px;font-size:0.85rem;">No emails were drafted — all activities were skipped or had errors.</div>';
+    if (toolbar) toolbar.style.display = 'none';
     return;
   }
 
+  if (toolbar) toolbar.style.display = 'block';
+
   draftedEmails.forEach((em, idx) => {
+    if (em._selected === undefined) em._selected = true; // default: everything selected
+
     const card = document.createElement('div');
     card.className = 'email-preview';
     card.id = `email-card-${idx}`;
@@ -6973,9 +7126,12 @@ function renderEmailList() {
 
     card.innerHTML = `
       <div class="email-preview-header">
-        <div>
-          <div class="record-name">${escHtml(em.record_name)}</div>
-          <div class="contact-email">${escHtml(em.contact_email)}</div>
+        <div style="display:flex;align-items:flex-start;gap:10px">
+          <input type="checkbox" class="act-email-select" data-idx="${idx}" ${em._selected ? 'checked' : ''} onchange="actToggleOne(${idx}, this.checked)" style="accent-color:var(--accent);width:15px;height:15px;margin-top:3px;flex-shrink:0">
+          <div>
+            <div class="record-name">${escHtml(em.record_name)}</div>
+            <div class="contact-email">${escHtml(em.contact_email)}</div>
+          </div>
         </div>
         <div style="display:flex;gap:8px;align-items:center">
           <span class="activity-badge" id="badge-${idx}">pending</span>
@@ -6994,9 +7150,8 @@ function renderEmailList() {
         <button class="btn btn-ghost" style="padding:8px 14px;font-size:0.82rem" onclick="actDraftToCompose(${idx})" title="Open in Quick Compose to edit and send via IMAP">
           ✉ Draft email
         </button>
-        <button class="btn btn-ghost" style="padding:8px 14px;font-size:0.82rem" onclick="actLogNote(${idx})" title="Log this draft as a note on the Odoo contact without sending">
-          📋 Log note
-        </button>
+        <button class="btn btn-ghost act-log-btn" style="padding:8px 14px;font-size:0.82rem" onclick="actLogNote(${idx})" title="Log this draft, mark the original activity done, and schedule a follow-up — without opening any email client">📋 Log &amp; follow up</button>
+        <button class="btn btn-ghost" style="padding:8px 14px;font-size:0.82rem" onclick="actVerifyRecord(${idx})" title="Show the raw, unfiltered chatter on this record — bypasses Odoo's UI to confirm whether a note actually landed">🔍 Verify</button>
         <button class="btn btn-ghost" id="skip-btn-${idx}" style="padding:8px 14px;font-size:0.82rem" onclick="skipEmail(${idx})">Skip</button>
         <div style="flex:1"></div>
         <div style="font-size:0.75rem;color:var(--muted)">${escHtml(em.contact_name)}</div>
@@ -7007,6 +7162,289 @@ function renderEmailList() {
     // Load contact context asynchronously — don't block card render
     emailCardLoadContext(idx, em);
   });
+
+  actUpdateSelectedCount();
+  actUpdateLogButtonLabels();
+}
+
+// Whether logging should also mark the original activity done and schedule a
+// follow-up (the default), or just post the note and leave the activity alone
+// (for catching up someone else's activities — they still see it scheduled
+// normally, with the drafted email waiting as a note to review and send).
+function actLoggingModeIsFull() {
+  const cb = document.getElementById('act-also-followup');
+  return !cb || cb.checked;
+}
+
+function actUpdateLogButtonLabels() {
+  const full = actLoggingModeIsFull();
+  const bulkBtn = document.getElementById('act-bulk-log-btn');
+  if (bulkBtn) {
+    bulkBtn.innerHTML = full ? '📋 Log &amp; follow up — selected' : '📋 Log only — selected';
+    bulkBtn.title = full
+      ? "Posts the drafted note, marks the original activity done, and schedules a follow-up on each selected record — no emails opened"
+      : "Posts the drafted note only, on each selected record — the original activity and any follow-up schedule are left untouched";
+  }
+  document.querySelectorAll('.act-log-btn').forEach(btn => {
+    btn.innerHTML = full ? '📋 Log &amp; follow up' : '📋 Log only';
+    btn.title = full
+      ? 'Log this draft, mark the original activity done, and schedule a follow-up — without opening any email client'
+      : 'Just post this draft as a note — the original activity stays scheduled exactly as-is';
+  });
+}
+
+// Posts the drafted email as a chatter note only — no activity changes at all.
+// Posts a chatter note and actually verifies it landed — message_post can return
+// a falsy/missing ID or silently no-op on some instances (e.g. if the
+// 'mail.mt_note' subtype doesn't resolve) without ever throwing, which is
+// exactly the "shows logged, nothing on the record" failure mode. This makes
+// that failure loud and specific instead of silent, and self-heals the
+// subtype issue if that's what's actually wrong.
+async function postVerifiedNote(model, resId, body) {
+  let raw;
+  try {
+    raw = await odooExecute(odooUid, model, 'message_post', [[resId]], {
+      body, message_type: 'comment', subtype_xmlid: 'mail.mt_note',
+    });
+  } catch(e) {
+    // 'mail.mt_note' may not resolve on this instance — retry letting Odoo pick the default subtype
+    try {
+      raw = await odooExecute(odooUid, model, 'message_post', [[resId]], {
+        body, message_type: 'comment',
+      });
+    } catch(e2) {
+      throw new Error(`message_post itself failed on ${model}#${resId}: ${e2.message}`);
+    }
+  }
+
+  // message_post's return shape isn't consistent across Odoo versions (older
+  // versions return a plain int ID; some newer ones return something else
+  // entirely over XML-RPC) — pull an ID out of whatever came back, best-effort,
+  // rather than assuming a specific shape.
+  let msgId = null;
+  if (typeof raw === 'number' && raw > 0) msgId = raw;
+  else if (Array.isArray(raw) && raw.length === 1 && typeof raw[0] === 'number') msgId = raw[0];
+  else if (raw && typeof raw === 'object' && typeof raw.id === 'number') msgId = raw.id;
+
+  // Verify by reading back the exact ID if we extracted one
+  let verifiedId = null;
+  if (msgId) {
+    try {
+      const check = await odooExecute(odooUid, 'mail.message', 'read', [[msgId]], { fields: ['res_id', 'model'] });
+      if (check && check.length && check[0].model === model && check[0].res_id === resId) {
+        verifiedId = msgId;
+      }
+    } catch(e) { /* fall through to search-based verification below */ }
+  }
+
+  // Don't depend on message_post's return shape at all for the final answer —
+  // search for a message that actually matches this record and this note's
+  // own text, created just now. The recency window matters: the note's opening
+  // line is a fixed generic header ("Follow-up email sent via..."), so without
+  // a time constraint this could false-match an old note from a previous
+  // attempt on the same record and report success when this attempt actually
+  // failed again.
+  if (!verifiedId) {
+    const snippet = body.slice(0, 40).replace(/[\\%_]/g, '\\$&');
+    const cutoff = new Date(Date.now() - 120000); // last 2 minutes only
+    const cutoffStr = cutoff.toISOString().slice(0, 19).replace('T', ' ');
+    try {
+      const found = await odooExecute(odooUid, 'mail.message', 'search_read', [[
+        ['res_id', '=', resId], ['model', '=', model], ['body', 'ilike', snippet], ['date', '>=', cutoffStr],
+      ]], { fields: ['id'], order: 'id desc', limit: 1 });
+      if (found && found.length) verifiedId = found[0].id;
+    } catch(e) { /* still unverified — will throw below */ }
+  }
+
+  if (!verifiedId) {
+    throw new Error(`message_post returned ${JSON.stringify(raw)} (type: ${typeof raw}) for ${model}#${resId}, and a follow-up search for the note's own text on that record found nothing either — it genuinely wasn't created. Worth checking whether ${model} #${resId} still exists, whether this instance has custom mail.thread logic overriding message_post, or whether the API user's access rights actually allow posting on this record.`);
+  }
+
+  return verifiedId;
+}
+
+async function logNoteOnly(em) {
+  const cleanBody = String(em.body || '')
+    .replace(/\r\n/g, '\n')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .trim();
+
+  const noteText = [
+    'Follow-up email drafted — ready to review and send',
+    '─────────────────────────────',
+    `To: ${em.contact_email}`,
+    `Subject: ${em.subject}`,
+    '─────────────────────────────',
+    cleanBody
+  ].join('\n');
+
+  await postVerifiedNote(em.res_model, em.res_id, noteText);
+}
+
+function actToggleSelectAll(checked) {
+  draftedEmails.forEach(em => { if (!em.skipped) em._selected = checked; });
+  document.querySelectorAll('.act-email-select').forEach(cb => {
+    const idx = parseInt(cb.dataset.idx);
+    if (draftedEmails[idx] && !draftedEmails[idx].skipped) cb.checked = checked;
+  });
+  actUpdateSelectedCount();
+}
+
+function actToggleOne(idx, checked) {
+  if (draftedEmails[idx]) draftedEmails[idx]._selected = checked;
+  actUpdateSelectedCount();
+}
+
+function actUpdateSelectedCount() {
+  const selectable = draftedEmails.filter(e => !e.skipped);
+  const selected = selectable.filter(e => e._selected !== false);
+  const el = document.getElementById('act-selected-count');
+  if (el) el.textContent = `${selected.length} of ${selectable.length} selected`;
+  const selectAllCb = document.getElementById('act-select-all');
+  if (selectAllCb) selectAllCb.checked = selectable.length > 0 && selected.length === selectable.length;
+}
+
+// Shared selection filter — same rule as bulk logging: everything checked
+// and not skipped.
+function actGetExportTargets() {
+  return draftedEmails
+    .map((em, i) => ({ em, i }))
+    .filter(({ em }) => !em.skipped && em._selected !== false)
+    .map(({ em }) => em);
+}
+
+function actRepLabelForExport() {
+  const sel = document.getElementById('act-rep-select');
+  return (sel?.value && sel.selectedOptions?.[0]) ? sel.selectedOptions[0].textContent : 'me';
+}
+
+function actBuildReportHtml(targets, repLabel) {
+  const generated = new Date().toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
+  const entries = targets.map((em, i) => `
+    <div class="entry">
+      <div class="entry-num">${i + 1} of ${targets.length}</div>
+      <h2>${escHtml(em.record_name)}</h2>
+      <div class="meta">${escHtml(em.contact_name)} &lt;<a href="mailto:${escHtml(em.contact_email)}">${escHtml(em.contact_email)}</a>&gt;</div>
+      <div class="field-label">Subject</div>
+      <div class="subject-box">${escHtml(em.subject)}</div>
+      <div class="field-label">Body</div>
+      <textarea readonly rows="8" onclick="this.select()">${escHtml(em.body)}</textarea>
+    </div>`).join('\n');
+
+  return `<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8">
+<title>Follow-up drafts for ${escHtml(repLabel)}</title>
+<style>
+  body { font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif; background: #f4f3ef; color: #1a1a1a; margin: 0; padding: 24px; }
+  .wrap { max-width: 720px; margin: 0 auto; }
+  header { margin-bottom: 24px; }
+  header h1 { font-size: 1.3rem; margin: 0 0 4px; }
+  header .sub { color: #666; font-size: 0.85rem; }
+  .instructions { background: #fff8e6; border: 1px solid #e8d9a8; border-radius: 8px; padding: 12px 16px; margin-bottom: 24px; font-size: 0.85rem; line-height: 1.6; }
+  .entry { background: #fff; border: 1px solid #ddd; border-radius: 10px; padding: 18px 20px; margin-bottom: 16px; }
+  .entry-num { font-size: 0.72rem; color: #999; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+  .entry h2 { font-size: 1.05rem; margin: 0 0 4px; }
+  .meta { color: #555; font-size: 0.85rem; margin-bottom: 14px; }
+  .meta a { color: #8a6d1f; }
+  .field-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: #999; margin: 10px 0 4px; }
+  .subject-box { background: #f7f6f2; border: 1px solid #e2ded4; border-radius: 6px; padding: 8px 12px; font-weight: 600; font-size: 0.92rem; }
+  textarea { width: 100%; box-sizing: border-box; background: #f7f6f2; border: 1px solid #e2ded4; border-radius: 6px; padding: 10px 12px; font-family: inherit; font-size: 0.88rem; line-height: 1.6; color: #1a1a1a; resize: vertical; }
+  footer { text-align: center; color: #999; font-size: 0.75rem; margin-top: 24px; }
+</style></head>
+<body><div class="wrap">
+  <header>
+    <h1>Follow-up email drafts — ${escHtml(repLabel)}</h1>
+    <div class="sub">${targets.length} draft${targets.length !== 1 ? 's' : ''} · generated ${escHtml(generated)}</div>
+  </header>
+  <div class="instructions">Click into a body box below and it'll auto-select all the text — copy it (Ctrl/Cmd+C), then paste it into a new email in your normal mail client. Do the same for the subject line. No Odoo login needed to use this page.</div>
+  ${entries}
+  <footer>Generated by OEL Command</footer>
+</div></body></html>`;
+}
+
+function actBuildReportText(targets, repLabel) {
+  const generated = new Date().toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
+  const parts = [`Follow-up email drafts — ${repLabel}`, `${targets.length} draft${targets.length !== 1 ? 's' : ''} · generated ${generated}`, ''];
+  targets.forEach((em, i) => {
+    parts.push('═'.repeat(50));
+    parts.push(`${i + 1} of ${targets.length} — ${em.record_name}`);
+    parts.push(`${em.contact_name} <${em.contact_email}>`);
+    parts.push('');
+    parts.push(`Subject: ${em.subject}`);
+    parts.push('');
+    parts.push(em.body);
+    parts.push('');
+  });
+  return parts.join('\n');
+}
+
+function actExportReport() {
+  const targets = actGetExportTargets();
+  if (!targets.length) { alert('Select at least one email first.'); return; }
+  const repLabel = actRepLabelForExport();
+  const html = actBuildReportHtml(targets, repLabel);
+  const blob = new Blob([html], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const dateStr = new Date().toISOString().slice(0, 10);
+  const safeRep = repLabel.replace(/[^a-z0-9]+/gi, '-').replace(/^-+|-+$/g, '') || 'me';
+  a.href = url;
+  a.download = `drafts-${safeRep}-${dateStr}.html`;
+  a.click();
+  URL.revokeObjectURL(url);
+  const statusEl = document.getElementById('act-bulk-status');
+  if (statusEl) statusEl.textContent = `Downloaded — attach this file to an email to ${repLabel}.`;
+}
+
+async function actCopyReportText() {
+  const targets = actGetExportTargets();
+  if (!targets.length) { alert('Select at least one email first.'); return; }
+  const text = actBuildReportText(targets, actRepLabelForExport());
+  const statusEl = document.getElementById('act-bulk-status');
+  try {
+    await navigator.clipboard.writeText(text);
+    if (statusEl) statusEl.textContent = `Copied ${targets.length} draft${targets.length !== 1 ? 's' : ''} to clipboard — paste into an email.`;
+  } catch(e) {
+    if (statusEl) statusEl.textContent = 'Clipboard blocked — try the Export report button instead.';
+  }
+}
+
+
+async function actBulkLog() {
+  if (!odooUid) { alert('Connect to Odoo first'); return; }
+  const targets = draftedEmails
+    .map((em, i) => ({ em, i }))
+    .filter(({ em }) => !em.skipped && em._selected !== false);
+
+  if (!targets.length) { alert('Select at least one email first.'); return; }
+
+  const fullMode = actLoggingModeIsFull();
+  const statusEl = document.getElementById('act-bulk-status');
+  let ok = 0, err = 0;
+
+  for (const { em, i } of targets) {
+    const badge = document.getElementById(`badge-${i}`);
+    if (badge) { badge.textContent = 'logging…'; badge.style.background = 'rgba(201,168,76,0.15)'; }
+    if (statusEl) statusEl.textContent = `Logging ${ok + err + 1} of ${targets.length}…`;
+    try {
+      if (fullMode) {
+        await logToOdoo(em, em.subject, em.body, null, null, false, em.followUpDays || followUpDays);
+      } else {
+        await logNoteOnly(em);
+      }
+      ok++;
+      if (badge) { badge.textContent = 'logged ✓'; badge.style.background = 'rgba(100,200,100,0.15)'; badge.style.color = 'var(--success)'; }
+      const card = document.getElementById(`email-card-${i}`);
+      if (card) card.style.opacity = '0.6';
+    } catch(e) {
+      err++;
+      if (badge) { badge.textContent = 'error'; badge.style.background = 'rgba(220,50,50,0.15)'; badge.title = e.message; }
+    }
+  }
+
+  const modeNote = fullMode ? '' : ' (note only — activities left untouched)';
+  if (statusEl) statusEl.textContent = `Done — ${ok} logged${err ? `, ${err} failed` : ''}${modeNote}`;
 }
 
 async function emailCardLoadContext(idx, em) {
@@ -7068,15 +7506,19 @@ function skipEmail(idx) {
   const card = document.getElementById(`email-card-${idx}`);
   const badge = document.getElementById(`badge-${idx}`);
   const skipBtn = document.getElementById(`skip-btn-${idx}`);
+  const checkbox = document.querySelector(`.act-email-select[data-idx="${idx}"]`);
   if (em.skipped) {
     if (card) card.style.opacity = '0.4';
     if (badge) { badge.textContent = 'skipped'; badge.style.color = 'var(--muted)'; badge.style.background = 'transparent'; badge.style.borderColor = 'var(--border)'; }
     if (skipBtn) skipBtn.textContent = 'Unskip';
+    if (checkbox) checkbox.disabled = true;
   } else {
     if (card) card.style.opacity = '1';
     if (badge) { badge.textContent = 'pending'; badge.style.color = 'var(--accent)'; badge.style.background = 'var(--accent-dim)'; badge.style.borderColor = 'rgba(200,240,78,0.2)'; }
     if (skipBtn) skipBtn.textContent = 'Skip';
+    if (checkbox) checkbox.disabled = false;
   }
+  actUpdateSelectedCount();
 }
 
 function openModal(idx) {
@@ -7261,11 +7703,7 @@ async function logToOdoo(em, subject, body, attachFile, assignUserId, assignImme
     cleanBody
   ].join('\n');
 
-  const msgId = await odooExecute(odooUid, em.res_model, 'message_post', [[em.res_id]], {
-    body: noteText,
-    message_type: 'comment',
-    subtype_xmlid: 'mail.mt_note'
-  });
+  const msgId = await postVerifiedNote(em.res_model, em.res_id, noteText);
 
   // 1b. Attach file to Odoo note if requested
   if (attachFile && msgId) {
@@ -7340,11 +7778,10 @@ Subject: ${subject}`
   }
 }
 
-function openAllEmails() {
-  draftedEmails.filter(e => !e.skipped).forEach((em, i) => {
-    setTimeout(() => openModal(draftedEmails.indexOf(em)), i * 300);
-  });
-}
+// (The old "Send all without editing" button was removed — it only opened each
+// email's edit modal 300ms apart without ever auto-sending or logging anything,
+// so it never actually did bulk anything. Replaced by the "Log & follow up —
+// selected" bulk toolbar above the email list, which does real, complete work.)
 
 function escHtml(s) {
   return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
