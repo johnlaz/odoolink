@@ -3,7 +3,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <meta name="oel-version" content="v15.16">
+  <meta name="oel-version" content="v15.17">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="mobile-web-app-capable" content="yes">
@@ -939,6 +939,12 @@
       <div class="sb-item-icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="2.5" width="12" height="9" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M1.5 3.5l5 3.8 5-3.8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 8.5l3 3M12 8.5l-3 3" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg></div>
       <span class="sb-item-label">Mass Mail</span>
       <span class="sb-badge" id="badge-massmail"></span>
+    </div>
+
+    <div class="sb-item" id="nav-oppimport" onclick="navTo('oppimport')" title="Opportunity Import — bulk-create CRM opportunities from a spreadsheet, open or assigned to a rep">
+      <div class="sb-item-icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1.5" width="8" height="10" rx="1.3" stroke="currentColor" stroke-width="1.2"/><path d="M3 4.5h4M3 6.7h4M3 8.9h2.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/><circle cx="11" cy="9.2" r="2.3" fill="var(--accent)"/><path d="M11 8v2.4M9.8 9.2h2.4" stroke="var(--surface)" stroke-width="1" stroke-linecap="round"/></svg></div>
+      <span class="sb-item-label">Opportunity Import</span>
+      <span class="sb-badge" id="badge-oppimport"></span>
     </div>
 
     <div class="sb-divider"></div>
@@ -2916,9 +2922,9 @@ Support Team"></textarea>
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
           <div>
             <div style="font-family:'DM Serif Display',serif;font-size:1.3rem;color:var(--text)">OEL Command</div>
-            <div style="font-size:0.75rem;color:var(--muted);margin-top:2px">Quick Reference Guide · v15.16</div>
+            <div style="font-size:0.75rem;color:var(--muted);margin-top:2px">Quick Reference Guide · v15.17</div>
           </div>
-          <span style="font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace">v15.16</span>
+          <span style="font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace">v15.17</span>
         </div>
 
         <!-- Setup -->
@@ -3158,7 +3164,7 @@ Support Team"></textarea>
         <div class="card" style="margin-bottom:14px">
           <div class="card-title">🔧 Troubleshooting</div>
           <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
-            <p style="margin:0 0 4px"><strong style="color:var(--text)">App not updating after deploy:</strong> Hard refresh Ctrl+Shift+R. Service worker cache key = oel-v15.16.</p>
+            <p style="margin:0 0 4px"><strong style="color:var(--text)">App not updating after deploy:</strong> Hard refresh Ctrl+Shift+R. Service worker cache key = oel-v15.17.</p>
             <p style="margin:0 0 4px"><strong style="color:var(--text)">Odoo calls failing:</strong> Confirm server.py is running on port 7842. Check status lights in Settings. All domains must be flat arrays for Odoo 19 — no nested | operators. The header Connect button retries automatically (up to 3x) since the public CORS proxies it cycles through in Proxy mode can be individually flaky — "retry 1/2" in the status text is normal, not an error. If it still fails after retries, switch to Local Server mode in Settings.</p>
             <p style="margin:0 0 4px"><strong style="color:var(--text)">IMAP not working:</strong> Confirm imap_server.py is running on port 7843. Gmail requires an App Password. Turbify uses standard IMAP credentials.</p>
             <p style="margin:0 0 4px"><strong style="color:var(--text)">AI drafts failing:</strong> Check Groq API key in Settings. Verify model name — default is qwen/qwen3.6-27b.</p>
@@ -3167,7 +3173,7 @@ Support Team"></textarea>
         </div>
 
         <div style="text-align:center;font-size:0.72rem;color:var(--muted);padding:12px 0">
-          OEL Command v15.16 · Built by Lazzaro · Powered by Groq AI + Odoo 19
+          OEL Command v15.17 · Built by Lazzaro · Powered by Groq AI + Odoo 19
         </div>
 
       </div>
@@ -3277,7 +3283,7 @@ Support Team"></textarea>
           <div class="card-title" style="font-family:'DM Serif Display',serif;font-size:1.2rem;margin-bottom:6px">Dashboard</div>
           <div class="card-subtitle" style="margin-bottom:16px">Pipeline, opportunities, and team performance from Odoo.</div>
           <div style="display:inline-flex;align-items:center;gap:6px;margin-bottom:8px">
-            <span style="font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace;box-shadow:0 0 8px rgba(201,168,76,0.35),0 0 20px rgba(201,168,76,0.12);animation:versionGlow 3s ease-in-out infinite alternate">OEL Command v15.16</span>
+            <span style="font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace;box-shadow:0 0 8px rgba(201,168,76,0.35),0 0 20px rgba(201,168,76,0.12);animation:versionGlow 3s ease-in-out infinite alternate">OEL Command v15.17</span>
             <span style="font-size:0.68rem;color:var(--muted)">Built by Lazzaro</span>
           </div>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px">
@@ -3999,6 +4005,97 @@ Thank you</textarea>
           <button class="btn btn-primary" onclick="mmLogAndSchedule()" id="mm-log-btn" style="padding:9px 20px;font-size:0.85rem">I sent it — log to Odoo &amp; schedule follow-up</button>
           <div id="mm-log-progress" style="font-size:0.78rem;color:var(--muted);margin-top:10px"></div>
           <div id="mm-log-results" style="display:flex;flex-direction:column;gap:4px;margin-top:8px;max-height:260px;overflow-y:auto"></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── OPPORTUNITY IMPORT ────────────────────────────────────────────── -->
+    <div class="section-panel" id="panel-oppimport">
+      <div class="section-scroll" style="padding:20px 24px">
+
+        <!-- PHASE: Upload -->
+        <div id="oi-upload-phase">
+          <div style="margin-bottom:16px">
+            <div style="font-size:1.05rem;font-weight:600;margin-bottom:4px">Opportunity Import</div>
+            <div style="font-size:0.83rem;color:var(--muted)">Upload a spreadsheet of prospects to bulk-create CRM opportunities — leave them open for any rep to take, or assign them as you push</div>
+          </div>
+          <div style="border:2px dashed var(--border);border-radius:10px;padding:40px 20px;text-align:center;background:var(--surface2)" ondragover="event.preventDefault();this.style.borderColor='var(--accent)'" ondragleave="this.style.borderColor='var(--border)'" ondrop="oiHandleDrop(event)">
+            <div style="font-size:2rem;margin-bottom:10px">📋</div>
+            <div style="font-weight:600;font-size:0.9rem;margin-bottom:6px">Upload Your File</div>
+            <div style="font-size:0.82rem;color:var(--muted);margin-bottom:18px">Excel (.xlsx, .xls) or CSV</div>
+            <label style="cursor:pointer">
+              <input type="file" accept=".xlsx,.xls,.csv" id="oi-file-input" style="display:none" onchange="oiHandleUpload(this)">
+              <span class="btn btn-primary" style="padding:8px 20px;font-size:0.85rem">Choose File</span>
+            </label>
+          </div>
+          <div id="oi-upload-err" style="display:none;color:var(--danger);font-size:0.8rem;margin-top:10px"></div>
+        </div>
+
+        <!-- PHASE: Preview -->
+        <div id="oi-preview-phase" style="display:none">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+            <a onclick="oiGoTo('upload')" style="cursor:pointer;color:var(--accent);font-size:0.83rem">← Upload Different File</a>
+          </div>
+          <div id="oi-file-banner" style="background:var(--accent);color:var(--bg);padding:9px 13px;border-radius:7px;font-size:0.83rem;font-weight:500;margin-bottom:16px"></div>
+          <div style="font-weight:600;font-size:0.88rem;margin-bottom:8px">Data Preview (first 10 rows)</div>
+          <div style="overflow-x:auto;border:1px solid var(--border);border-radius:8px;margin-bottom:16px"><table id="oi-preview-tbl" style="width:100%;border-collapse:collapse;font-size:0.79rem"></table></div>
+          <div style="display:flex;gap:8px;padding-top:14px;border-top:1px solid var(--border)">
+            <button class="btn btn-ghost" onclick="oiGoTo('upload')" style="padding:7px 14px;font-size:0.83rem">← Back</button>
+            <button class="btn btn-primary" onclick="oiGoTo('mapping')" style="padding:7px 16px;font-size:0.83rem;margin-left:auto">Map Columns →</button>
+          </div>
+        </div>
+
+        <!-- PHASE: Column mapping -->
+        <div id="oi-mapping-phase" style="display:none">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+            <a onclick="oiGoTo('preview')" style="cursor:pointer;color:var(--accent);font-size:0.83rem">← Back to Preview</a>
+          </div>
+          <div style="font-weight:600;font-size:0.88rem;margin-bottom:4px">Map Your Columns</div>
+          <div style="font-size:0.82rem;color:var(--muted);margin-bottom:16px">Tell us which spreadsheet column holds each piece of information. We've guessed based on your headers — check them over.</div>
+          <div id="oi-map-grid" style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px"></div>
+          <div style="display:flex;gap:8px;padding-top:14px;border-top:1px solid var(--border)">
+            <button class="btn btn-ghost" onclick="oiGoTo('preview')" style="padding:7px 14px;font-size:0.83rem">← Back</button>
+            <button class="btn btn-primary" onclick="oiBuildRows()" style="padding:7px 16px;font-size:0.83rem;margin-left:auto">Preview Opportunities →</button>
+          </div>
+        </div>
+
+        <!-- PHASE: Results / assign / push -->
+        <div id="oi-results-phase" style="display:none">
+
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:0.82rem;color:var(--muted);white-space:nowrap"><input type="checkbox" id="oi-select-all" onchange="oiToggleSelectAll(this.checked)" style="accent-color:var(--accent);cursor:pointer;width:15px;height:15px"> All</label>
+            <span id="oi-checked-count" style="font-size:0.82rem;color:var(--muted);min-width:90px">0 selected</span>
+            <select id="oi-bulk-rep" style="flex:1;min-width:160px;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-size:0.82rem;font-family:'DM Sans',sans-serif;outline:none">
+              <option value="">— Open (unassigned) —</option>
+            </select>
+            <button class="btn btn-primary" onclick="oiBulkAssign()" style="padding:6px 14px;font-size:0.82rem;white-space:nowrap">✓ Apply to checked</button>
+            <div style="flex:1"></div>
+            <button class="btn btn-ghost" onclick="oiGoTo('mapping')" style="padding:6px 14px;font-size:0.82rem;white-space:nowrap">← Remap columns</button>
+            <button class="btn btn-ghost" onclick="oiConfirmReset()" style="padding:6px 14px;font-size:0.82rem;white-space:nowrap;border-color:var(--danger);color:var(--danger)">↺ New list</button>
+          </div>
+
+          <div id="oi-rows-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px"></div>
+
+          <div style="display:flex;gap:8px;padding-top:14px;border-top:1px solid var(--border)">
+            <div style="flex:1;font-size:0.78rem;color:var(--muted);align-self:center" id="oi-push-hint">Rows with no name are skipped automatically — a valid opportunity needs at least a name.</div>
+            <button class="btn btn-primary" id="oi-push-btn" onclick="oiPushChecked()" style="padding:8px 20px;font-size:0.85rem;white-space:nowrap">Push checked to CRM →</button>
+          </div>
+        </div>
+
+        <!-- PHASE: Creating -->
+        <div id="oi-creating-phase" style="display:none;text-align:center;padding:40px 20px">
+          <div style="width:36px;height:36px;border:3px solid var(--border);border-top:3px solid var(--accent);border-radius:50%;margin:0 auto 16px;animation:de-spin 1s linear infinite"></div>
+          <div id="oi-creating-status" style="font-size:0.85rem;color:var(--muted)">Creating opportunities…</div>
+        </div>
+
+        <!-- PHASE: Done -->
+        <div id="oi-done-phase" style="display:none;text-align:center;padding:40px 20px">
+          <div style="font-size:2rem;margin-bottom:12px">✓</div>
+          <div style="font-size:1rem;font-weight:600;margin-bottom:6px">Opportunities Created</div>
+          <div id="oi-done-summary" style="font-size:0.85rem;color:var(--muted);margin-bottom:20px"></div>
+          <div id="oi-done-errors" style="font-size:0.8rem;color:var(--danger);margin-bottom:16px"></div>
+          <button class="btn btn-primary" onclick="oiConfirmReset()" style="padding:8px 20px;font-size:0.85rem">Import Another List</button>
         </div>
 
       </div>
@@ -9442,6 +9539,7 @@ const OEL_SEARCH_INDEX = [
   { id:'catchup',      label:'Dormant Contacts',  keywords:'dormant stale deals no activity re-engage stalled opportunities open deals no movement follow up old deals' },
   { id:'vendor',       label:'Vendor Outreach',   keywords:'find subcontractors vendors blast quote request track responses rent from vendor mailto email a vendor about pricing' },
   { id:'massmail',     label:'Mass Mail',         keywords:'marketing email bulk blast batch mass email excel upload contact list outlook bcc cc newsletter campaign send to many contacts' },
+  { id:'oppimport',    label:'Opportunity Import',keywords:'bulk opportunity import crm lead excel spreadsheet upload create opportunities assign rep open unassigned pipeline push to odoo' },
   { id:'projects',     label:'Projects',          keywords:'projects tasks todo brainstorm project management to-do list' },
   { id:'discuss',      label:'Discuss',           keywords:'message colleague quick message log note odoo discuss chat with a coworker' },
   { id:'support',      label:'Support',           keywords:'remote support launch remote tools session invite client help desk fix a client issue' },
@@ -24000,7 +24098,7 @@ window.inboxTab = function(tab) {
   var SECTIONS = [
     { key:'daily',    label:'DAILY',        items:['nav-inbox','nav-leads','nav-activities'] },
     { key:'quoting',  label:'QUOTING',      items:['nav-quotedesk','nav-smartbuilder','nav-quotes','nav-templates'] },
-    { key:'pipeline', label:'PIPELINE',     items:['nav-prospect','nav-catchup','nav-vendor','nav-massmail'] },
+    { key:'pipeline', label:'PIPELINE',     items:['nav-prospect','nav-catchup','nav-vendor','nav-massmail','nav-oppimport'] },
     { key:'work',     label:'WORK & COMMS', items:['nav-projects','nav-discuss','nav-support'] },
     { key:'utils',    label:'UTILITIES',    items:['nav-bounces','nav-expenses','nav-salestargeting','nav-dataexplorer','nav-docs'] },
     { key:'reports',  label:'REPORTS',      items:['nav-reports','nav-help'] },
@@ -24174,6 +24272,7 @@ window.navTo = function(section) {
     catchup:    {panel:'panel-catchup',    title:'Dormant Contacts',     hasSrc:false},
     vendor:     {panel:'panel-vendor',     title:'Vendor Outreach', hasSrc:false},
     massmail:   {panel:'panel-massmail',   title:'Mass Mail',       hasSrc:false},
+    oppimport:  {panel:'panel-oppimport',  title:'Opportunity Import', hasSrc:false},
     docs:       {panel:'panel-docs',       title:'Documents',       hasSrc:false},
     bounces:    {panel:'panel-bounces',     title:'Bounce Manager',  hasSrc:false},
     expenses:   {panel:'panel-expenses',    title:'Expenses',        hasSrc:false},
@@ -24200,6 +24299,7 @@ window.navTo = function(section) {
   if (section === 'catchup') setTimeout(() => { if (typeof cuInit === 'function') cuInit(); }, 200);
   if (section === 'vendor') setTimeout(() => { if (typeof voLoadTracker === 'function') voLoadTracker(); }, 200);
   if (section === 'massmail') setTimeout(() => { if (typeof mmInit === 'function') mmInit(); }, 200);
+  if (section === 'oppimport') setTimeout(() => { if (typeof oiInit === 'function') oiInit(); }, 200);
   if (section === 'expenses') setTimeout(() => { if (typeof expInit === 'function') expInit(); }, 200);
 };
 
@@ -29072,6 +29172,301 @@ document.addEventListener('DOMContentLoaded', hslInit);
     } catch(e) {
       if (statusEl) { statusEl.style.color = 'var(--danger)'; statusEl.textContent = 'Error: ' + e.message; }
     }
+  };
+
+})();
+</script>
+
+<!-- ── Opportunity Import ───────────────────────────────────────────────── -->
+<script>
+(function(){
+
+  // Target opportunity fields we can map spreadsheet columns onto.
+  // key = internal id, label = shown to user, crmField = odoo field name (or null for name-only/derived fields)
+  const OI_TARGETS = [
+    { key:'name',      label:'Opportunity Name',  crmField:'name',             required:true,  guess:/^(opportunity|opp|deal|title|subject)/i },
+    { key:'company',   label:'Company',           crmField:'partner_name',     required:false, guess:/(company|business|customer|account|organization)/i },
+    { key:'contact',   label:'Contact Name',      crmField:'contact_name',     required:false, guess:/(contact|full\s*name|^name$)/i },
+    { key:'email',     label:'Email',             crmField:'email_from',       required:false, guess:/e[\s\-_]?mail/i },
+    { key:'phone',     label:'Phone',             crmField:'phone',            required:false, guess:/phone|tel|mobile|cell/i },
+    { key:'revenue',   label:'Expected Revenue',  crmField:'expected_revenue', required:false, guess:/(revenue|value|amount|budget|deal\s*size)/i },
+    { key:'notes',     label:'Notes / Description', crmField:'description',    required:false, guess:/(note|description|comment|detail)/i },
+  ];
+
+  let OI = {
+    headers: [],
+    rows: [],           // raw parsed spreadsheet rows (array of objects keyed by header)
+    mapping: {},         // { targetKey: sourceHeader | '' }
+    opps: [],            // built opportunity rows after mapping: [{name, company, contact, email, phone, revenue, notes, _selected, _repId, _repName, _status}]
+    fileName: '',
+  };
+
+  let _oiReps = [];
+
+  window.oiInit = async function() {
+    if (!odooUid) return;
+    if (_oiReps.length) return;
+    try {
+      let users = odooUsers;
+      if (!users || !users.length) {
+        users = await odooExecute(odooUid, 'res.users', 'search_read', [[['active','=',true]]], { fields: ['id','name'], limit: 300 });
+        users.sort((a,b) => a.name.localeCompare(b.name));
+        odooUsers = users;
+      }
+      _oiReps = users;
+      const sel = document.getElementById('oi-bulk-rep');
+      if (sel) {
+        sel.innerHTML = '<option value="">— Open (unassigned) —</option>' +
+          _oiReps.map(u => `<option value="${u.id}">${escHtml(u.name)}</option>`).join('');
+      }
+    } catch(e) {}
+  };
+
+  function oiGoTo(phase) {
+    ['upload','preview','mapping','results','creating','done'].forEach(p => {
+      const el = document.getElementById('oi-' + p + '-phase');
+      if (el) el.style.display = (p === phase) ? 'block' : 'none';
+    });
+  }
+  window.oiGoTo = oiGoTo;
+
+  window.oiHandleDrop = function(ev) {
+    ev.preventDefault();
+    ev.currentTarget.style.borderColor = 'var(--border)';
+    const file = ev.dataTransfer?.files?.[0];
+    if (!file) return;
+    const input = document.getElementById('oi-file-input');
+    const dt = new DataTransfer();
+    dt.items.add(file);
+    input.files = dt.files;
+    oiHandleUpload(input);
+  };
+
+  window.oiHandleUpload = async function(input) {
+    const file = input.files && input.files[0];
+    if (!file) return;
+    const errEl = document.getElementById('oi-upload-err');
+    if (errEl) errEl.style.display = 'none';
+
+    try {
+      let rows = [];
+      if (file.name.toLowerCase().endsWith('.csv')) {
+        const lines = (await file.text()).trim().split('\n');
+        const hdrs = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+        for (let i = 1; i < lines.length; i++) {
+          if (!lines[i].trim()) continue;
+          const vals = lines[i].split(',').map(v => v.trim().replace(/^"|"$/g, ''));
+          const row = {};
+          hdrs.forEach((h, j) => row[h] = vals[j] || '');
+          rows.push(row);
+        }
+        OI.headers = hdrs;
+      } else {
+        if (typeof XLSX === 'undefined') { if (errEl) { errEl.style.display='block'; errEl.textContent='Excel library not loaded — try a CSV file instead'; } return; }
+        const wb = XLSX.read(await file.arrayBuffer(), { type: 'array' });
+        rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval: '' });
+        OI.headers = rows.length ? Object.keys(rows[0]) : [];
+      }
+
+      if (!rows.length) { if (errEl) { errEl.style.display='block'; errEl.textContent='No data found in that file.'; } return; }
+
+      OI.rows = rows;
+      OI.fileName = file.name;
+      oiRenderPreview();
+      oiGoTo('preview');
+    } catch(e) {
+      if (errEl) { errEl.style.display = 'block'; errEl.textContent = 'Upload failed: ' + e.message; }
+    }
+  };
+
+  function oiRenderPreview() {
+    const banner = document.getElementById('oi-file-banner');
+    if (banner) banner.textContent = `${OI.fileName} — ${OI.rows.length} row${OI.rows.length !== 1 ? 's' : ''} found`;
+
+    const tbl = document.getElementById('oi-preview-tbl');
+    if (!tbl) return;
+    const cols = OI.headers;
+    const headRow = '<tr>' + cols.map(c => `<th style="padding:6px 8px;text-align:left;border-bottom:1px solid var(--border);font-size:0.72rem;color:var(--muted);white-space:nowrap">${escHtml(c)}</th>`).join('') + '</tr>';
+    const bodyRows = OI.rows.slice(0, 10).map(r =>
+      '<tr>' + cols.map(c => `<td style="padding:6px 8px;border-bottom:1px solid var(--border);white-space:nowrap;max-width:200px;overflow:hidden;text-overflow:ellipsis">${escHtml(String(r[c] ?? ''))}</td>`).join('') + '</tr>'
+    ).join('');
+    tbl.innerHTML = '<thead>' + headRow + '</thead><tbody>' + bodyRows + '</tbody>';
+
+    oiPopulateMapping();
+  }
+
+  function oiPopulateMapping() {
+    const grid = document.getElementById('oi-map-grid');
+    if (!grid) return;
+    const cols = OI.headers;
+
+    grid.innerHTML = OI_TARGETS.map(t => {
+      // Auto-guess: first column whose header matches this target's regex
+      let guessed = OI.mapping[t.key];
+      if (guessed === undefined) {
+        const found = cols.find(c => t.guess.test(c));
+        guessed = found || '';
+      }
+      OI.mapping[t.key] = guessed;
+
+      const options = ['<option value="">— none —</option>']
+        .concat(cols.map(c => `<option value="${escHtml(c)}" ${c === guessed ? 'selected' : ''}>${escHtml(c)}</option>`));
+
+      return `<div style="display:flex;align-items:center;gap:12px;padding:8px 12px;background:var(--surface2);border-radius:8px">
+        <div style="width:160px;font-size:0.83rem;color:var(--text)">${escHtml(t.label)}${t.required ? ' <span style="color:var(--danger)">*</span>' : ''}</div>
+        <select data-target="${t.key}" onchange="oiMappingChanged(this)" style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-size:0.82rem;font-family:'DM Sans',sans-serif;outline:none">
+          ${options.join('')}
+        </select>
+      </div>`;
+    }).join('');
+  }
+
+  window.oiMappingChanged = function(sel) {
+    OI.mapping[sel.dataset.target] = sel.value;
+  };
+
+  window.oiBuildRows = function() {
+    if (!OI.mapping.name) {
+      alert('Map at least "Opportunity Name" before continuing — every opportunity needs one.');
+      return;
+    }
+    const m = OI.mapping;
+    OI.opps = OI.rows.map(r => {
+      const get = (key) => m[key] ? String(r[m[key]] ?? '').trim() : '';
+      const revenueRaw = get('revenue').replace(/[^0-9.\-]/g, '');
+      return {
+        name: get('name') || get('company') || '',
+        company: get('company'),
+        contact: get('contact'),
+        email: get('email'),
+        phone: get('phone'),
+        revenue: revenueRaw ? parseFloat(revenueRaw) : null,
+        notes: get('notes'),
+        _selected: true,
+        _repId: '',
+        _repName: 'Open (unassigned)',
+        _status: '',
+      };
+    }).filter(o => o.name); // rows with no derivable name are dropped — nothing to create
+
+    const skipped = OI.rows.length - OI.opps.length;
+    const hint = document.getElementById('oi-push-hint');
+    if (hint) hint.textContent = skipped > 0
+      ? `${skipped} row${skipped !== 1 ? 's' : ''} skipped — no name or company found. A valid opportunity needs at least one.`
+      : 'Rows with no name are skipped automatically — a valid opportunity needs at least a name.';
+
+    oiRenderRows();
+    oiGoTo('results');
+  };
+
+  function oiRenderRows() {
+    const list = document.getElementById('oi-rows-list');
+    if (!list) return;
+    list.innerHTML = OI.opps.map((o, i) => {
+      const statusBadge = o._status === 'ok' ? '<span style="color:var(--success);font-size:0.72rem">✓ created</span>'
+        : o._status === 'err' ? `<span style="color:var(--danger);font-size:0.72rem" title="${escHtml(o._statusMsg||'')}">✗ error</span>`
+        : '';
+      return `<div class="card" style="padding:10px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <input type="checkbox" class="oi-row-select" data-idx="${i}" ${o._selected ? 'checked' : ''} onchange="oiToggleOne(${i}, this.checked)" style="accent-color:var(--accent);width:15px;height:15px;flex-shrink:0">
+        <div style="flex:1;min-width:220px">
+          <div style="font-size:0.85rem;color:var(--text);font-weight:500">${escHtml(o.name)}</div>
+          <div style="font-size:0.74rem;color:var(--muted);margin-top:2px">${[o.company, o.contact, o.email, o.phone].filter(Boolean).map(escHtml).join(' · ') || '—'}${o.revenue ? ' · $' + o.revenue.toLocaleString() : ''}</div>
+        </div>
+        <select data-idx="${i}" onchange="oiSetRowRep(${i}, this.value, this)" style="min-width:170px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:5px 9px;color:var(--text);font-size:0.8rem;font-family:'DM Sans',sans-serif;outline:none">
+          <option value="" ${!o._repId ? 'selected' : ''}>— Open (unassigned) —</option>
+          ${_oiReps.map(u => `<option value="${u.id}" ${String(o._repId)===String(u.id) ? 'selected' : ''}>${escHtml(u.name)}</option>`).join('')}
+        </select>
+        <div style="width:80px;text-align:right">${statusBadge}</div>
+      </div>`;
+    }).join('');
+    oiUpdateCheckedCount();
+  }
+
+  window.oiToggleSelectAll = function(checked) {
+    OI.opps.forEach(o => { if (!o._status) o._selected = checked; });
+    document.querySelectorAll('.oi-row-select').forEach(cb => {
+      const idx = parseInt(cb.dataset.idx);
+      if (OI.opps[idx] && !OI.opps[idx]._status) cb.checked = checked;
+    });
+    oiUpdateCheckedCount();
+  };
+
+  window.oiToggleOne = function(idx, checked) {
+    if (OI.opps[idx]) OI.opps[idx]._selected = checked;
+    oiUpdateCheckedCount();
+  };
+
+  window.oiSetRowRep = function(idx, repId, selEl) {
+    const o = OI.opps[idx];
+    if (!o) return;
+    o._repId = repId;
+    o._repName = repId ? (selEl.selectedOptions[0]?.textContent || '') : 'Open (unassigned)';
+  };
+
+  function oiUpdateCheckedCount() {
+    const selectable = OI.opps.filter(o => !o._status);
+    const n = selectable.filter(o => o._selected).length;
+    const el = document.getElementById('oi-checked-count');
+    if (el) el.textContent = `${n} of ${selectable.length} selected`;
+    const selectAllCb = document.getElementById('oi-select-all');
+    if (selectAllCb) selectAllCb.checked = selectable.length > 0 && n === selectable.length;
+  }
+
+  window.oiBulkAssign = function() {
+    const sel = document.getElementById('oi-bulk-rep');
+    const repId = sel?.value || '';
+    const repName = repId ? (sel.selectedOptions[0]?.textContent || '') : 'Open (unassigned)';
+    OI.opps.forEach(o => { if (o._selected && !o._status) { o._repId = repId; o._repName = repName; } });
+    oiRenderRows();
+  };
+
+  window.oiPushChecked = async function() {
+    if (!odooUid) { alert('Connect to Odoo first'); return; }
+    const targets = OI.opps.map((o, i) => ({ o, i })).filter(({o}) => o._selected && !o._status);
+    if (!targets.length) { alert('Select at least one row first.'); return; }
+
+    oiGoTo('creating');
+    const statusEl = document.getElementById('oi-creating-status');
+    let ok = 0, err = 0, errNames = [];
+
+    for (let k = 0; k < targets.length; k++) {
+      const { o, i } = targets[k];
+      if (statusEl) statusEl.textContent = `Creating ${k+1} of ${targets.length}…`;
+      try {
+        const vals = { name: o.name, type: 'opportunity' };
+        if (o.company) vals.partner_name = o.company;
+        if (o.contact) vals.contact_name = o.contact;
+        if (o.email) vals.email_from = o.email;
+        if (o.phone) vals.phone = o.phone;
+        if (o.revenue != null && !isNaN(o.revenue)) vals.expected_revenue = o.revenue;
+        if (o.notes) vals.description = o.notes;
+        if (o._repId) vals.user_id = parseInt(o._repId);
+        await odooExecute(odooUid, 'crm.lead', 'create', [vals]);
+        o._status = 'ok';
+        ok++;
+      } catch(e) {
+        o._status = 'err';
+        o._statusMsg = e.message;
+        err++;
+        errNames.push(o.name);
+      }
+    }
+
+    const summary = document.getElementById('oi-done-summary');
+    if (summary) summary.textContent = `${ok} opportunity${ok !== 1 ? 'ies' : ''} created${err ? `, ${err} failed` : ''}.`;
+    const errBox = document.getElementById('oi-done-errors');
+    if (errBox) errBox.textContent = errNames.length ? 'Failed: ' + errNames.join(', ') : '';
+    oiGoTo('done');
+  };
+
+  window.oiConfirmReset = function() {
+    if (OI.rows.length && !confirm('Start a new list? This clears the current one.')) return;
+    OI = { headers: [], rows: [], mapping: {}, opps: [], fileName: '' };
+    const fileInput = document.getElementById('oi-file-input');
+    if (fileInput) fileInput.value = '';
+    const errEl = document.getElementById('oi-upload-err');
+    if (errEl) errEl.style.display = 'none';
+    oiGoTo('upload');
   };
 
 })();
