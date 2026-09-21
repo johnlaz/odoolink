@@ -3,7 +3,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <meta name="oel-version" content="v15.20">
+  <meta name="oel-version" content="v15.22">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="mobile-web-app-capable" content="yes">
@@ -945,6 +945,12 @@
       <div class="sb-item-icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1.5" width="8" height="10" rx="1.3" stroke="currentColor" stroke-width="1.2"/><path d="M3 4.5h4M3 6.7h4M3 8.9h2.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/><circle cx="11" cy="9.2" r="2.3" fill="var(--accent)"/><path d="M11 8v2.4M9.8 9.2h2.4" stroke="var(--surface)" stroke-width="1" stroke-linecap="round"/></svg></div>
       <span class="sb-item-label">Opportunity Import</span>
       <span class="sb-badge" id="badge-oppimport"></span>
+    </div>
+
+    <div class="sb-item" id="nav-shortagerfq" onclick="navTo('shortagerfq')" title="Cover Shortages — pull an order's line items, mark what you're short, and send an RFQ to one or more vendors">
+      <div class="sb-item-icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2h6l3 3v7H2z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M8 2v3h3" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M4.3 8.3L6 10l3.5-3.5" stroke="var(--accent)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <span class="sb-item-label">Cover Shortages</span>
+      <span class="sb-badge" id="badge-shortagerfq"></span>
     </div>
 
     <div class="sb-divider"></div>
@@ -2937,9 +2943,9 @@ Support Team"></textarea>
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
           <div>
             <div style="font-family:'DM Serif Display',serif;font-size:1.3rem;color:var(--text)">OEL Command</div>
-            <div style="font-size:0.75rem;color:var(--muted);margin-top:2px">Quick Reference Guide · v15.20</div>
+            <div style="font-size:0.75rem;color:var(--muted);margin-top:2px">Quick Reference Guide · v15.22</div>
           </div>
-          <span style="font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace">v15.20</span>
+          <span style="font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace">v15.22</span>
         </div>
 
         <!-- Setup -->
@@ -2953,7 +2959,7 @@ Support Team"></textarea>
             </div>
             <p style="margin:0 0 6px">Double-click <strong style="color:var(--text)">start.bat</strong> to launch both and open the app.</p>
             <p style="margin:0 0 6px"><strong style="color:var(--text)">Settings tab:</strong> Enter Odoo URL, database, username, API key, and Groq API key. Use Export/Import credentials to back up and restore all settings, templates, and specs.</p>
-            <p style="margin:0"><strong style="color:var(--text)">Groq model:</strong> qwen/qwen3.6-27b by default. Change in Settings if hitting rate limits.</p>
+            <p style="margin:0"><strong style="color:var(--text)">Groq model:</strong> qwen/qwen3.8-27b by default. Change in Settings if hitting rate limits.</p>
           </div>
         </div>
 
@@ -3156,6 +3162,16 @@ Support Team"></textarea>
           </div>
         </div>
 
+        <!-- Cover Shortages -->
+        <div class="card" style="margin-bottom:14px">
+          <div class="card-title">📋 Cover Shortages</div>
+          <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
+            <p style="margin:0 0 4px">Search for a rental or sales order by number or customer, select it, and its line items load as your starting list. Adjust each quantity down to your actual shortage, remove anything you've got covered, and use the search box to add products that aren't on the order at all — on-hand quantity shows next to each line for context.</p>
+            <p style="margin:0 0 4px">Check one vendor to send a single RFQ, or check several to shop the same list around for comparison — a separate draft RFQ (Odoo's <code style="background:var(--surface2);padding:1px 5px;border-radius:4px">purchase.order</code> in draft state) is created per vendor checked, each carrying the same line items. Est. cost per line is optional — leave it blank to let the vendor quote.</p>
+            <p style="margin:0"><strong style="color:var(--text)">Open RFQs</strong> tracks everything still in RFQ status. <strong style="color:var(--text)">✉ Send</strong> opens an editable composer and marks it sent; <strong style="color:var(--text)">✓ Confirm → PO</strong> converts it into a real Purchase Order once the vendor's agreed to the order — same Odoo record, just a state change, nothing new to re-enter.</p>
+          </div>
+        </div>
+
         <!-- Sales Targeting -->
         <div class="card" style="margin-bottom:14px">
           <div class="card-title">🎯 Sales Targeting</div>
@@ -3199,16 +3215,16 @@ Support Team"></textarea>
         <div class="card" style="margin-bottom:14px">
           <div class="card-title">🔧 Troubleshooting</div>
           <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
-            <p style="margin:0 0 4px"><strong style="color:var(--text)">App not updating after deploy:</strong> Hard refresh Ctrl+Shift+R. Service worker cache key = oel-v15.20.</p>
+            <p style="margin:0 0 4px"><strong style="color:var(--text)">App not updating after deploy:</strong> Hard refresh Ctrl+Shift+R. Service worker cache key = oel-v15.22.</p>
             <p style="margin:0 0 4px"><strong style="color:var(--text)">Odoo calls failing:</strong> Confirm server.py is running on port 7842. Check status lights in Settings. All domains must be flat arrays for Odoo 19 — no nested | operators. The header Connect button retries automatically (up to 3x) since the public CORS proxies it cycles through in Proxy mode can be individually flaky — "retry 1/2" in the status text is normal, not an error. If it still fails after retries, switch to Local Server mode in Settings.</p>
             <p style="margin:0 0 4px"><strong style="color:var(--text)">IMAP not working:</strong> Confirm imap_server.py is running on port 7843. Gmail requires an App Password. Turbify uses standard IMAP credentials.</p>
-            <p style="margin:0 0 4px"><strong style="color:var(--text)">AI drafts failing:</strong> Check Groq API key in Settings. Verify model name — default is qwen/qwen3.6-27b.</p>
+            <p style="margin:0 0 4px"><strong style="color:var(--text)">AI drafts failing:</strong> Check Groq API key in Settings. Verify model name — default is qwen/qwen3.8-27b.</p>
             <p style="margin:0"><strong style="color:var(--text)">Credentials lost:</strong> Use Export Credentials to save a JSON backup. Import on any device.</p>
           </div>
         </div>
 
         <div style="text-align:center;font-size:0.72rem;color:var(--muted);padding:12px 0">
-          OEL Command v15.20 · Built by Lazzaro · Powered by Groq AI + Odoo 19
+          OEL Command v15.22 · Built by Lazzaro · Powered by Groq AI + Odoo 19
         </div>
 
       </div>
@@ -3318,7 +3334,7 @@ Support Team"></textarea>
           <div class="card-title" style="font-family:'DM Serif Display',serif;font-size:1.2rem;margin-bottom:6px">Dashboard</div>
           <div class="card-subtitle" style="margin-bottom:16px">Pipeline, opportunities, and team performance from Odoo.</div>
           <div style="display:inline-flex;align-items:center;gap:6px;margin-bottom:8px">
-            <span style="font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace;box-shadow:0 0 8px rgba(201,168,76,0.35),0 0 20px rgba(201,168,76,0.12);animation:versionGlow 3s ease-in-out infinite alternate">OEL Command v15.20</span>
+            <span style="font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace;box-shadow:0 0 8px rgba(201,168,76,0.35),0 0 20px rgba(201,168,76,0.12);animation:versionGlow 3s ease-in-out infinite alternate">OEL Command v15.22</span>
             <span style="font-size:0.68rem;color:var(--muted)">Built by Lazzaro</span>
           </div>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px">
@@ -4258,6 +4274,88 @@ Thank you</textarea>
       </div>
     </div>
 
+    <!-- ── COVER SHORTAGES (RFQ Builder) ───────────────────────────────── -->
+    <div class="section-panel" id="panel-shortagerfq">
+      <div class="section-scroll">
+
+        <div class="card" style="margin-bottom:14px">
+          <div class="card-title">📋 Cover Shortages</div>
+          <div class="card-subtitle">Pull a rental or sales order's line items, mark what you're actually short on, and send an RFQ to one or more vendors — then confirm it into a real Purchase Order once they've quoted.</div>
+          <div style="display:flex;gap:8px;margin-top:14px">
+            <div class="lm-chip active" id="rfq-tab-build" onclick="rfqSwitchTab('build')" style="padding:6px 16px;border-radius:20px;font-size:0.8rem">Build RFQ</div>
+            <div class="lm-chip" id="rfq-tab-open" onclick="rfqSwitchTab('open')" style="padding:6px 16px;border-radius:20px;font-size:0.8rem">Open RFQs</div>
+          </div>
+        </div>
+
+        <!-- ── Build view ───────────────────────────────────────────────── -->
+        <div id="rfq-view-build">
+
+          <!-- Order search -->
+          <div class="card" id="rfq-order-search-card" style="margin-bottom:14px">
+            <div style="font-size:0.85rem;font-weight:500;margin-bottom:10px">Find the order</div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <input type="text" id="rfq-order-search" placeholder="Order number or customer name…" onkeydown="if(event.key==='Enter')rfqSearchOrders()" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.83rem;outline:none">
+              <button class="btn btn-primary" onclick="rfqSearchOrders()" style="padding:8px 18px;font-size:0.83rem">Search</button>
+            </div>
+            <div id="rfq-order-results" style="display:flex;flex-direction:column;gap:6px;margin-top:12px"></div>
+          </div>
+
+          <!-- Selected order + line builder -->
+          <div id="rfq-builder-area" style="display:none">
+            <div class="card" id="rfq-source-banner" style="margin-bottom:14px;background:var(--accent-dim);border-color:rgba(200,240,78,0.25)"></div>
+
+            <div class="card" style="margin-bottom:14px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+                <div style="font-size:0.85rem;font-weight:500">Line items</div>
+                <div style="font-size:0.74rem;color:var(--muted)">Adjust quantities down to your actual shortage, or remove lines you have covered</div>
+              </div>
+              <div id="rfq-lines-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px"></div>
+
+              <div style="display:flex;gap:8px;align-items:center;border-top:1px solid var(--border);padding-top:12px">
+                <input type="text" id="rfq-product-search" placeholder="Add a product not on the order…" onkeydown="if(event.key==='Enter'){event.preventDefault();rfqSearchProducts();}" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.8rem;outline:none">
+                <button class="btn btn-ghost" onclick="rfqSearchProducts()" style="padding:6px 14px;font-size:0.8rem">Search</button>
+              </div>
+              <div id="rfq-product-results" style="display:flex;flex-direction:column;gap:4px;margin-top:8px"></div>
+            </div>
+
+            <div class="card" style="margin-bottom:14px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+                <div style="font-size:0.85rem;font-weight:500">Send to</div>
+                <span style="font-size:0.74rem;color:var(--muted)">Check one vendor for a single RFQ, or several to shop it around — one draft RFQ is created per vendor checked</span>
+              </div>
+              <input type="text" id="rfq-vendor-filter" placeholder="Filter vendors…" oninput="rfqRenderVendorList()" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.8rem;outline:none;margin-bottom:8px">
+              <div id="rfq-vendor-list" style="display:flex;flex-direction:column;gap:4px;max-height:220px;overflow-y:auto"></div>
+            </div>
+
+            <div class="card">
+              <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+                <div id="rfq-build-status" style="font-size:0.78rem;color:var(--muted);flex:1"></div>
+                <button class="btn btn-ghost" onclick="rfqResetBuilder()" style="padding:7px 14px;font-size:0.82rem">↺ Start over</button>
+                <button class="btn btn-primary" onclick="rfqCreateRfqs()" id="rfq-create-btn" style="padding:8px 20px;font-size:0.85rem">Create RFQ(s) →</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Open RFQs view ───────────────────────────────────────────── -->
+        <div id="rfq-view-open" style="display:none">
+          <div class="card" style="margin-bottom:14px">
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+              <select id="rfq-open-vendor" onchange="rfqLoadOpen()" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.82rem;outline:none;cursor:pointer">
+                <option value="">All vendors</option>
+              </select>
+              <div style="flex:1"></div>
+              <div id="rfq-open-status" style="font-size:0.78rem;color:var(--muted)"></div>
+            </div>
+          </div>
+          <div id="rfq-open-list" style="display:flex;flex-direction:column;gap:6px">
+            <div style="padding:16px;text-align:center;color:var(--muted);font-size:0.82rem">Connect to Odoo, then open this tab to load open RFQs.</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
     <div class="section-panel" id="panel-docs">
       <div class="section-scroll" style="padding:20px 24px">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px">
@@ -4396,11 +4494,11 @@ Thank you</textarea>
       <div class="field">
         <label>Model</label>
         <select id="gemini-model" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:11px 14px;color:var(--text);font-family:'DM Mono',monospace;font-size:0.85rem;outline:none;cursor:pointer;appearance:none;">
-          <option value="qwen/qwen3.6-27b">qwen/qwen3.6-27b — Free ✓ (recommended, best quality)</option>
+          <option value="qwen/qwen3.8-27b">qwen/qwen3.8-27b — Free ✓ (recommended, best quality)</option>
           <option value="openai/gpt-oss-120b">openai/gpt-oss-120b — Free ✓ (strong general-purpose alt)</option>
           <option value="openai/gpt-oss-20b">openai/gpt-oss-20b — Free ✓ (faster, higher limits)</option>
         </select>
-        <div class="field-hint">All models are free. qwen/qwen3.6-27b gives the best email quality.</div>
+        <div class="field-hint">All models are free. qwen/qwen3.8-27b gives the best email quality.</div>
       </div>
     </div>
 
@@ -5844,7 +5942,7 @@ async function persToggleNeedsReply(on) {
   if (!emails.length) { if (statusEl) statusEl.textContent = 'Scan first'; return; }
 
   // Batch classify in groups of 5
-  const model = document.getElementById('gemini-model')?.value || 'qwen/qwen3.6-27b';
+  const model = document.getElementById('gemini-model')?.value || 'qwen/qwen3.8-27b';
   _persNeedsReplyCache.clear();
   const batchSize = 5;
   for (let i = 0; i < emails.length; i += batchSize) {
@@ -7253,7 +7351,7 @@ function stripHtml(html) {
 async function draftEmail(ctx) {
   const key = document.getElementById('gemini-key')?.value?.trim();
   if (!key) throw new Error('No Groq API key entered. Please add your key in step 1.');
-  const model = document.getElementById('gemini-model')?.value || 'qwen/qwen3.6-27b';
+  const model = document.getElementById('gemini-model')?.value || 'qwen/qwen3.8-27b';
 
   const history = (ctx.history || '').trim() || 'No previous messages found.';
   const notes = (ctx.activity_notes || '').trim() || 'None';
@@ -8532,7 +8630,7 @@ async function voPasteExtract() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + groqKey },
       body: JSON.stringify({
-        model: document.getElementById('gemini-model')?.value || 'qwen/qwen3.6-27b',
+        model: document.getElementById('gemini-model')?.value || 'qwen/qwen3.8-27b',
         reasoning_effort:'none', reasoning_format:'hidden', max_tokens: 1500, temperature: 0.1,
         messages: [{ role: 'user', content: prompt }]
       }),
@@ -8779,7 +8877,7 @@ async function voGenerateTemplate() {
   var btn   = document.querySelector('[onclick="voGenerateTemplate()"]');
   if (btn) { btn.textContent='...'; btn.disabled=true; }
   try {
-    var r = await fetch('https://api.groq.com/openai/v1/chat/completions', { method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+groqKey}, body:JSON.stringify({ model:document.getElementById('gemini-model')?.value||'qwen/qwen3.6-27b', reasoning_effort:'none', reasoning_format:'hidden', max_tokens:300, temperature:0.5, messages:[{role:'user',content:'Write a professional equipment rental quote request email body for '+equip+' in '+loc+'. Include pricing request, availability, daily and weekly rates, delivery. Under 120 words. No subject line.'}] }), signal:AbortSignal.timeout(20000) });
+    var r = await fetch('https://api.groq.com/openai/v1/chat/completions', { method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+groqKey}, body:JSON.stringify({ model:document.getElementById('gemini-model')?.value||'qwen/qwen3.8-27b', reasoning_effort:'none', reasoning_format:'hidden', max_tokens:300, temperature:0.5, messages:[{role:'user',content:'Write a professional equipment rental quote request email body for '+equip+' in '+loc+'. Include pricing request, availability, daily and weekly rates, delivery. Under 120 words. No subject line.'}] }), signal:AbortSignal.timeout(20000) });
     var d = await r.json();
     var text = d.choices?.[0]?.message?.content?.trim()||'';
     if (text) { var b = document.getElementById('vo-body'); if (b) b.value=text; }
@@ -9696,6 +9794,7 @@ const OEL_SEARCH_INDEX = [
   { id:'vendor',       label:'Vendor Outreach',   keywords:'find subcontractors vendors blast quote request track responses rent from vendor mailto email a vendor about pricing' },
   { id:'massmail',     label:'Mass Mail',         keywords:'marketing email bulk blast batch mass email excel upload contact list outlook bcc cc newsletter campaign send to many contacts' },
   { id:'oppimport',    label:'Opportunity Import',keywords:'bulk opportunity import crm lead excel spreadsheet upload create opportunities assign rep open unassigned pipeline push to odoo' },
+  { id:'shortagerfq',  label:'Cover Shortages',   keywords:'rfq request for quote purchase order shortage short sub rental subrental vendor sourcing cover order inventory shop compare quotes purchase module' },
   { id:'projects',     label:'Projects',          keywords:'projects tasks todo brainstorm project management to-do list' },
   { id:'discuss',      label:'Discuss',           keywords:'message colleague quick message log note odoo discuss chat with a coworker' },
   { id:'support',      label:'Support',           keywords:'remote support launch remote tools session invite client help desk fix a client issue' },
@@ -9995,7 +10094,7 @@ async function oelSearchAI() {
   try {
     const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST', headers: { 'Content-Type':'application/json', 'Authorization':'Bearer '+groqKey },
-      body: JSON.stringify({ model: document.getElementById('gemini-model')?.value || 'qwen/qwen3.6-27b', reasoning_effort:'none', reasoning_format:'hidden', max_tokens: 100, temperature: 0, messages: [{ role:'user', content: prompt }] }),
+      body: JSON.stringify({ model: document.getElementById('gemini-model')?.value || 'qwen/qwen3.8-27b', reasoning_effort:'none', reasoning_format:'hidden', max_tokens: 100, temperature: 0, messages: [{ role:'user', content: prompt }] }),
       signal: AbortSignal.timeout(15000)
     });
     const d = await r.json();
@@ -10689,7 +10788,7 @@ async function lazAICompose() {
   const btn     = document.getElementById('ai-tmpl-btn');
   const status  = document.getElementById('ai-tmpl-status');
   const groqKey = document.getElementById('gemini-key')?.value?.trim();
-  const model   = document.getElementById('gemini-model')?.value || 'qwen/qwen3.6-27b';
+  const model   = document.getElementById('gemini-model')?.value || 'qwen/qwen3.8-27b';
 
   if (!purpose) { alert('Describe what the template is for first'); return; }
   if (!groqKey) { alert('Groq API key required — enter it in Settings'); return; }
@@ -10878,7 +10977,7 @@ function qdSetStatus(msg, color) {
 
 async function qdCallGroq(prompt) {
   const groqKey = document.getElementById('gemini-key')?.value?.trim();
-  const model   = document.getElementById('gemini-model')?.value || 'qwen/qwen3.6-27b';
+  const model   = document.getElementById('gemini-model')?.value || 'qwen/qwen3.8-27b';
   if (!groqKey) throw new Error('Groq API key required — enter it in Settings');
   const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST',
@@ -10987,7 +11086,7 @@ async function qdDraftResponse() {
     (notes || raw) + '\nOutput the subject line only, no quotes.';
 
   const groqKey = document.getElementById('gemini-key')?.value?.trim();
-  const model   = document.getElementById('gemini-model')?.value || 'qwen/qwen3.6-27b';
+  const model   = document.getElementById('gemini-model')?.value || 'qwen/qwen3.8-27b';
   if (!groqKey) throw new Error('Groq API key required');
 
   // Two calls in parallel — body uses system prompt, subject is simple
@@ -11696,7 +11795,7 @@ async function projChatSend() {
 
 
   try {
-    const model = document.getElementById('gemini-model')?.value || 'qwen/qwen3.6-27b';
+    const model = document.getElementById('gemini-model')?.value || 'qwen/qwen3.8-27b';
     const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + groqKey },
@@ -12138,7 +12237,7 @@ async function ptmAIRewrite() {
   suggestionsEl.style.display = 'none';
 
   try {
-    const model = document.getElementById('gemini-model')?.value || 'qwen/qwen3.6-27b';
+    const model = document.getElementById('gemini-model')?.value || 'qwen/qwen3.8-27b';
     const prompt =
       'Rewrite this project task name 3 different ways — clearer, more actionable, and professional. ' +
       'Each version should be concise (under 60 chars) and start with an action verb. ' +
@@ -12216,7 +12315,7 @@ async function qspExtract() {
   if (!raw) { alert('Paste a quote request first'); return; }
   const groqKey = document.getElementById('gemini-key')?.value?.trim();
   if (!groqKey) { alert('Groq API key required — enter it in Settings'); return; }
-  const model = document.getElementById('gemini-model')?.value || 'qwen/qwen3.6-27b';
+  const model = document.getElementById('gemini-model')?.value || 'qwen/qwen3.8-27b';
   const btn = document.getElementById('qsp-extract-btn');
   if (btn) btn.disabled = true;
   qspSetStatus('<div class="dot spin" style="display:inline-block;margin-right:5px"></div> Extracting contact &amp; event details…');
@@ -13222,7 +13321,7 @@ async function testGroqExtraction() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${groqKey}` },
       body: JSON.stringify({
-        model: 'qwen/qwen3.6-27b',
+        model: 'qwen/qwen3.8-27b',
         reasoning_effort:'none', reasoning_format:'hidden', max_tokens: 200, temperature: 0,
         messages: [
           { role: 'system', content: 'Extract lead fields and return ONLY JSON with keys: customer_name, phone, email, notes, agent. notes should be verbatim full description. agent is the staff member who handled the call.' },
@@ -15659,7 +15758,7 @@ async function lazDraftSelected() {
 
 async function lazGenerateDraft(em, body) {
   const groqKey = document.getElementById('gemini-key')?.value?.trim() || '';
-  const model   = document.getElementById('gemini-model')?.value || 'qwen/qwen3.6-27b';
+  const model   = document.getElementById('gemini-model')?.value || 'qwen/qwen3.8-27b';
 
   // Find best matching template
   const tmpl     = lazMatchTemplate(body + ' ' + (em.subject||''));
@@ -16193,7 +16292,7 @@ async function lazWizRenderPage() {
 
 async function lazWizGenerateSuggestion(d) {
   const groqKey = document.getElementById('gemini-key')?.value?.trim() || '';
-  const model   = document.getElementById('gemini-model')?.value || 'qwen/qwen3.6-27b';
+  const model   = document.getElementById('gemini-model')?.value || 'qwen/qwen3.8-27b';
 
   const cleanBody = (d.body||'')
     .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
@@ -16474,7 +16573,7 @@ async function discussAIDraft() {
   const statusEl = document.getElementById('discuss-reply-status');
   statusEl.style.color = 'var(--muted)';
   statusEl.innerHTML = '<div class="dot spin" style="display:inline-block;margin-right:4px"></div> Drafting...';
-  const model = document.getElementById('gemini-model')?.value || 'qwen/qwen3.6-27b';
+  const model = document.getElementById('gemini-model')?.value || 'qwen/qwen3.8-27b';
   const msg   = _discussReplyMsg;
   const prompt = `${LAZ_PERSONA}\n\nYou received this internal Odoo message and need to reply.\n\nFROM: ${msg.author}\nRECORD: ${msg.record_name||''}\nMESSAGE: ${msg.body}\n\nWrite a concise, direct reply in 2-4 sentences. Return plain text only.`;
   try {
@@ -16753,7 +16852,7 @@ async function notesCleanupSelected() {
 async function notesRunCleanup(notes) {
   const groqKey = document.getElementById('gemini-key')?.value?.trim() || '';
   if (!groqKey) { alert('No Groq key — add it in Step 1.'); return; }
-  const model   = document.getElementById('gemini-model')?.value || 'qwen/qwen3.6-27b';
+  const model   = document.getElementById('gemini-model')?.value || 'qwen/qwen3.8-27b';
 
   const modal     = document.getElementById('notes-cleanup-modal');
   const listEl    = document.getElementById('notes-cleanup-list');
@@ -16938,7 +17037,7 @@ async function sfFindShows() {
   document.getElementById('sf-show-list').innerHTML = '';
   document.getElementById('sf-proceed-btn').style.display = 'none';
 
-  const model = document.getElementById('gemini-model')?.value || 'qwen/qwen3.6-27b';
+  const model = document.getElementById('gemini-model')?.value || 'qwen/qwen3.8-27b';
 
   const regionLine = region ? `Region preference: ${region}` : 'Any region, prioritize US shows';
   const prompt = `You are helping a sales person at an AV, staging, and event production rental company find tradeshows to prospect at.
@@ -17599,7 +17698,7 @@ async function tsRunExtraction(isNext) {
   const wantEmail      = document.getElementById('ts-ext-email').checked;
   const wantPhone      = document.getElementById('ts-ext-phone').checked;
   const wantWebsite    = document.getElementById('ts-ext-website').checked;
-  const model          = document.getElementById('gemini-model')?.value || 'qwen/qwen3.6-27b';
+  const model          = document.getElementById('gemini-model')?.value || 'qwen/qwen3.8-27b';
 
   const extractBtn = document.getElementById('ts-extract-btn');
   const nextBtn    = document.getElementById('ts-next-btn');
@@ -17831,7 +17930,7 @@ async function prospGenerate() {
 
   const btn      = document.getElementById('prosp-btn');
   const statusEl = document.getElementById('prosp-status');
-  const model    = document.getElementById('gemini-model')?.value || 'qwen/qwen3.6-27b';
+  const model    = document.getElementById('gemini-model')?.value || 'qwen/qwen3.8-27b';
 
   btn.disabled = true;
   statusEl.style.color = 'var(--muted)';
@@ -18232,7 +18331,7 @@ async function fetchLeads() {
 
   // Run Groq extraction in browser (avoids Cloudflare blocking server-side calls)
   const groqKey = document.getElementById('gemini-key')?.value?.trim() || '';
-  const model   = document.getElementById('gemini-model')?.value || 'qwen/qwen3.6-27b';
+  const model   = document.getElementById('gemini-model')?.value || 'qwen/qwen3.8-27b';
   if (groqKey && leads.length > 0) {
     staticEl.style.color = 'var(--muted)';
     staticEl.textContent = `Extracting fields from ${leads.length} email${leads.length!==1?'s':''} with Groq…`;
@@ -19578,7 +19677,7 @@ async function supportDraftSelected() {
 
 async function supportGenerateDraft(em, body) {
   const groqKey = document.getElementById('gemini-key')?.value?.trim() || '';
-  const model   = document.getElementById('gemini-model')?.value || 'qwen/qwen3.6-27b';
+  const model   = document.getElementById('gemini-model')?.value || 'qwen/qwen3.8-27b';
   const tmpl    = supportMatchTemplate((em.subject||'') + ' ' + body);
 
   const cleanBody = (body||'').replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g,'')
@@ -19847,7 +19946,7 @@ async function supWizRenderPage() {
 
 async function supWizGenerateSuggestion(d) {
   const groqKey=document.getElementById('gemini-key')?.value?.trim()||'';
-  const model=document.getElementById('gemini-model')?.value||'qwen/qwen3.6-27b';
+  const model=document.getElementById('gemini-model')?.value||'qwen/qwen3.8-27b';
   const cleanBody=(d.body||'').replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g,'').replace(/\r\n/g,'\n').slice(0,3000);
   const prompt=`${SUPPORT_PERSONA}\n\nCreate a reusable support reply template for this type of support request.\n\nFROM: ${d.email.sender}\nSUBJECT: ${d.email.subject}\nBODY:\n${cleanBody}\n\nReturn ONLY JSON:\n{"name":"Template name","keywords":"keyword1, keyword2, keyword3","body":"Full reply template with numbered steps where applicable. Use {{customer_name}}, {{subject}}, {{my_name}}. Use [brackets] for per-issue specifics."}\nRaw JSON only.`;
   try {
@@ -21258,7 +21357,7 @@ async function persDraftSelected() {
   if (!selected.length) return;
   const groqKey = document.getElementById('gemini-key')?.value?.trim() || '';
   if (!groqKey) { alert('No Groq key — add in Step 1.'); return; }
-  const model = document.getElementById('gemini-model')?.value || 'qwen/qwen3.6-27b';
+  const model = document.getElementById('gemini-model')?.value || 'qwen/qwen3.8-27b';
 
   document.getElementById('pers-draft-selected-btn').disabled = true;
   document.getElementById('pers-draft-selected-btn').textContent = '⏳ Drafting…';
@@ -21342,7 +21441,7 @@ async function persRegenerateDraft() {
   if (!em) { alert('Click an email first.'); return; }
   const groqKey = document.getElementById('gemini-key')?.value?.trim() || '';
   if (!groqKey) { alert('No Groq key — add in Step 1.'); return; }
-  const model = document.getElementById('gemini-model')?.value || 'qwen/qwen3.6-27b';
+  const model = document.getElementById('gemini-model')?.value || 'qwen/qwen3.8-27b';
   const ta = document.getElementById('pers-draft-body');
   ta.value = '⏳ Drafting reply…';
   try {
@@ -21444,7 +21543,7 @@ async function persComposeAIDraft() {
   const to      = document.getElementById('pers-compose-to')?.value?.trim() || '';
   const subject = document.getElementById('pers-compose-subject')?.value?.trim() || '';
   const current = document.getElementById('pers-compose-body')?.value?.trim() || '';
-  const model   = document.getElementById('gemini-model')?.value || 'qwen/qwen3.6-27b';
+  const model   = document.getElementById('gemini-model')?.value || 'qwen/qwen3.8-27b';
   const myName  = localStorage.getItem('oel_my_name') || '';
 
   document.getElementById('pers-compose-toolbar-status').innerHTML = '<div class="dot spin" style="display:inline-block;margin-right:4px"></div> Drafting…';
@@ -21609,7 +21708,7 @@ async function persRunNoteCleanup(notes) {
   window._notesCleanupPending = [];
   const groqKey = document.getElementById('gemini-key')?.value?.trim()||'';
   if (!groqKey) { alert('No Groq key.'); return; }
-  const model = document.getElementById('gemini-model')?.value||'qwen/qwen3.6-27b';
+  const model = document.getElementById('gemini-model')?.value||'qwen/qwen3.8-27b';
   const modal = document.getElementById('notes-cleanup-modal');
   const listEl = document.getElementById('notes-cleanup-list');
   const subEl  = document.getElementById('notes-cleanup-subtitle');
@@ -21654,7 +21753,7 @@ async function persGenerateBriefing() {
   const body   = document.getElementById('pers-briefing-body');
   const sub    = document.getElementById('pers-briefing-subtitle');
   const oa     = document.getElementById('pers-briefing-oa')?.checked||false;
-  const model  = document.getElementById('gemini-model')?.value||'qwen/qwen3.6-27b';
+  const model  = document.getElementById('gemini-model')?.value||'qwen/qwen3.8-27b';
   modal.classList.remove('hidden');
   body.style.padding='20px 24px';
   body.innerHTML='<div style="display:flex;align-items:center;gap:10px;color:var(--muted)"><div class="dot spin" style="display:inline-block"></div><span>Scanning personal inbox…</span></div>';
@@ -22412,7 +22511,7 @@ async function qcAIDraft() {
   if (!groqKey) { document.getElementById('qc-toolbar-status').style.color='var(--danger)'; document.getElementById('qc-toolbar-status').textContent='No Groq key'; return; }
   const to      = document.getElementById('qc-to').value.trim();
   const subject = document.getElementById('qc-subject').value.trim();
-  const model   = document.getElementById('gemini-model')?.value || 'qwen/qwen3.6-27b';
+  const model   = document.getElementById('gemini-model')?.value || 'qwen/qwen3.8-27b';
   const myName  = document.getElementById('qc-from-name').value.trim() || 'me';
 
   document.getElementById('qc-toolbar-status').style.color = 'var(--muted)';
@@ -22676,7 +22775,7 @@ async function qmAIDraft() {
   const current = document.getElementById('qm-message').value.trim();
   const statusEl = document.getElementById('qm-status');
   statusEl.innerHTML = '<div class="dot spin" style="display:inline-block;margin-right:4px"></div> Drafting…';
-  const model = document.getElementById('gemini-model')?.value || 'qwen/qwen3.6-27b';
+  const model = document.getElementById('gemini-model')?.value || 'qwen/qwen3.8-27b';
   try {
     const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
@@ -23481,7 +23580,7 @@ async function lazGenerateBriefing() {
   const userId    = parseInt(document.getElementById('laz-pipeline-user')?.value) || odooUid;
   const userFilter = [['user_id','=',userId]];
   const today     = new Date().toISOString().split('T')[0];
-  const model     = document.getElementById('gemini-model')?.value || 'qwen/qwen3.6-27b';
+  const model     = document.getElementById('gemini-model')?.value || 'qwen/qwen3.8-27b';
   sub.textContent = new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
   if (overAchiever) sub.textContent += ' ⚡ Over Achiever';
 
@@ -24188,7 +24287,7 @@ On Windows, \`start.bat\` launches both servers silently in the background — n
 Everything runs locally. Credentials are stored in your browser's localStorage and optionally in an export file you control. Nothing is sent to any third-party service except Groq (for AI) and your own Odoo instance.
 
 **What Groq model does it use?**
-\`qwen/qwen3.6-27b\` by default — free tier, no credit card. Switch to \`openai/gpt-oss-20b\` for faster responses at higher volume.
+\`qwen/qwen3.8-27b\` by default — free tier, no credit card. Switch to \`openai/gpt-oss-20b\` for faster responses at higher volume.
 
 **Can multiple people use it?**
 Yes — each person runs their own copy and connects with their own Odoo credentials. Activities are always filtered to the logged-in user. Export your settings and share the JSON with a teammate to get them set up quickly (they'll need to add their own passwords).
@@ -24256,7 +24355,7 @@ window.inboxTab = function(tab) {
   var SECTIONS = [
     { key:'daily',    label:'DAILY',        items:['nav-inbox','nav-leads','nav-activities'] },
     { key:'quoting',  label:'QUOTING',      items:['nav-quotedesk','nav-smartbuilder','nav-quotes','nav-templates'] },
-    { key:'pipeline', label:'PIPELINE',     items:['nav-prospect','nav-catchup','nav-vendor','nav-massmail','nav-oppimport'] },
+    { key:'pipeline', label:'PIPELINE',     items:['nav-prospect','nav-catchup','nav-vendor','nav-massmail','nav-oppimport','nav-shortagerfq'] },
     { key:'work',     label:'WORK & COMMS', items:['nav-projects','nav-discuss','nav-support'] },
     { key:'utils',    label:'UTILITIES',    items:['nav-bounces','nav-expenses','nav-salestargeting','nav-dataexplorer','nav-docs'] },
     { key:'accounting',label:'ACCOUNTING',   items:['nav-reconcile','nav-arfollowup'] },
@@ -24434,6 +24533,7 @@ window.navTo = function(section) {
     vendor:     {panel:'panel-vendor',     title:'Vendor Outreach', hasSrc:false},
     massmail:   {panel:'panel-massmail',   title:'Mass Mail',       hasSrc:false},
     oppimport:  {panel:'panel-oppimport',  title:'Opportunity Import', hasSrc:false},
+    shortagerfq:{panel:'panel-shortagerfq',title:'Cover Shortages', hasSrc:false},
     docs:       {panel:'panel-docs',       title:'Documents',       hasSrc:false},
     bounces:    {panel:'panel-bounces',     title:'Bounce Manager',  hasSrc:false},
     expenses:   {panel:'panel-expenses',    title:'Expenses',        hasSrc:false},
@@ -24461,6 +24561,7 @@ window.navTo = function(section) {
   if (section === 'vendor') setTimeout(() => { if (typeof voLoadTracker === 'function') voLoadTracker(); }, 200);
   if (section === 'massmail') setTimeout(() => { if (typeof mmInit === 'function') mmInit(); }, 200);
   if (section === 'oppimport') setTimeout(() => { if (typeof oiInit === 'function') oiInit(); }, 200);
+  if (section === 'shortagerfq') setTimeout(() => { if (typeof rfqInit === 'function') rfqInit(); }, 200);
   if (section === 'expenses') setTimeout(() => { if (typeof expInit === 'function') expInit(); }, 200);
   if (section === 'reconcile') setTimeout(() => { if (typeof rcInit === 'function') rcInit(); }, 200);
   if (section === 'arfollowup') setTimeout(() => { if (typeof arInit === 'function') arInit(); }, 200);
@@ -25263,7 +25364,7 @@ Write a 3-4 sentence email: acknowledge the gap, briefly reference the deal cont
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${groqKey}` },
       body: JSON.stringify({
-        model: document.getElementById('gemini-model')?.value || 'qwen/qwen3.6-27b',
+        model: document.getElementById('gemini-model')?.value || 'qwen/qwen3.8-27b',
         reasoning_effort:'none', reasoning_format:'hidden', max_tokens: 300, temperature: 0.7,
         messages: [{ role: 'user', content: prompt }]
       }),
@@ -27412,7 +27513,7 @@ window.persTab = function(tab) {
     if (!el) return;
     var groqKey = document.getElementById('gemini-key') && document.getElementById('gemini-key').value.trim();
     if (!groqKey) { el.textContent = 'Add Groq API key in Settings to enable AI coaching.'; return; }
-    var model = (document.getElementById('gemini-model') && document.getElementById('gemini-model').value) || 'qwen/qwen3.6-27b';
+    var model = (document.getElementById('gemini-model') && document.getElementById('gemini-model').value) || 'qwen/qwen3.8-27b';
     var notesText = messages.slice(0, 5).map(function (msg) {
       return msg.date.substring(0, 10) + ': ' + msg.body.replace(/<[^>]+>/g, '').substring(0, 200);
     }).join('\n');
@@ -30517,6 +30618,410 @@ Thanks,`
       arLoad();
     } catch(e) {
       alert('Failed to log as sent: ' + e.message);
+    }
+  };
+
+})();
+</script>
+
+<!-- ── Cover Shortages (RFQ Builder) ────────────────────────────────────── -->
+<script>
+(function(){
+
+  // purchase.order/purchase.order.line are long-stable core Odoo models —
+  // far less version-risk here than hr.expense or mail.activity gave us
+  // earlier tonight. RFQ and PO are the same record; state 'draft'/'sent'
+  // is an RFQ, 'purchase' is a confirmed PO. Confirming one is just a state
+  // transition via the standard button_confirm action.
+
+  let RFQ = { order: null, lines: [], selectedVendorIds: new Set() };
+  let _rfqModuleAvailable = null;
+  let _rfqVendors = [];
+  let _rfqUomCache = {}; // productId -> uom id to use on purchase.order.line
+
+  function rfqFmt(n) { return '$' + (n||0).toLocaleString('en-US', {maximumFractionDigits:2}); }
+  function rfqIsMissingModelError(msg) {
+    return /doesn.?t exist|does not exist|invalid model|access.*(right|denied)|not allowed/i.test(msg || '');
+  }
+
+  async function rfqCheckModuleAvailable() {
+    if (_rfqModuleAvailable !== null) return _rfqModuleAvailable;
+    try {
+      await odooExecute(odooUid, 'purchase.order', 'search_count', [[]]);
+      _rfqModuleAvailable = true;
+    } catch(e) {
+      _rfqModuleAvailable = rfqIsMissingModelError(e.message) ? false : null;
+    }
+    return _rfqModuleAvailable;
+  }
+
+  async function rfqShowModuleMissingBanner() {
+    const listEl = document.getElementById('rfq-order-results');
+    if (!listEl) return;
+    listEl.innerHTML = `<div style="padding:16px;text-align:center;color:var(--muted);font-size:0.85rem">
+      <div style="color:var(--text);font-weight:500;margin-bottom:6px">Can't reach purchase.order on this Odoo instance</div>
+      <div>Likely an access-rights gap on the API user for the Purchase app. Check Settings → Users for the account tied to this API key.</div>
+      <button class="btn btn-primary" onclick="rfqRetryModuleCheck()" style="padding:7px 16px;font-size:0.8rem;margin-top:12px">↻ Try Again</button>
+    </div>`;
+  }
+  window.rfqRetryModuleCheck = function() { _rfqModuleAvailable = null; rfqInit(); };
+
+  window.rfqSwitchTab = function(tab) {
+    const buildView = document.getElementById('rfq-view-build');
+    const openView = document.getElementById('rfq-view-open');
+    const buildTab = document.getElementById('rfq-tab-build');
+    const openTab = document.getElementById('rfq-tab-open');
+    if (tab === 'open') {
+      if (buildView) buildView.style.display = 'none';
+      if (openView) openView.style.display = 'block';
+      if (buildTab) buildTab.classList.remove('active');
+      if (openTab) openTab.classList.add('active');
+      rfqLoadOpen();
+    } else {
+      if (openView) openView.style.display = 'none';
+      if (buildView) buildView.style.display = 'block';
+      if (openTab) openTab.classList.remove('active');
+      if (buildTab) buildTab.classList.add('active');
+    }
+  };
+
+  window.rfqInit = async function() {
+    if (!odooUid) return;
+    const available = await rfqCheckModuleAvailable();
+    if (available === false) { rfqShowModuleMissingBanner(); return; }
+
+    if (!_rfqVendors.length) {
+      try {
+        _rfqVendors = await odooExecute(odooUid, 'res.partner', 'search_read',
+          [[['supplier_rank','>',0]]], { fields: ['id','name','email'], limit: 500, order: 'name' });
+        const sel = document.getElementById('rfq-open-vendor');
+        if (sel) sel.innerHTML = '<option value="">All vendors</option>' +
+          _rfqVendors.map(v => `<option value="${v.id}">${escHtml(v.name)}</option>`).join('');
+      } catch(e) {}
+    }
+    rfqUpdateBadge();
+  };
+
+  window.rfqUpdateBadge = async function() {
+    if (!odooUid || _rfqModuleAvailable === false) return;
+    try {
+      const count = await odooExecute(odooUid, 'purchase.order', 'search_count', [[['state','in',['draft','sent']]]]);
+      const badge = document.getElementById('badge-shortagerfq');
+      if (badge) { badge.textContent = count > 0 ? String(count) : ''; badge.style.display = count > 0 ? '' : 'none'; }
+    } catch(e) {}
+  };
+
+  // ── Order search ─────────────────────────────────────────────────────
+  window.rfqSearchOrders = async function() {
+    if (!odooUid) { alert('Connect to Odoo first'); return; }
+    const q = document.getElementById('rfq-order-search')?.value?.trim();
+    const listEl = document.getElementById('rfq-order-results');
+    if (!q) { alert('Enter an order number or customer name first.'); return; }
+    listEl.innerHTML = '<div style="padding:12px;text-align:center;color:var(--muted);font-size:0.8rem"><div class="dot spin" style="display:inline-block;margin-right:6px"></div>Searching…</div>';
+
+    try {
+      const domain = ['|', ['name','ilike', q], ['partner_id.name','ilike', q]];
+      const orders = await odooExecute(odooUid, 'sale.order', 'search_read', [domain], {
+        fields: ['name','partner_id','date_order','state','amount_total'], order: 'date_order desc', limit: 15
+      });
+      if (!orders.length) { listEl.innerHTML = '<div style="padding:12px;text-align:center;color:var(--muted);font-size:0.8rem">No matching orders.</div>'; return; }
+
+      listEl.innerHTML = orders.map(o => `<div class="card" style="padding:10px 14px;display:flex;align-items:center;gap:10px;cursor:pointer" onclick="rfqSelectOrder(${o.id})">
+        <div style="flex:1">
+          <div style="font-size:0.85rem;color:var(--text);font-weight:500">${escHtml(o.name)} <span style="color:var(--muted);font-weight:400">— ${escHtml(Array.isArray(o.partner_id)?o.partner_id[1]:'')}</span></div>
+          <div style="font-size:0.74rem;color:var(--muted);margin-top:2px">${escHtml(o.date_order||'')} · ${escHtml(o.state||'')}</div>
+        </div>
+        <div style="font-family:monospace;font-size:0.85rem;color:var(--text)">${rfqFmt(o.amount_total)}</div>
+        <span style="color:var(--accent);font-size:0.8rem">Select →</span>
+      </div>`).join('');
+    } catch(e) {
+      if (rfqIsMissingModelError(e.message)) { _rfqModuleAvailable = false; }
+      listEl.innerHTML = '<div style="padding:12px;text-align:center;color:var(--danger);font-size:0.8rem">Error: ' + escHtml(e.message) + '</div>';
+    }
+  };
+
+  window.rfqSelectOrder = async function(orderId) {
+    const statusEl = document.getElementById('rfq-build-status');
+    try {
+      const orders = await odooExecute(odooUid, 'sale.order', 'read', [[orderId]], { fields: ['name','partner_id','date_order','state'] });
+      const order = orders[0];
+      const lines = await odooExecute(odooUid, 'sale.order.line', 'search_read',
+        [[['order_id','=', orderId], ['display_type','=', false]]],
+        { fields: ['product_id','name','product_uom_qty'] });
+
+      const productIds = [...new Set(lines.filter(l => l.product_id).map(l => l.product_id[0]))];
+      const onHandByProduct = {};
+      if (productIds.length) {
+        try {
+          const products = await odooExecute(odooUid, 'product.product', 'search_read',
+            [[['id','in', productIds]]], { fields: ['id','qty_available','uom_po_id','uom_id'] });
+          products.forEach(p => {
+            onHandByProduct[p.id] = p.qty_available;
+            _rfqUomCache[p.id] = (p.uom_po_id && p.uom_po_id[0]) || (p.uom_id && p.uom_id[0]) || null;
+          });
+        } catch(e) {}
+      }
+
+      RFQ.order = { id: order.id, name: order.name, partnerId: Array.isArray(order.partner_id)?order.partner_id[0]:null, partnerName: Array.isArray(order.partner_id)?order.partner_id[1]:'', date: order.date_order };
+      RFQ.lines = lines.map((l, i) => ({
+        key: 'src' + i,
+        productId: l.product_id ? l.product_id[0] : null,
+        productName: l.product_id ? l.product_id[1] : (l.name || 'Item'),
+        qty: l.product_uom_qty || 1,
+        onHand: l.product_id ? onHandByProduct[l.product_id[0]] : null,
+        price: '',
+      }));
+
+      document.getElementById('rfq-order-search-card').style.display = 'none';
+      document.getElementById('rfq-builder-area').style.display = 'block';
+      document.getElementById('rfq-source-banner').innerHTML = `<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+        <div><strong style="color:var(--text)">${escHtml(order.name)}</strong> <span style="color:var(--muted)">— ${escHtml(RFQ.order.partnerName)} · ${escHtml(order.date_order||'')}</span></div>
+        <a onclick="rfqResetBuilder()" style="cursor:pointer;color:var(--accent);font-size:0.8rem">Change order</a>
+      </div>`;
+
+      rfqRenderLines();
+      rfqRenderVendorList();
+      if (statusEl) statusEl.textContent = '';
+    } catch(e) {
+      if (statusEl) { statusEl.style.color = 'var(--danger)'; statusEl.textContent = 'Error loading order: ' + e.message; }
+    }
+  };
+
+  window.rfqResetBuilder = function() {
+    RFQ = { order: null, lines: [], selectedVendorIds: new Set() };
+    document.getElementById('rfq-order-search-card').style.display = 'block';
+    document.getElementById('rfq-builder-area').style.display = 'none';
+    document.getElementById('rfq-order-search').value = '';
+    document.getElementById('rfq-order-results').innerHTML = '';
+    document.getElementById('rfq-build-status').textContent = '';
+  };
+
+  // ── Line items ───────────────────────────────────────────────────────
+  function rfqRenderLines() {
+    const listEl = document.getElementById('rfq-lines-list');
+    if (!listEl) return;
+    if (!RFQ.lines.length) { listEl.innerHTML = '<div style="font-size:0.8rem;color:var(--muted);padding:8px 0">No lines — search below to add a product.</div>'; return; }
+    listEl.innerHTML = RFQ.lines.map((l, i) => `<div class="card" style="padding:8px 12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <div style="flex:1;min-width:180px">
+        <div style="font-size:0.84rem;color:var(--text)">${escHtml(l.productName)}</div>
+        ${l.onHand !== null && l.onHand !== undefined ? `<div style="font-size:0.72rem;color:var(--muted)">on hand: ${l.onHand}</div>` : ''}
+      </div>
+      <label style="font-size:0.72rem;color:var(--muted)">Qty <input type="number" min="0" step="1" value="${l.qty}" onchange="rfqSetLineQty(${i}, this.value)" style="width:60px;margin-left:4px;background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:4px 6px;color:var(--text);font-size:0.8rem;outline:none"></label>
+      <label style="font-size:0.72rem;color:var(--muted)">Est. cost <input type="number" min="0" step="0.01" placeholder="—" value="${l.price}" onchange="rfqSetLinePrice(${i}, this.value)" style="width:80px;margin-left:4px;background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:4px 6px;color:var(--text);font-size:0.8rem;outline:none"></label>
+      <button class="btn btn-ghost" onclick="rfqRemoveLine(${i})" style="padding:4px 10px;font-size:0.75rem">✕</button>
+    </div>`).join('');
+  }
+  window.rfqSetLineQty = function(i, v) { if (RFQ.lines[i]) RFQ.lines[i].qty = parseFloat(v) || 0; };
+  window.rfqSetLinePrice = function(i, v) { if (RFQ.lines[i]) RFQ.lines[i].price = v === '' ? '' : parseFloat(v); };
+  window.rfqRemoveLine = function(i) { RFQ.lines.splice(i, 1); rfqRenderLines(); };
+
+  window.rfqSearchProducts = async function() {
+    const q = document.getElementById('rfq-product-search')?.value?.trim();
+    const resultsEl = document.getElementById('rfq-product-results');
+    if (!q) return;
+    resultsEl.innerHTML = '<div style="font-size:0.78rem;color:var(--muted)">Searching…</div>';
+    try {
+      const products = await odooExecute(odooUid, 'product.product', 'search_read',
+        [[['name','ilike', q]]], { fields: ['id','name','qty_available','uom_po_id','uom_id'], limit: 10 });
+      if (!products.length) { resultsEl.innerHTML = '<div style="font-size:0.78rem;color:var(--muted)">No matches.</div>'; return; }
+      resultsEl.innerHTML = products.map(p => `<div style="display:flex;align-items:center;gap:8px;padding:5px 8px;background:var(--surface2);border-radius:6px;font-size:0.8rem">
+        <span style="flex:1">${escHtml(p.name)}</span>
+        <span style="color:var(--muted);font-size:0.72rem">on hand: ${p.qty_available}</span>
+        <button class="btn btn-ghost" onclick='rfqAddProduct(${p.id}, ${JSON.stringify(p.name)}, ${p.qty_available}, ${p.uom_po_id?p.uom_po_id[0]:'null'}, ${p.uom_id?p.uom_id[0]:'null'})' style="padding:3px 10px;font-size:0.74rem">+ Add</button>
+      </div>`).join('');
+    } catch(e) {
+      resultsEl.innerHTML = '<div style="font-size:0.78rem;color:var(--danger)">Error: ' + escHtml(e.message) + '</div>';
+    }
+  };
+  window.rfqAddProduct = function(productId, name, onHand, uomPoId, uomId) {
+    _rfqUomCache[productId] = uomPoId || uomId || null;
+    RFQ.lines.push({ key: 'add' + Date.now(), productId, productName: name, qty: 1, onHand, price: '' });
+    rfqRenderLines();
+    document.getElementById('rfq-product-search').value = '';
+    document.getElementById('rfq-product-results').innerHTML = '';
+  };
+
+  // ── Vendors ──────────────────────────────────────────────────────────
+  window.rfqRenderVendorList = function() {
+    const listEl = document.getElementById('rfq-vendor-list');
+    if (!listEl) return;
+    const filter = (document.getElementById('rfq-vendor-filter')?.value || '').toLowerCase();
+    const filtered = _rfqVendors.filter(v => v.name.toLowerCase().includes(filter));
+    if (!filtered.length) { listEl.innerHTML = '<div style="font-size:0.78rem;color:var(--muted)">No vendors match.</div>'; return; }
+    listEl.innerHTML = filtered.map(v => `<label style="display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:6px;cursor:pointer;font-size:0.82rem" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background='transparent'">
+      <input type="checkbox" ${RFQ.selectedVendorIds.has(v.id) ? 'checked' : ''} onchange="rfqToggleVendor(${v.id}, this.checked)" style="accent-color:var(--accent);width:15px;height:15px">
+      <span style="flex:1">${escHtml(v.name)}</span>
+      ${!v.email ? '<span style="font-size:0.68rem;color:var(--warning, #d99a3f)">no email</span>' : ''}
+    </label>`).join('');
+  };
+  window.rfqToggleVendor = function(id, checked) {
+    if (checked) RFQ.selectedVendorIds.add(id); else RFQ.selectedVendorIds.delete(id);
+  };
+
+  // ── Create RFQ(s) ────────────────────────────────────────────────────
+  window.rfqCreateRfqs = async function() {
+    if (!odooUid) { alert('Connect to Odoo first'); return; }
+    if (!RFQ.lines.length) { alert('Add at least one line item first.'); return; }
+    if (!RFQ.selectedVendorIds.size) { alert('Check at least one vendor to send this to.'); return; }
+
+    const statusEl = document.getElementById('rfq-build-status');
+    const vendorIds = [...RFQ.selectedVendorIds];
+    const plannedDate = (() => { const d = new Date(); d.setDate(d.getDate() + 7); return d.toISOString().slice(0,10) + ' 00:00:00'; })();
+
+    const orderLineTuples = RFQ.lines.filter(l => l.qty > 0).map(l => {
+      const vals = { product_qty: l.qty, name: l.productName, date_planned: plannedDate };
+      if (l.productId) {
+        vals.product_id = l.productId;
+        if (_rfqUomCache[l.productId]) vals.product_uom = _rfqUomCache[l.productId];
+      }
+      if (l.price !== '' && l.price !== null && !isNaN(l.price)) vals.price_unit = l.price;
+      return [0, 0, vals];
+    });
+
+    let ok = 0, err = 0, createdIds = [];
+    for (const vendorId of vendorIds) {
+      const vendorName = _rfqVendors.find(v => v.id === vendorId)?.name || 'vendor';
+      statusEl.textContent = `Creating RFQ ${ok+err+1} of ${vendorIds.length} (${vendorName})…`;
+      try {
+        const poId = await odooExecute(odooUid, 'purchase.order', 'create', [{
+          partner_id: vendorId,
+          order_line: orderLineTuples,
+          origin: RFQ.order ? RFQ.order.name : '',
+        }]);
+        createdIds.push(poId);
+        ok++;
+      } catch(e) {
+        err++;
+        statusEl.style.color = 'var(--danger)';
+        statusEl.textContent = `Error creating RFQ for ${vendorName}: ${e.message}`;
+        if (err > 0 && ok === 0 && vendorIds.length === 1) return; // single-vendor failure — stop and show the error clearly
+      }
+    }
+
+    statusEl.style.color = ok ? 'var(--success)' : 'var(--danger)';
+    statusEl.textContent = `Done — ${ok} RFQ${ok!==1?'s':''} created${err?`, ${err} failed`:''}. Switch to "Open RFQs" to review and send.`;
+    rfqUpdateBadge();
+    if (ok) {
+      RFQ.selectedVendorIds.clear();
+      setTimeout(() => { rfqSwitchTab('open'); }, 900);
+    }
+  };
+
+  // ── Open RFQs ────────────────────────────────────────────────────────
+  window.rfqLoadOpen = async function() {
+    if (!odooUid) return;
+    const listEl = document.getElementById('rfq-open-list');
+    const statusEl = document.getElementById('rfq-open-status');
+    listEl.innerHTML = '<div style="padding:16px;text-align:center;color:var(--muted);font-size:0.82rem"><div class="dot spin" style="display:inline-block;margin-right:6px"></div>Loading…</div>';
+
+    const vendorId = document.getElementById('rfq-open-vendor')?.value || '';
+    const domain = [['state','in',['draft','sent']]];
+    if (vendorId) domain.push(['partner_id','=', parseInt(vendorId)]);
+
+    try {
+      const orders = await odooExecute(odooUid, 'purchase.order', 'search_read', [domain], {
+        fields: ['name','partner_id','amount_total','state','origin','date_order'], order: 'id desc', limit: 200
+      });
+      if (statusEl) statusEl.textContent = `${orders.length} open RFQ${orders.length!==1?'s':''}`;
+      if (!orders.length) { listEl.innerHTML = '<div style="padding:16px;text-align:center;color:var(--muted);font-size:0.82rem">No open RFQs.</div>'; return; }
+
+      listEl.innerHTML = orders.map(o => {
+        const sentBadge = o.state === 'sent'
+          ? '<span style="font-size:0.68rem;font-weight:600;text-transform:uppercase;padding:3px 9px;border-radius:20px;border:1px solid var(--success);color:var(--success)">Sent</span>'
+          : '<span style="font-size:0.68rem;font-weight:600;text-transform:uppercase;padding:3px 9px;border-radius:20px;border:1px solid var(--warning, #d99a3f);color:var(--warning, #d99a3f)">Draft</span>';
+        return `<div class="card" style="padding:10px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <div style="flex:1;min-width:200px">
+            <div style="font-size:0.85rem;color:var(--text);font-weight:500">${escHtml(o.name)} <span style="color:var(--muted);font-weight:400">— ${escHtml(Array.isArray(o.partner_id)?o.partner_id[1]:'')}</span></div>
+            <div style="font-size:0.74rem;color:var(--muted);margin-top:2px">${o.origin ? 'from ' + escHtml(o.origin) + ' · ' : ''}${escHtml(o.date_order||'')}</div>
+          </div>
+          <div style="font-family:monospace;font-size:0.85rem;color:var(--text)">${rfqFmt(o.amount_total)}</div>
+          ${sentBadge}
+          <button class="btn btn-ghost" onclick="rfqOpenComposer(${o.id})" style="padding:5px 12px;font-size:0.78rem">✉ Send</button>
+          <button class="btn btn-primary" onclick="rfqConfirmToPO(${o.id})" style="padding:5px 12px;font-size:0.78rem">✓ Confirm → PO</button>
+        </div>`;
+      }).join('');
+    } catch(e) {
+      if (rfqIsMissingModelError(e.message)) { _rfqModuleAvailable = false; rfqShowModuleMissingBanner(); return; }
+      listEl.innerHTML = '<div style="padding:16px;text-align:center;color:var(--danger);font-size:0.82rem">Error: ' + escHtml(e.message) + '</div>';
+    }
+  };
+
+  window.rfqOpenComposer = async function(poId) {
+    const existing = document.getElementById('rfq-composer-modal');
+    if (existing) existing.remove();
+    const modal = document.createElement('div');
+    modal.id = 'rfq-composer-modal';
+    modal.className = 'modal-overlay';
+    modal.style.cssText = 'display:flex';
+    modal.innerHTML = `<div class="modal" style="max-width:560px">
+      <div class="modal-header">
+        <div class="modal-header-text"><div class="record">Send RFQ</div></div>
+        <button class="modal-close" onclick="document.getElementById('rfq-composer-modal').remove()">✕</button>
+      </div>
+      <div class="modal-body" style="display:flex;flex-direction:column;gap:10px">
+        <div style="text-align:center;color:var(--muted);font-size:0.82rem;padding:10px"><div class="dot spin" style="display:inline-block;margin-right:6px"></div>Loading RFQ details…</div>
+      </div>
+    </div>`;
+    document.body.appendChild(modal);
+
+    try {
+      const pos = await odooExecute(odooUid, 'purchase.order', 'read', [[poId]], { fields: ['name','partner_id','origin'] });
+      const po = pos[0];
+      const vendor = _rfqVendors.find(v => v.id === (Array.isArray(po.partner_id)?po.partner_id[0]:po.partner_id));
+      const lines = await odooExecute(odooUid, 'purchase.order.line', 'search_read',
+        [[['order_id','=', poId]]], { fields: ['name','product_qty','price_unit'] });
+
+      const lineText = lines.map(l => `  • ${l.name} — qty ${l.product_qty}${l.price_unit ? ' @ ' + rfqFmt(l.price_unit) + ' est.' : ''}`).join('\n');
+      const subject = `RFQ ${po.name}${po.origin ? ' (ref: ' + po.origin + ')' : ''}`;
+      const body = `Hi,\n\nCould you send us pricing and availability for the following?\n\n${lineText}\n\nReference: ${po.name}${po.origin ? ' / ' + po.origin : ''}\n\nThanks,`;
+
+      const bodyEl = modal.querySelector('.modal-body');
+      bodyEl.innerHTML = `
+        <div style="font-size:0.8rem;color:var(--muted)">To: ${vendor ? escHtml(vendor.name) + (vendor.email ? ' &lt;' + escHtml(vendor.email) + '&gt;' : ' (no email on file)') : '—'}</div>
+        <div class="field"><label>Subject</label><input type="text" id="rfq-comp-subject" value="${escHtml(subject)}" style="width:100%"></div>
+        <div class="field"><label>Body</label>
+          <textarea id="rfq-comp-body" rows="10" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 13px;color:var(--text);font-family:'DM Mono',monospace;font-size:0.79rem;line-height:1.6;outline:none;resize:vertical">${escHtml(body)}</textarea>
+        </div>
+      `;
+      const footer = document.createElement('div');
+      footer.className = 'modal-footer';
+      footer.innerHTML = `<button class="btn btn-ghost" onclick="document.getElementById('rfq-composer-modal').remove()">Cancel</button>
+        <button class="btn btn-primary" onclick="rfqSendComposer(${poId}, '${vendor && vendor.email ? escHtml(vendor.email) : ''}')" style="margin-left:auto">✉ Open in mail client</button>`;
+      modal.querySelector('.modal').appendChild(footer);
+    } catch(e) {
+      modal.querySelector('.modal-body').innerHTML = '<div style="color:var(--danger);font-size:0.82rem">Error: ' + escHtml(e.message) + '</div>';
+    }
+  };
+
+  window.rfqSendComposer = async function(poId, vendorEmail) {
+    const subject = document.getElementById('rfq-comp-subject')?.value || '';
+    const body = document.getElementById('rfq-comp-body')?.value || '';
+    const mailto = `mailto:${encodeURIComponent(vendorEmail || '')}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = mailto;
+    try {
+      await odooExecute(odooUid, 'purchase.order', 'write', [[poId], { state: 'sent' }]);
+    } catch(e) { /* marking as sent is a nice-to-have; mail client already opened regardless */ }
+    document.getElementById('rfq-composer-modal')?.remove();
+    rfqLoadOpen();
+  };
+
+  // ── Confirm RFQ → PO ─────────────────────────────────────────────────
+  window.rfqConfirmToPO = async function(poId) {
+    if (!confirm('Confirm this RFQ into a Purchase Order? Do this once the vendor has agreed to the order.')) return;
+    try {
+      try {
+        await odooExecute(odooUid, 'purchase.order', 'button_confirm', [[poId]], {});
+      } catch(e1) {
+        try {
+          await odooExecute(odooUid, 'purchase.order', 'action_confirm', [[poId]], {});
+        } catch(e2) {
+          await odooExecute(odooUid, 'purchase.order', 'write', [[poId], { state: 'purchase' }]);
+        }
+      }
+      rfqUpdateBadge();
+      rfqLoadOpen();
+    } catch(e) {
+      alert('Confirm failed: ' + e.message);
     }
   };
 
