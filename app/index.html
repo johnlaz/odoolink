@@ -3,7 +3,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <meta name="oel-version" content="v15.24">
+  <meta name="oel-version" content="v15.25">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="mobile-web-app-capable" content="yes">
@@ -2943,9 +2943,9 @@ Support Team"></textarea>
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
           <div>
             <div style="font-family:'DM Serif Display',serif;font-size:1.3rem;color:var(--text)">OEL Command</div>
-            <div style="font-size:0.75rem;color:var(--muted);margin-top:2px">Quick Reference Guide · v15.24</div>
+            <div style="font-size:0.75rem;color:var(--muted);margin-top:2px">Quick Reference Guide · v15.25</div>
           </div>
-          <span style="font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace">v15.24</span>
+          <span style="font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace">v15.25</span>
         </div>
 
         <!-- Setup -->
@@ -3216,7 +3216,7 @@ Support Team"></textarea>
         <div class="card" style="margin-bottom:14px">
           <div class="card-title">🔧 Troubleshooting</div>
           <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
-            <p style="margin:0 0 4px"><strong style="color:var(--text)">App not updating after deploy:</strong> Hard refresh Ctrl+Shift+R. Service worker cache key = oel-v15.24.</p>
+            <p style="margin:0 0 4px"><strong style="color:var(--text)">App not updating after deploy:</strong> Hard refresh Ctrl+Shift+R. Service worker cache key = oel-v15.25.</p>
             <p style="margin:0 0 4px"><strong style="color:var(--text)">Odoo calls failing:</strong> Confirm server.py is running on port 7842. Check status lights in Settings. All domains must be flat arrays for Odoo 19 — no nested | operators. The header Connect button retries automatically (up to 3x) since the public CORS proxies it cycles through in Proxy mode can be individually flaky — "retry 1/2" in the status text is normal, not an error. If it still fails after retries, switch to Local Server mode in Settings.</p>
             <p style="margin:0 0 4px"><strong style="color:var(--text)">IMAP not working:</strong> Confirm imap_server.py is running on port 7843. Gmail requires an App Password. Turbify uses standard IMAP credentials.</p>
             <p style="margin:0 0 4px"><strong style="color:var(--text)">AI drafts failing:</strong> Check Groq API key in Settings. Verify model name — default is qwen/qwen3.8-27b.</p>
@@ -3225,7 +3225,7 @@ Support Team"></textarea>
         </div>
 
         <div style="text-align:center;font-size:0.72rem;color:var(--muted);padding:12px 0">
-          OEL Command v15.24 · Built by Lazzaro · Powered by Groq AI + Odoo 19
+          OEL Command v15.25 · Built by Lazzaro · Powered by Groq AI + Odoo 19
         </div>
 
       </div>
@@ -3335,7 +3335,7 @@ Support Team"></textarea>
           <div class="card-title" style="font-family:'DM Serif Display',serif;font-size:1.2rem;margin-bottom:6px">Dashboard</div>
           <div class="card-subtitle" style="margin-bottom:16px">Pipeline, opportunities, and team performance from Odoo.</div>
           <div style="display:inline-flex;align-items:center;gap:6px;margin-bottom:8px">
-            <span style="font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace;box-shadow:0 0 8px rgba(201,168,76,0.35),0 0 20px rgba(201,168,76,0.12);animation:versionGlow 3s ease-in-out infinite alternate">OEL Command v15.24</span>
+            <span style="font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace;box-shadow:0 0 8px rgba(201,168,76,0.35),0 0 20px rgba(201,168,76,0.12);animation:versionGlow 3s ease-in-out infinite alternate">OEL Command v15.25</span>
             <span style="font-size:0.68rem;color:var(--muted)">Built by Lazzaro</span>
           </div>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px">
@@ -4306,9 +4306,15 @@ Thank you</textarea>
             <div class="card" id="rfq-source-banner" style="margin-bottom:14px;background:var(--accent-dim);border-color:rgba(200,240,78,0.25)"></div>
 
             <div class="card" style="margin-bottom:14px">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:6px">
                 <div style="font-size:0.85rem;font-weight:500">Line items</div>
                 <div style="font-size:0.74rem;color:var(--muted)">Adjust quantities down to your actual shortage, or remove lines you have covered</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+                <label style="display:flex;align-items:center;gap:6px;font-size:0.78rem;color:var(--muted);cursor:pointer"><input type="checkbox" id="rfq-lines-select-all" onchange="rfqToggleSelectAllLines(this.checked)" style="accent-color:var(--accent);width:15px;height:15px"> Select all</label>
+                <span id="rfq-lines-selected-count" style="font-size:0.76rem;color:var(--muted)"></span>
+                <div style="flex:1"></div>
+                <button class="btn btn-ghost" onclick="rfqDeleteSelectedLines()" style="padding:4px 12px;font-size:0.76rem;color:var(--danger);border-color:rgba(220,80,80,0.4)">Delete selected</button>
               </div>
               <div id="rfq-lines-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px"></div>
 
@@ -30683,6 +30689,22 @@ Thanks,`
   let _rfqModuleAvailable = null;
   let _rfqVendors = [];
   let _rfqUomCache = {}; // productId -> uom id to use on purchase.order.line
+  let _rfqProductFieldSet = null; // discovered product.product fields — uom_po_id doesn't exist on this instance
+
+  async function rfqDiscoverProductFields() {
+    if (_rfqProductFieldSet) return _rfqProductFieldSet;
+    try {
+      const fields = await odooExecute(odooUid, 'product.product', 'fields_get', [], { attributes: [] });
+      _rfqProductFieldSet = new Set(Object.keys(fields || {}));
+    } catch(e) {
+      _rfqProductFieldSet = new Set(); // discovery failed — caller falls back to a safe minimal list
+    }
+    return _rfqProductFieldSet;
+  }
+  function rfqProductFields(wanted) {
+    if (!_rfqProductFieldSet || !_rfqProductFieldSet.size) return ['id','qty_available']; // safe minimum if discovery failed
+    return wanted.filter(f => _rfqProductFieldSet.has(f));
+  }
 
   function rfqFmt(n) { return '$' + (n||0).toLocaleString('en-US', {maximumFractionDigits:2}); }
   function rfqIsMissingModelError(msg) {
@@ -30822,8 +30844,9 @@ Thanks,`
       const onHandByProduct = {};
       if (productIds.length) {
         try {
+          await rfqDiscoverProductFields();
           const products = await odooExecute(odooUid, 'product.product', 'search_read',
-            [[['id','in', productIds]]], { fields: ['id','qty_available','uom_po_id','uom_id'] });
+            [[['id','in', productIds]]], { fields: rfqProductFields(['id','qty_available','uom_po_id','uom_id']) });
           products.forEach(p => {
             onHandByProduct[p.id] = p.qty_available;
             _rfqUomCache[p.id] = (p.uom_po_id && p.uom_po_id[0]) || (p.uom_id && p.uom_id[0]) || null;
@@ -30869,8 +30892,13 @@ Thanks,`
   function rfqRenderLines() {
     const listEl = document.getElementById('rfq-lines-list');
     if (!listEl) return;
-    if (!RFQ.lines.length) { listEl.innerHTML = '<div style="font-size:0.8rem;color:var(--muted);padding:8px 0">No lines — search below to add a product.</div>'; return; }
+    if (!RFQ.lines.length) {
+      listEl.innerHTML = '<div style="font-size:0.8rem;color:var(--muted);padding:8px 0">No lines — search below to add a product.</div>';
+      rfqUpdateLinesSelectedCount();
+      return;
+    }
     listEl.innerHTML = RFQ.lines.map((l, i) => `<div class="card" style="padding:8px 12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <input type="checkbox" class="rfq-line-select" data-idx="${i}" ${l.selected !== false ? 'checked' : ''} onchange="rfqToggleLineSelect(${i}, this.checked)" style="accent-color:var(--accent);width:15px;height:15px;flex-shrink:0">
       <div style="flex:1;min-width:180px">
         <div style="font-size:0.84rem;color:var(--text)">${escHtml(l.productName)}</div>
         ${l.onHand !== null && l.onHand !== undefined ? `<div style="font-size:0.72rem;color:var(--muted)">on hand: ${l.onHand}</div>` : ''}
@@ -30879,7 +30907,33 @@ Thanks,`
       <label style="font-size:0.72rem;color:var(--muted)">Est. cost <input type="number" min="0" step="0.01" placeholder="—" value="${l.price}" onchange="rfqSetLinePrice(${i}, this.value)" style="width:80px;margin-left:4px;background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:4px 6px;color:var(--text);font-size:0.8rem;outline:none"></label>
       <button class="btn btn-ghost" onclick="rfqRemoveLine(${i})" style="padding:4px 10px;font-size:0.75rem">✕</button>
     </div>`).join('');
+    rfqUpdateLinesSelectedCount();
   }
+
+  window.rfqToggleSelectAllLines = function(checked) {
+    RFQ.lines.forEach(l => { l.selected = checked; });
+    document.querySelectorAll('.rfq-line-select').forEach(cb => { cb.checked = checked; });
+    rfqUpdateLinesSelectedCount();
+  };
+  window.rfqToggleLineSelect = function(i, checked) {
+    if (RFQ.lines[i]) RFQ.lines[i].selected = checked;
+    rfqUpdateLinesSelectedCount();
+  };
+  function rfqUpdateLinesSelectedCount() {
+    const n = RFQ.lines.filter(l => l.selected !== false).length;
+    const el = document.getElementById('rfq-lines-selected-count');
+    if (el) el.textContent = RFQ.lines.length ? `${n} of ${RFQ.lines.length} selected` : '';
+    const allCb = document.getElementById('rfq-lines-select-all');
+    if (allCb) allCb.checked = RFQ.lines.length > 0 && n === RFQ.lines.length;
+  }
+  window.rfqDeleteSelectedLines = function() {
+    const n = RFQ.lines.filter(l => l.selected !== false).length;
+    if (!n) { alert('Nothing selected.'); return; }
+    if (!confirm(`Remove ${n} line${n!==1?'s':''} from this RFQ?`)) return;
+    RFQ.lines = RFQ.lines.filter(l => l.selected === false);
+    rfqRenderLines();
+  };
+
   window.rfqSetLineQty = function(i, v) { if (RFQ.lines[i]) RFQ.lines[i].qty = parseFloat(v) || 0; };
   window.rfqSetLinePrice = function(i, v) { if (RFQ.lines[i]) RFQ.lines[i].price = v === '' ? '' : parseFloat(v); };
   window.rfqRemoveLine = function(i) { RFQ.lines.splice(i, 1); rfqRenderLines(); };
@@ -30890,8 +30944,9 @@ Thanks,`
     if (!q) return;
     resultsEl.innerHTML = '<div style="font-size:0.78rem;color:var(--muted)">Searching…</div>';
     try {
+      await rfqDiscoverProductFields();
       const products = await odooExecute(odooUid, 'product.product', 'search_read',
-        [[['name','ilike', q]]], { fields: ['id','name','qty_available','uom_po_id','uom_id'], limit: 10 });
+        [[['name','ilike', q]]], { fields: rfqProductFields(['id','name','qty_available','uom_po_id','uom_id']), limit: 10 });
       if (!products.length) { resultsEl.innerHTML = '<div style="font-size:0.78rem;color:var(--muted)">No matches.</div>'; return; }
       resultsEl.innerHTML = products.map(p => `<div style="display:flex;align-items:center;gap:8px;padding:5px 8px;background:var(--surface2);border-radius:6px;font-size:0.8rem">
         <span style="flex:1">${escHtml(p.name)}</span>
