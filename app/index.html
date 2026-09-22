@@ -3,7 +3,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <meta name="oel-version" content="v15.23">
+  <meta name="oel-version" content="v15.24">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="mobile-web-app-capable" content="yes">
@@ -2943,9 +2943,9 @@ Support Team"></textarea>
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
           <div>
             <div style="font-family:'DM Serif Display',serif;font-size:1.3rem;color:var(--text)">OEL Command</div>
-            <div style="font-size:0.75rem;color:var(--muted);margin-top:2px">Quick Reference Guide · v15.23</div>
+            <div style="font-size:0.75rem;color:var(--muted);margin-top:2px">Quick Reference Guide · v15.24</div>
           </div>
-          <span style="font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace">v15.23</span>
+          <span style="font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace">v15.24</span>
         </div>
 
         <!-- Setup -->
@@ -3168,6 +3168,7 @@ Support Team"></textarea>
           <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
             <p style="margin:0 0 4px">Search for a rental or sales order by number or customer, select it, and its line items load as your starting list. Adjust each quantity down to your actual shortage, remove anything you've got covered, search to add a catalog product that isn't on the order, or use <strong style="color:var(--text)">+ Add a custom line</strong> for anything that isn't in Odoo's product catalog at all — just a description and quantity.</p>
             <p style="margin:0 0 4px">Two speeds, same vendor checklist: <strong style="color:var(--text)">✉ Quick ask</strong> opens one email BCC'd to everyone checked — nothing is created in Odoo, it's just casting the net before you know who you're going with. <strong style="color:var(--text)">Create formal RFQ(s)</strong> makes a real draft RFQ (Odoo's <code style="background:var(--surface2);padding:1px 5px;border-radius:4px">purchase.order</code> in draft state) per vendor checked — use it once you've picked who you're actually asking, even if that's still more than one for comparison. Est. cost per line is optional either way — leave it blank to let the vendor quote.</p>
+            <p style="margin:0 0 4px">No vendor list showing? It's filtering Odoo contacts by <code style="background:var(--surface2);padding:1px 5px;border-radius:4px">supplier_rank &gt; 0</code> — the same field Vendor Outreach sets when it creates one. If the fetch itself fails (a network hiccup), you'll now see the real error with a Retry button rather than just an empty list. Don't see the vendor you need at all? <strong style="color:var(--text)">+ Add a vendor to Odoo</strong> creates a real contact on the spot. For a true one-off you don't want in Odoo yet, use the <strong style="color:var(--text)">one-off email</strong> field instead — it only feeds Quick ask, never creates a record, and can stand in on its own with no vendor checked at all.</p>
             <p style="margin:0"><strong style="color:var(--text)">Open RFQs</strong> tracks everything still in RFQ status. <strong style="color:var(--text)">✉ Send</strong> opens an editable composer and marks it sent; <strong style="color:var(--text)">✓ Confirm → PO</strong> converts it into a real Purchase Order once the vendor's agreed to the order — same Odoo record, just a state change, nothing new to re-enter.</p>
           </div>
         </div>
@@ -3215,7 +3216,7 @@ Support Team"></textarea>
         <div class="card" style="margin-bottom:14px">
           <div class="card-title">🔧 Troubleshooting</div>
           <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
-            <p style="margin:0 0 4px"><strong style="color:var(--text)">App not updating after deploy:</strong> Hard refresh Ctrl+Shift+R. Service worker cache key = oel-v15.23.</p>
+            <p style="margin:0 0 4px"><strong style="color:var(--text)">App not updating after deploy:</strong> Hard refresh Ctrl+Shift+R. Service worker cache key = oel-v15.24.</p>
             <p style="margin:0 0 4px"><strong style="color:var(--text)">Odoo calls failing:</strong> Confirm server.py is running on port 7842. Check status lights in Settings. All domains must be flat arrays for Odoo 19 — no nested | operators. The header Connect button retries automatically (up to 3x) since the public CORS proxies it cycles through in Proxy mode can be individually flaky — "retry 1/2" in the status text is normal, not an error. If it still fails after retries, switch to Local Server mode in Settings.</p>
             <p style="margin:0 0 4px"><strong style="color:var(--text)">IMAP not working:</strong> Confirm imap_server.py is running on port 7843. Gmail requires an App Password. Turbify uses standard IMAP credentials.</p>
             <p style="margin:0 0 4px"><strong style="color:var(--text)">AI drafts failing:</strong> Check Groq API key in Settings. Verify model name — default is qwen/qwen3.8-27b.</p>
@@ -3224,7 +3225,7 @@ Support Team"></textarea>
         </div>
 
         <div style="text-align:center;font-size:0.72rem;color:var(--muted);padding:12px 0">
-          OEL Command v15.23 · Built by Lazzaro · Powered by Groq AI + Odoo 19
+          OEL Command v15.24 · Built by Lazzaro · Powered by Groq AI + Odoo 19
         </div>
 
       </div>
@@ -3334,7 +3335,7 @@ Support Team"></textarea>
           <div class="card-title" style="font-family:'DM Serif Display',serif;font-size:1.2rem;margin-bottom:6px">Dashboard</div>
           <div class="card-subtitle" style="margin-bottom:16px">Pipeline, opportunities, and team performance from Odoo.</div>
           <div style="display:inline-flex;align-items:center;gap:6px;margin-bottom:8px">
-            <span style="font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace;box-shadow:0 0 8px rgba(201,168,76,0.35),0 0 20px rgba(201,168,76,0.12);animation:versionGlow 3s ease-in-out infinite alternate">OEL Command v15.23</span>
+            <span style="font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace;box-shadow:0 0 8px rgba(201,168,76,0.35),0 0 20px rgba(201,168,76,0.12);animation:versionGlow 3s ease-in-out infinite alternate">OEL Command v15.24</span>
             <span style="font-size:0.68rem;color:var(--muted)">Built by Lazzaro</span>
           </div>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px">
@@ -4334,6 +4335,25 @@ Thank you</textarea>
               </div>
               <input type="text" id="rfq-vendor-filter" placeholder="Filter vendors…" oninput="rfqRenderVendorList()" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.8rem;outline:none;margin-bottom:8px">
               <div id="rfq-vendor-list" style="display:flex;flex-direction:column;gap:4px;max-height:220px;overflow-y:auto"></div>
+
+              <div style="margin-top:8px;padding-top:10px;border-top:1px solid var(--border)">
+                <a id="rfq-addvendor-toggle" onclick="rfqToggleAddVendorForm()" style="cursor:pointer;color:var(--accent);font-size:0.78rem">+ Add a vendor to Odoo</a>
+                <div id="rfq-addvendor-form" style="display:none;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap">
+                  <input type="text" id="rfq-newvendor-name" placeholder="Vendor name" style="flex:1;min-width:140px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.8rem;outline:none">
+                  <input type="email" id="rfq-newvendor-email" placeholder="Email" style="flex:1;min-width:140px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.8rem;outline:none">
+                  <button class="btn btn-ghost" onclick="rfqCreateVendor()" style="padding:6px 14px;font-size:0.8rem">+ Create</button>
+                </div>
+              </div>
+
+              <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
+                <div style="font-size:0.78rem;color:var(--muted);margin-bottom:6px">One-off email <span style="color:var(--muted);opacity:0.8">— Quick ask only, nothing saved to Odoo</span></div>
+                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                  <input type="text" id="rfq-oneoff-name" placeholder="Name (optional)" style="width:140px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.8rem;outline:none">
+                  <input type="email" id="rfq-oneoff-email" placeholder="Email" style="flex:1;min-width:140px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.8rem;outline:none">
+                  <button class="btn btn-ghost" onclick="rfqAddOneOff()" style="padding:6px 14px;font-size:0.8rem">+ Add</button>
+                </div>
+                <div id="rfq-oneoff-list" style="display:flex;flex-direction:column;gap:4px;margin-top:8px"></div>
+              </div>
             </div>
 
             <div class="card" style="margin-bottom:14px">
@@ -30659,7 +30679,7 @@ Thanks,`
   // is an RFQ, 'purchase' is a confirmed PO. Confirming one is just a state
   // transition via the standard button_confirm action.
 
-  let RFQ = { order: null, lines: [], selectedVendorIds: new Set() };
+  let RFQ = { order: null, lines: [], selectedVendorIds: new Set(), oneOffRecipients: [] };
   let _rfqModuleAvailable = null;
   let _rfqVendors = [];
   let _rfqUomCache = {}; // productId -> uom id to use on purchase.order.line
@@ -30714,17 +30734,41 @@ Thanks,`
     if (!odooUid) return;
     const available = await rfqCheckModuleAvailable();
     if (available === false) { rfqShowModuleMissingBanner(); return; }
-
-    if (!_rfqVendors.length) {
-      try {
-        _rfqVendors = await odooExecute(odooUid, 'res.partner', 'search_read',
-          [[['supplier_rank','>',0]]], { fields: ['id','name','email'], limit: 500, order: 'name' });
-        const sel = document.getElementById('rfq-open-vendor');
-        if (sel) sel.innerHTML = '<option value="">All vendors</option>' +
-          _rfqVendors.map(v => `<option value="${v.id}">${escHtml(v.name)}</option>`).join('');
-      } catch(e) {}
-    }
+    await rfqLoadVendors();
     rfqUpdateBadge();
+  };
+
+  // Pulled out of rfqInit so it can be retried on demand — previously a
+  // failed fetch here (a proxy hiccup, a transient network error) was
+  // swallowed silently and the empty result cached for the rest of the
+  // session, which is exactly what "vendor list is just empty" looks like
+  // with zero explanation. Now it surfaces the real error and offers Retry.
+  window.rfqLoadVendors = async function(force) {
+    if (_rfqVendors.length && !force) return true;
+    const listEl = document.getElementById('rfq-vendor-list');
+    try {
+      _rfqVendors = await odooExecute(odooUid, 'res.partner', 'search_read',
+        [[['supplier_rank','>',0]]], { fields: ['id','name','email'], limit: 500, order: 'name' });
+      const sel = document.getElementById('rfq-open-vendor');
+      if (sel) sel.innerHTML = '<option value="">All vendors</option>' +
+        _rfqVendors.map(v => `<option value="${v.id}">${escHtml(v.name)}</option>`).join('');
+
+      if (!_rfqVendors.length && listEl) {
+        listEl.innerHTML = `<div style="padding:10px;text-align:center;color:var(--muted);font-size:0.8rem">
+          No vendor contacts found in Odoo (looking for <code style="background:var(--surface2);padding:1px 5px;border-radius:4px">supplier_rank &gt; 0</code>). This is the same field Vendor Outreach sets when it creates a new vendor, so if you've added vendors elsewhere and they're still not showing here, that's worth flagging.<br><br>
+          <button class="btn btn-ghost" onclick="rfqLoadVendors(true)" style="padding:5px 12px;font-size:0.76rem">↻ Retry</button>
+        </div>`;
+      } else if (listEl) {
+        rfqRenderVendorList();
+      }
+      return true;
+    } catch(e) {
+      if (listEl) listEl.innerHTML = `<div style="padding:10px;text-align:center;color:var(--danger);font-size:0.8rem">
+        Couldn't load vendors: ${escHtml(e.message)}<br><br>
+        <button class="btn btn-ghost" onclick="rfqLoadVendors(true)" style="padding:5px 12px;font-size:0.76rem">↻ Retry</button>
+      </div>`;
+      return false;
+    }
   };
 
   window.rfqUpdateBadge = async function() {
@@ -30805,7 +30849,7 @@ Thanks,`
       </div>`;
 
       rfqRenderLines();
-      rfqRenderVendorList();
+      await rfqLoadVendors();
       if (statusEl) statusEl.textContent = '';
     } catch(e) {
       if (statusEl) { statusEl.style.color = 'var(--danger)'; statusEl.textContent = 'Error loading order: ' + e.message; }
@@ -30813,7 +30857,7 @@ Thanks,`
   };
 
   window.rfqResetBuilder = function() {
-    RFQ = { order: null, lines: [], selectedVendorIds: new Set() };
+    RFQ = { order: null, lines: [], selectedVendorIds: new Set(), oneOffRecipients: [] };
     document.getElementById('rfq-order-search-card').style.display = 'block';
     document.getElementById('rfq-builder-area').style.display = 'none';
     document.getElementById('rfq-order-search').value = '';
@@ -30904,6 +30948,66 @@ Thanks,`
     if (checked) RFQ.selectedVendorIds.add(id); else RFQ.selectedVendorIds.delete(id);
   };
 
+  // ── Add a vendor to Odoo, inline ────────────────────────────────────
+  // Same creation shape Vendor Outreach uses when pushing a new vendor —
+  // supplier_rank: 1 is what makes them show up in this list at all.
+  window.rfqToggleAddVendorForm = function() {
+    const form = document.getElementById('rfq-addvendor-form');
+    if (!form) return;
+    const showing = form.style.display === 'flex';
+    form.style.display = showing ? 'none' : 'flex';
+    if (!showing) document.getElementById('rfq-newvendor-name')?.focus();
+  };
+
+  window.rfqCreateVendor = async function() {
+    if (!odooUid) { alert('Connect to Odoo first'); return; }
+    const name = document.getElementById('rfq-newvendor-name')?.value?.trim();
+    const email = document.getElementById('rfq-newvendor-email')?.value?.trim();
+    if (!name) { alert('Enter a vendor name first.'); return; }
+    try {
+      const vals = { name, supplier_rank: 1, is_company: true };
+      if (email) vals.email = email;
+      const id = await odooExecute(odooUid, 'res.partner', 'create', [vals]);
+      _rfqVendors.push({ id, name, email: email || false });
+      _rfqVendors.sort((a,b) => a.name.localeCompare(b.name));
+      RFQ.selectedVendorIds.add(id);
+      rfqRenderVendorList();
+      const sel = document.getElementById('rfq-open-vendor');
+      if (sel) sel.innerHTML = '<option value="">All vendors</option>' +
+        _rfqVendors.map(v => `<option value="${v.id}">${escHtml(v.name)}</option>`).join('');
+      document.getElementById('rfq-newvendor-name').value = '';
+      document.getElementById('rfq-newvendor-email').value = '';
+      document.getElementById('rfq-addvendor-form').style.display = 'none';
+    } catch(e) {
+      alert('Couldn\'t create vendor: ' + e.message);
+    }
+  };
+
+  // ── One-off email — Quick ask only, never written to Odoo ───────────
+  window.rfqAddOneOff = function() {
+    const name = document.getElementById('rfq-oneoff-name')?.value?.trim();
+    const email = document.getElementById('rfq-oneoff-email')?.value?.trim();
+    if (!email) { alert('Enter an email address first.'); return; }
+    RFQ.oneOffRecipients.push({ name: name || email, email });
+    rfqRenderOneOffList();
+    document.getElementById('rfq-oneoff-name').value = '';
+    document.getElementById('rfq-oneoff-email').value = '';
+  };
+  window.rfqRemoveOneOff = function(i) {
+    RFQ.oneOffRecipients.splice(i, 1);
+    rfqRenderOneOffList();
+  };
+  function rfqRenderOneOffList() {
+    const el = document.getElementById('rfq-oneoff-list');
+    if (!el) return;
+    if (!RFQ.oneOffRecipients.length) { el.innerHTML = ''; return; }
+    el.innerHTML = RFQ.oneOffRecipients.map((r, i) => `<div style="display:flex;align-items:center;gap:8px;padding:4px 8px;background:var(--surface2);border-radius:6px;font-size:0.78rem">
+      <span style="flex:1">${escHtml(r.name)} &lt;${escHtml(r.email)}&gt;</span>
+      <span style="font-size:0.68rem;color:var(--muted)">Quick ask only</span>
+      <button class="btn btn-ghost" onclick="rfqRemoveOneOff(${i})" style="padding:2px 8px;font-size:0.72rem">✕</button>
+    </div>`).join('');
+  }
+
   // ── Quick ask — one BCC'd email, no Odoo records created ─────────────
   function rfqBuildLineText() {
     return RFQ.lines.filter(l => l.qty > 0).map(l => `  • ${l.productName} — qty ${l.qty}${l.price !== '' && l.price != null ? ' @ ' + rfqFmt(l.price) + ' est.' : ''}`).join('\n');
@@ -30911,12 +31015,13 @@ Thanks,`
 
   window.rfqOpenQuickAskComposer = function() {
     if (!RFQ.lines.length) { alert('Add at least one line item first.'); return; }
-    if (!RFQ.selectedVendorIds.size) { alert('Check at least one vendor first.'); return; }
+    if (!RFQ.selectedVendorIds.size && !RFQ.oneOffRecipients.length) { alert('Check at least one vendor, or add a one-off email, first.'); return; }
 
     const selected = _rfqVendors.filter(v => RFQ.selectedVendorIds.has(v.id));
     const withEmail = selected.filter(v => v.email);
     const withoutEmail = selected.filter(v => !v.email);
-    if (!withEmail.length) { alert("None of the checked vendors have an email on file — add one in Odoo first."); return; }
+    const allRecipients = [...withEmail, ...RFQ.oneOffRecipients];
+    if (!allRecipients.length) { alert("None of the checked vendors have an email on file, and no one-off emails were added — add one in Odoo or use the one-off field first."); return; }
 
     const existing = document.getElementById('rfq-quickask-modal');
     if (existing) existing.remove();
@@ -30927,17 +31032,20 @@ Thanks,`
 
     const subject = `Quick quote request${RFQ.order ? ' — ref ' + RFQ.order.name : ''}`;
     const body = `Hi,\n\nCasting a quick net for pricing/availability on the following — no commitment yet, just gathering numbers:\n\n${rfqBuildLineText()}\n\n${RFQ.order ? 'Reference: ' + RFQ.order.name + '\n\n' : ''}Thanks,`;
-    const bccEmails = withEmail.map(v => v.email).join(',');
+    const bccEmails = allRecipients.map(v => v.email).join(',');
     const skippedNote = withoutEmail.length
       ? `<div style="font-size:0.75rem;color:var(--warning, #d99a3f);margin-top:6px">Skipped (no email on file): ${escHtml(withoutEmail.map(v=>v.name).join(', '))}</div>` : '';
+    const oneOffNote = RFQ.oneOffRecipients.length
+      ? `<div style="font-size:0.75rem;color:var(--muted);margin-top:4px">Plus one-off: ${escHtml(RFQ.oneOffRecipients.map(r=>r.name).join(', '))}</div>` : '';
 
     modal.innerHTML = `<div class="modal" style="max-width:560px">
       <div class="modal-header">
-        <div class="modal-header-text"><div class="record">Quick Ask — BCC ${withEmail.length} vendor${withEmail.length!==1?'s':''}</div></div>
+        <div class="modal-header-text"><div class="record">Quick Ask — BCC ${allRecipients.length} recipient${allRecipients.length!==1?'s':''}</div></div>
         <button class="modal-close" onclick="document.getElementById('rfq-quickask-modal').remove()">✕</button>
       </div>
       <div class="modal-body" style="display:flex;flex-direction:column;gap:10px">
-        <div style="font-size:0.8rem;color:var(--muted)">BCC: ${escHtml(withEmail.map(v=>v.name).join(', '))}</div>
+        <div style="font-size:0.8rem;color:var(--muted)">BCC: ${escHtml(withEmail.map(v=>v.name).join(', ') || '—')}</div>
+        ${oneOffNote}
         ${skippedNote}
         <div class="field"><label>Subject</label><input type="text" id="rfq-qa-subject" value="${escHtml(subject)}" style="width:100%"></div>
         <div class="field"><label>Body</label>
