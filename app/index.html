@@ -3,7 +3,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <meta name="oel-version" content="v15.22">
+  <meta name="oel-version" content="v15.23">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="mobile-web-app-capable" content="yes">
@@ -2943,9 +2943,9 @@ Support Team"></textarea>
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
           <div>
             <div style="font-family:'DM Serif Display',serif;font-size:1.3rem;color:var(--text)">OEL Command</div>
-            <div style="font-size:0.75rem;color:var(--muted);margin-top:2px">Quick Reference Guide · v15.22</div>
+            <div style="font-size:0.75rem;color:var(--muted);margin-top:2px">Quick Reference Guide · v15.23</div>
           </div>
-          <span style="font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace">v15.22</span>
+          <span style="font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace">v15.23</span>
         </div>
 
         <!-- Setup -->
@@ -3166,8 +3166,8 @@ Support Team"></textarea>
         <div class="card" style="margin-bottom:14px">
           <div class="card-title">📋 Cover Shortages</div>
           <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
-            <p style="margin:0 0 4px">Search for a rental or sales order by number or customer, select it, and its line items load as your starting list. Adjust each quantity down to your actual shortage, remove anything you've got covered, and use the search box to add products that aren't on the order at all — on-hand quantity shows next to each line for context.</p>
-            <p style="margin:0 0 4px">Check one vendor to send a single RFQ, or check several to shop the same list around for comparison — a separate draft RFQ (Odoo's <code style="background:var(--surface2);padding:1px 5px;border-radius:4px">purchase.order</code> in draft state) is created per vendor checked, each carrying the same line items. Est. cost per line is optional — leave it blank to let the vendor quote.</p>
+            <p style="margin:0 0 4px">Search for a rental or sales order by number or customer, select it, and its line items load as your starting list. Adjust each quantity down to your actual shortage, remove anything you've got covered, search to add a catalog product that isn't on the order, or use <strong style="color:var(--text)">+ Add a custom line</strong> for anything that isn't in Odoo's product catalog at all — just a description and quantity.</p>
+            <p style="margin:0 0 4px">Two speeds, same vendor checklist: <strong style="color:var(--text)">✉ Quick ask</strong> opens one email BCC'd to everyone checked — nothing is created in Odoo, it's just casting the net before you know who you're going with. <strong style="color:var(--text)">Create formal RFQ(s)</strong> makes a real draft RFQ (Odoo's <code style="background:var(--surface2);padding:1px 5px;border-radius:4px">purchase.order</code> in draft state) per vendor checked — use it once you've picked who you're actually asking, even if that's still more than one for comparison. Est. cost per line is optional either way — leave it blank to let the vendor quote.</p>
             <p style="margin:0"><strong style="color:var(--text)">Open RFQs</strong> tracks everything still in RFQ status. <strong style="color:var(--text)">✉ Send</strong> opens an editable composer and marks it sent; <strong style="color:var(--text)">✓ Confirm → PO</strong> converts it into a real Purchase Order once the vendor's agreed to the order — same Odoo record, just a state change, nothing new to re-enter.</p>
           </div>
         </div>
@@ -3215,7 +3215,7 @@ Support Team"></textarea>
         <div class="card" style="margin-bottom:14px">
           <div class="card-title">🔧 Troubleshooting</div>
           <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
-            <p style="margin:0 0 4px"><strong style="color:var(--text)">App not updating after deploy:</strong> Hard refresh Ctrl+Shift+R. Service worker cache key = oel-v15.22.</p>
+            <p style="margin:0 0 4px"><strong style="color:var(--text)">App not updating after deploy:</strong> Hard refresh Ctrl+Shift+R. Service worker cache key = oel-v15.23.</p>
             <p style="margin:0 0 4px"><strong style="color:var(--text)">Odoo calls failing:</strong> Confirm server.py is running on port 7842. Check status lights in Settings. All domains must be flat arrays for Odoo 19 — no nested | operators. The header Connect button retries automatically (up to 3x) since the public CORS proxies it cycles through in Proxy mode can be individually flaky — "retry 1/2" in the status text is normal, not an error. If it still fails after retries, switch to Local Server mode in Settings.</p>
             <p style="margin:0 0 4px"><strong style="color:var(--text)">IMAP not working:</strong> Confirm imap_server.py is running on port 7843. Gmail requires an App Password. Turbify uses standard IMAP credentials.</p>
             <p style="margin:0 0 4px"><strong style="color:var(--text)">AI drafts failing:</strong> Check Groq API key in Settings. Verify model name — default is qwen/qwen3.8-27b.</p>
@@ -3224,7 +3224,7 @@ Support Team"></textarea>
         </div>
 
         <div style="text-align:center;font-size:0.72rem;color:var(--muted);padding:12px 0">
-          OEL Command v15.22 · Built by Lazzaro · Powered by Groq AI + Odoo 19
+          OEL Command v15.23 · Built by Lazzaro · Powered by Groq AI + Odoo 19
         </div>
 
       </div>
@@ -3334,7 +3334,7 @@ Support Team"></textarea>
           <div class="card-title" style="font-family:'DM Serif Display',serif;font-size:1.2rem;margin-bottom:6px">Dashboard</div>
           <div class="card-subtitle" style="margin-bottom:16px">Pipeline, opportunities, and team performance from Odoo.</div>
           <div style="display:inline-flex;align-items:center;gap:6px;margin-bottom:8px">
-            <span style="font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace;box-shadow:0 0 8px rgba(201,168,76,0.35),0 0 20px rgba(201,168,76,0.12);animation:versionGlow 3s ease-in-out infinite alternate">OEL Command v15.22</span>
+            <span style="font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace;box-shadow:0 0 8px rgba(201,168,76,0.35),0 0 20px rgba(201,168,76,0.12);animation:versionGlow 3s ease-in-out infinite alternate">OEL Command v15.23</span>
             <span style="font-size:0.68rem;color:var(--muted)">Built by Lazzaro</span>
           </div>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px">
@@ -4316,18 +4316,43 @@ Thank you</textarea>
                 <button class="btn btn-ghost" onclick="rfqSearchProducts()" style="padding:6px 14px;font-size:0.8rem">Search</button>
               </div>
               <div id="rfq-product-results" style="display:flex;flex-direction:column;gap:4px;margin-top:8px"></div>
+
+              <div style="margin-top:8px">
+                <a id="rfq-custom-line-toggle" onclick="rfqToggleCustomLineForm()" style="cursor:pointer;color:var(--accent);font-size:0.78rem">+ Add a custom line (not in the product catalog)</a>
+                <div id="rfq-custom-line-form" style="display:none;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap">
+                  <input type="text" id="rfq-custom-desc" placeholder="Description…" style="flex:1;min-width:160px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.8rem;outline:none">
+                  <input type="number" id="rfq-custom-qty" placeholder="Qty" value="1" min="0" step="1" style="width:70px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:var(--text);font-size:0.8rem;outline:none">
+                  <button class="btn btn-ghost" onclick="rfqAddCustomLine()" style="padding:6px 14px;font-size:0.8rem">+ Add line</button>
+                </div>
+              </div>
             </div>
 
             <div class="card" style="margin-bottom:14px">
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
                 <div style="font-size:0.85rem;font-weight:500">Send to</div>
-                <span style="font-size:0.74rem;color:var(--muted)">Check one vendor for a single RFQ, or several to shop it around — one draft RFQ is created per vendor checked</span>
+                <span style="font-size:0.74rem;color:var(--muted)">Same checklist drives both actions below</span>
               </div>
               <input type="text" id="rfq-vendor-filter" placeholder="Filter vendors…" oninput="rfqRenderVendorList()" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.8rem;outline:none;margin-bottom:8px">
               <div id="rfq-vendor-list" style="display:flex;flex-direction:column;gap:4px;max-height:220px;overflow-y:auto"></div>
             </div>
 
+            <div class="card" style="margin-bottom:14px">
+              <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+                <div style="flex:1;min-width:220px">
+                  <div style="font-size:0.84rem;font-weight:500;color:var(--text)">✉ Quick ask</div>
+                  <div style="font-size:0.75rem;color:var(--muted);margin-top:2px">One email, BCC'd to everyone checked. Nothing is created in Odoo — just casting the net.</div>
+                </div>
+                <button class="btn btn-ghost" onclick="rfqOpenQuickAskComposer()" style="padding:7px 16px;font-size:0.83rem;white-space:nowrap">Open composer →</button>
+              </div>
+            </div>
+
             <div class="card">
+              <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px">
+                <div style="flex:1;min-width:220px">
+                  <div style="font-size:0.84rem;font-weight:500;color:var(--text)">Create formal RFQ(s)</div>
+                  <div style="font-size:0.75rem;color:var(--muted);margin-top:2px">One real draft RFQ per vendor checked — trackable in Odoo, later confirmable into a PO. Use once you know who you're actually asking.</div>
+                </div>
+              </div>
               <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
                 <div id="rfq-build-status" style="font-size:0.78rem;color:var(--muted);flex:1"></div>
                 <button class="btn btn-ghost" onclick="rfqResetBuilder()" style="padding:7px 14px;font-size:0.82rem">↺ Start over</button>
@@ -30841,6 +30866,27 @@ Thanks,`
     document.getElementById('rfq-product-results').innerHTML = '';
   };
 
+  // A line with no product_id at all — for anything not in the Odoo catalog.
+  // purchase.order.line supports this natively: a free-text name + qty with
+  // no product_id link, exactly like a manually-typed line in Odoo's own UI.
+  window.rfqToggleCustomLineForm = function() {
+    const form = document.getElementById('rfq-custom-line-form');
+    if (!form) return;
+    const showing = form.style.display === 'flex';
+    form.style.display = showing ? 'none' : 'flex';
+    if (!showing) document.getElementById('rfq-custom-desc')?.focus();
+  };
+  window.rfqAddCustomLine = function() {
+    const desc = document.getElementById('rfq-custom-desc')?.value?.trim();
+    const qty = parseFloat(document.getElementById('rfq-custom-qty')?.value) || 1;
+    if (!desc) { alert('Enter a description first.'); return; }
+    RFQ.lines.push({ key: 'custom' + Date.now(), productId: null, productName: desc, qty, onHand: null, price: '' });
+    rfqRenderLines();
+    document.getElementById('rfq-custom-desc').value = '';
+    document.getElementById('rfq-custom-qty').value = '1';
+    document.getElementById('rfq-custom-line-form').style.display = 'none';
+  };
+
   // ── Vendors ──────────────────────────────────────────────────────────
   window.rfqRenderVendorList = function() {
     const listEl = document.getElementById('rfq-vendor-list');
@@ -30856,6 +30902,64 @@ Thanks,`
   };
   window.rfqToggleVendor = function(id, checked) {
     if (checked) RFQ.selectedVendorIds.add(id); else RFQ.selectedVendorIds.delete(id);
+  };
+
+  // ── Quick ask — one BCC'd email, no Odoo records created ─────────────
+  function rfqBuildLineText() {
+    return RFQ.lines.filter(l => l.qty > 0).map(l => `  • ${l.productName} — qty ${l.qty}${l.price !== '' && l.price != null ? ' @ ' + rfqFmt(l.price) + ' est.' : ''}`).join('\n');
+  }
+
+  window.rfqOpenQuickAskComposer = function() {
+    if (!RFQ.lines.length) { alert('Add at least one line item first.'); return; }
+    if (!RFQ.selectedVendorIds.size) { alert('Check at least one vendor first.'); return; }
+
+    const selected = _rfqVendors.filter(v => RFQ.selectedVendorIds.has(v.id));
+    const withEmail = selected.filter(v => v.email);
+    const withoutEmail = selected.filter(v => !v.email);
+    if (!withEmail.length) { alert("None of the checked vendors have an email on file — add one in Odoo first."); return; }
+
+    const existing = document.getElementById('rfq-quickask-modal');
+    if (existing) existing.remove();
+    const modal = document.createElement('div');
+    modal.id = 'rfq-quickask-modal';
+    modal.className = 'modal-overlay';
+    modal.style.cssText = 'display:flex';
+
+    const subject = `Quick quote request${RFQ.order ? ' — ref ' + RFQ.order.name : ''}`;
+    const body = `Hi,\n\nCasting a quick net for pricing/availability on the following — no commitment yet, just gathering numbers:\n\n${rfqBuildLineText()}\n\n${RFQ.order ? 'Reference: ' + RFQ.order.name + '\n\n' : ''}Thanks,`;
+    const bccEmails = withEmail.map(v => v.email).join(',');
+    const skippedNote = withoutEmail.length
+      ? `<div style="font-size:0.75rem;color:var(--warning, #d99a3f);margin-top:6px">Skipped (no email on file): ${escHtml(withoutEmail.map(v=>v.name).join(', '))}</div>` : '';
+
+    modal.innerHTML = `<div class="modal" style="max-width:560px">
+      <div class="modal-header">
+        <div class="modal-header-text"><div class="record">Quick Ask — BCC ${withEmail.length} vendor${withEmail.length!==1?'s':''}</div></div>
+        <button class="modal-close" onclick="document.getElementById('rfq-quickask-modal').remove()">✕</button>
+      </div>
+      <div class="modal-body" style="display:flex;flex-direction:column;gap:10px">
+        <div style="font-size:0.8rem;color:var(--muted)">BCC: ${escHtml(withEmail.map(v=>v.name).join(', '))}</div>
+        ${skippedNote}
+        <div class="field"><label>Subject</label><input type="text" id="rfq-qa-subject" value="${escHtml(subject)}" style="width:100%"></div>
+        <div class="field"><label>Body</label>
+          <textarea id="rfq-qa-body" rows="10" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 13px;color:var(--text);font-family:'DM Mono',monospace;font-size:0.79rem;line-height:1.6;outline:none;resize:vertical">${escHtml(body)}</textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="document.getElementById('rfq-quickask-modal').remove()">Cancel</button>
+        <button class="btn btn-primary" onclick="rfqSendQuickAsk('${bccEmails}')" style="margin-left:auto">✉ Open in mail client</button>
+      </div>
+    </div>`;
+    document.body.appendChild(modal);
+  };
+
+  window.rfqSendQuickAsk = function(bccEmails) {
+    const subject = document.getElementById('rfq-qa-subject')?.value || '';
+    const body = document.getElementById('rfq-qa-body')?.value || '';
+    const mailto = `mailto:?bcc=${encodeURIComponent(bccEmails)}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = mailto;
+    document.getElementById('rfq-quickask-modal')?.remove();
+    const statusEl = document.getElementById('rfq-build-status');
+    if (statusEl) { statusEl.style.color = 'var(--muted)'; statusEl.textContent = 'Quick ask opened in your mail client — no Odoo records created. Once you pick a vendor, check just them and use Create RFQ(s) below.'; }
   };
 
   // ── Create RFQ(s) ────────────────────────────────────────────────────
