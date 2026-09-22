@@ -3,7 +3,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <meta name="oel-version" content="v15.25">
+  <meta name="oel-version" content="v15.27">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="mobile-web-app-capable" content="yes">
@@ -2943,9 +2943,9 @@ Support Team"></textarea>
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
           <div>
             <div style="font-family:'DM Serif Display',serif;font-size:1.3rem;color:var(--text)">OEL Command</div>
-            <div style="font-size:0.75rem;color:var(--muted);margin-top:2px">Quick Reference Guide · v15.25</div>
+            <div style="font-size:0.75rem;color:var(--muted);margin-top:2px">Quick Reference Guide · v15.27</div>
           </div>
-          <span style="font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace">v15.25</span>
+          <span style="font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace">v15.27</span>
         </div>
 
         <!-- Setup -->
@@ -3209,6 +3209,7 @@ Support Team"></textarea>
           <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
             <p style="margin:0 0 4px"><strong style="color:var(--text)">Dashboard:</strong> 8 CRM cards + 4 accounting cards, click any for drill-down. ⚡ Daily AI Briefing summarizes pipeline, wins, due activities, stale deals. Quick reports: Aged AR · Top Customers (YTD) · Overdue Notices — print-ready.</p>
             <p style="margin:0"><strong style="color:var(--text)">Sales Reporting:</strong> filter rental/sales orders by rep, order type, stage, and delivery month, sortable on every column. <strong style="color:var(--text)">Commission estimate</strong> toggle restricts to confirmed orders, switches to delivery-date filtering, and totals goods-only revenue by <strong style="color:var(--text)">product category</strong> (not product type) — use ⚙ Categories to mark which categories count as services, and the rate chips (5% / 7% / 10% / custom) to set the payout percentage. The delivery-date field auto-detects from your Odoo schema and can be overridden in the dropdown if it guesses wrong.</p>
+            <p style="margin:0 0 4px"><strong style="color:var(--text)">Location</strong> shows the order's delivery/shipping address. <strong style="color:var(--text)">Tax</strong> isn't pulled from Odoo's tax engine — it's whichever order line has "tax" in its name, shown by name and amount so you can tell NW Tax from Local Tax at a glance. Use <strong style="color:var(--text)">⚙ Tax names</strong> to maintain the approved list — any tax line that doesn't match gets flagged in red with a ⚠, and the "Unapproved Tax" summary card counts how many orders need a look.</p>
           </div>
         </div>
 
@@ -3216,7 +3217,7 @@ Support Team"></textarea>
         <div class="card" style="margin-bottom:14px">
           <div class="card-title">🔧 Troubleshooting</div>
           <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
-            <p style="margin:0 0 4px"><strong style="color:var(--text)">App not updating after deploy:</strong> Hard refresh Ctrl+Shift+R. Service worker cache key = oel-v15.25.</p>
+            <p style="margin:0 0 4px"><strong style="color:var(--text)">App not updating after deploy:</strong> Hard refresh Ctrl+Shift+R. Service worker cache key = oel-v15.27.</p>
             <p style="margin:0 0 4px"><strong style="color:var(--text)">Odoo calls failing:</strong> Confirm server.py is running on port 7842. Check status lights in Settings. All domains must be flat arrays for Odoo 19 — no nested | operators. The header Connect button retries automatically (up to 3x) since the public CORS proxies it cycles through in Proxy mode can be individually flaky — "retry 1/2" in the status text is normal, not an error. If it still fails after retries, switch to Local Server mode in Settings.</p>
             <p style="margin:0 0 4px"><strong style="color:var(--text)">IMAP not working:</strong> Confirm imap_server.py is running on port 7843. Gmail requires an App Password. Turbify uses standard IMAP credentials.</p>
             <p style="margin:0 0 4px"><strong style="color:var(--text)">AI drafts failing:</strong> Check Groq API key in Settings. Verify model name — default is qwen/qwen3.8-27b.</p>
@@ -3225,7 +3226,7 @@ Support Team"></textarea>
         </div>
 
         <div style="text-align:center;font-size:0.72rem;color:var(--muted);padding:12px 0">
-          OEL Command v15.25 · Built by Lazzaro · Powered by Groq AI + Odoo 19
+          OEL Command v15.27 · Built by Lazzaro · Powered by Groq AI + Odoo 19
         </div>
 
       </div>
@@ -3335,7 +3336,7 @@ Support Team"></textarea>
           <div class="card-title" style="font-family:'DM Serif Display',serif;font-size:1.2rem;margin-bottom:6px">Dashboard</div>
           <div class="card-subtitle" style="margin-bottom:16px">Pipeline, opportunities, and team performance from Odoo.</div>
           <div style="display:inline-flex;align-items:center;gap:6px;margin-bottom:8px">
-            <span style="font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace;box-shadow:0 0 8px rgba(201,168,76,0.35),0 0 20px rgba(201,168,76,0.12);animation:versionGlow 3s ease-in-out infinite alternate">OEL Command v15.25</span>
+            <span style="font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace;box-shadow:0 0 8px rgba(201,168,76,0.35),0 0 20px rgba(201,168,76,0.12);animation:versionGlow 3s ease-in-out infinite alternate">OEL Command v15.27</span>
             <span style="font-size:0.68rem;color:var(--muted)">Built by Lazzaro</span>
           </div>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px">
@@ -3438,7 +3439,10 @@ Support Team"></textarea>
           <div style="margin-top:18px">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px">
               <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);font-weight:500">Sales Reporting</div>
-              <button class="btn btn-ghost" onclick="srLoad()" title="Reload sales orders from Odoo" style="padding:5px 12px;font-size:0.78rem">Refresh</button>
+              <div style="display:flex;gap:8px">
+                <button class="btn btn-ghost" onclick="srOpenTaxNamesModal()" title="Manage which tax line names are approved — anything else gets flagged in the Tax column" style="padding:5px 12px;font-size:0.78rem">⚙ Tax names</button>
+                <button class="btn btn-ghost" onclick="srLoad()" title="Reload sales orders from Odoo" style="padding:5px 12px;font-size:0.78rem">Refresh</button>
+              </div>
             </div>
             <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
               <select id="sr-rep" onchange="srLoad()" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.82rem;outline:none;cursor:pointer">
@@ -9384,6 +9388,68 @@ let _srSortDir  = 'desc';
 
 function srFmt(n) { return '$' + (n||0).toLocaleString('en-US', {maximumFractionDigits:0}); }
 
+// ── Approved tax line names — anything else found on an order gets flagged ──
+function srLoadApprovedTaxNames() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('oel_sr_approved_tax_names') || 'null');
+    if (Array.isArray(saved)) return saved;
+  } catch(e) {}
+  return ['NW Tax', 'Local Tax']; // sensible starting point — fully editable
+}
+function srSaveApprovedTaxNames(list) {
+  try { localStorage.setItem('oel_sr_approved_tax_names', JSON.stringify(list)); } catch(e) {}
+}
+let _srApprovedTaxNames = srLoadApprovedTaxNames();
+
+function srIsApprovedTaxName(name) {
+  const n = (name || '').trim().toLowerCase();
+  return _srApprovedTaxNames.some(function(a){ return a.trim().toLowerCase() === n; });
+}
+
+function srOpenTaxNamesModal() {
+  const existing = document.getElementById('sr-taxnames-modal');
+  if (existing) existing.remove();
+  const modal = document.createElement('div');
+  modal.id = 'sr-taxnames-modal';
+  modal.className = 'modal-overlay';
+  modal.style.cssText = 'display:flex';
+  modal.innerHTML = '<div class="modal" style="max-width:420px">'
+    + '<div class="modal-header"><div class="modal-header-text"><div class="record">Approved Tax Line Names</div>'
+    + '<div class="contact">Any tax line found on an order that doesn\'t match one of these gets flagged in the table</div></div>'
+    + '<button class="modal-close" onclick="document.getElementById(\'sr-taxnames-modal\').remove()">✕</button></div>'
+    + '<div class="modal-body"><div id="sr-taxnames-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px"></div>'
+    + '<div style="display:flex;gap:8px"><input type="text" id="sr-taxname-input" placeholder="e.g. NW Tax" onkeydown="if(event.key===\'Enter\'){event.preventDefault();srAddApprovedTaxName();}" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-family:\'DM Sans\',sans-serif;font-size:0.82rem;outline:none">'
+    + '<button class="btn btn-ghost" onclick="srAddApprovedTaxName()" style="padding:6px 14px;font-size:0.8rem">+ Add</button></div></div>'
+    + '<div class="modal-footer"><button class="btn btn-primary" onclick="document.getElementById(\'sr-taxnames-modal\').remove(); srRenderList();" style="margin-left:auto">Done</button></div>'
+    + '</div>';
+  document.body.appendChild(modal);
+  srRenderTaxNamesList();
+}
+function srRenderTaxNamesList() {
+  const el = document.getElementById('sr-taxnames-list');
+  if (!el) return;
+  if (!_srApprovedTaxNames.length) { el.innerHTML = '<div style="font-size:0.78rem;color:var(--muted)">No approved names yet — everything will be flagged until you add some.</div>'; return; }
+  el.innerHTML = _srApprovedTaxNames.map(function(name, i) {
+    return '<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--surface2);border-radius:6px;font-size:0.82rem">'
+      + '<span style="flex:1">' + escHtml(name) + '</span>'
+      + '<button class="btn btn-ghost" onclick="srRemoveApprovedTaxName(' + i + ')" style="padding:2px 8px;font-size:0.72rem">✕</button></div>';
+  }).join('');
+}
+function srAddApprovedTaxName() {
+  const input = document.getElementById('sr-taxname-input');
+  const val = input?.value?.trim();
+  if (!val) return;
+  if (!srIsApprovedTaxName(val)) _srApprovedTaxNames.push(val);
+  srSaveApprovedTaxNames(_srApprovedTaxNames);
+  input.value = '';
+  srRenderTaxNamesList();
+}
+function srRemoveApprovedTaxName(i) {
+  _srApprovedTaxNames.splice(i, 1);
+  srSaveApprovedTaxNames(_srApprovedTaxNames);
+  srRenderTaxNamesList();
+}
+
 function srStageLabel(state) {
   if (state === 'draft' || state === 'sent') return 'Pending';
   if (state === 'sale'  || state === 'done') return 'Confirmed';
@@ -9621,7 +9687,7 @@ async function srLoad() {
   else if (stage === 'confirmed') domain.push(['state','in', ['sale','done']]);
   else if (stage === 'cancel')    domain.push(['state','=', 'cancel']);
 
-  const fieldList = ['name','partner_id','user_id','state','is_rental_order','amount_total','date_order'];
+  const fieldList = ['name','partner_id','partner_shipping_id','user_id','state','is_rental_order','amount_total','date_order'];
   if (_srDeliveryField && fieldList.indexOf(_srDeliveryField) === -1) fieldList.push(_srDeliveryField);
 
   try {
@@ -9649,6 +9715,36 @@ async function srLoad() {
       });
     }
     _srOrders = filtered;
+
+    // Tax isn't tracked via Odoo's tax engine here — it's a line item whose
+    // name contains "tax", per how this business actually enters it. Pull
+    // order lines for the visible set in one batched call and capture both
+    // the name and amount of any matching line per order — not just the
+    // total — so you can see exactly which tax line was used, and catch
+    // anything that isn't one of the approved names.
+    const taxOrderIds = _srOrders.map(function(o){ return o.id; });
+    if (taxOrderIds.length) {
+      try {
+        const taxLines = await odooExecute(odooUid, 'sale.order.line', 'search_read',
+          [[['order_id','in', taxOrderIds], ['display_type','=', false]]],
+          { fields: ['order_id','name','price_subtotal'], limit: 5000 });
+        const taxByOrder = {};
+        const namesByOrder = {};
+        (taxLines||[]).forEach(function(l) {
+          if (/tax/i.test(l.name || '')) {
+            const oid = Array.isArray(l.order_id) ? l.order_id[0] : l.order_id;
+            taxByOrder[oid] = (taxByOrder[oid] || 0) + (l.price_subtotal || 0);
+            (namesByOrder[oid] = namesByOrder[oid] || []).push({ name: l.name || '(unnamed)', amount: l.price_subtotal || 0 });
+          }
+        });
+        _srOrders.forEach(function(o) {
+          o._taxAmount = taxByOrder[o.id] || 0;
+          o._taxLines = namesByOrder[o.id] || [];
+        });
+      } catch(e) {
+        _srOrders.forEach(function(o) { o._taxAmount = null; o._taxLines = null; }); // couldn't fetch — render shows "—" rather than a false $0
+      }
+    }
 
     // Diagnostics — surface what's actually happening with the delivery field
     if (warnEl) {
@@ -9689,6 +9785,8 @@ function srRenderList() {
     else if (key === 'stage')   { av = srStageLabel(a.state); bv = srStageLabel(b.state); }
     else if (key === 'type')    { av = a.is_rental_order?'Rental':'Sales'; bv = b.is_rental_order?'Rental':'Sales'; }
     else if (key === 'amount')  { av = a.amount_total||0; bv = b.amount_total||0; }
+    else if (key === 'tax')     { av = a._taxAmount||0; bv = b._taxAmount||0; }
+    else if (key === 'location'){ av = (a.partner_shipping_id&&a.partner_shipping_id[1])||''; bv = (b.partner_shipping_id&&b.partner_shipping_id[1])||''; }
     else                        { av = a._deliveryDate||''; bv = b._deliveryDate||''; }
     if (av < bv) return dir === 'asc' ? -1 : 1;
     if (av > bv) return dir === 'asc' ? 1 : -1;
@@ -9696,12 +9794,16 @@ function srRenderList() {
   });
 
   const totalAmt = _srOrders.reduce(function(s,o){ return s + (o.amount_total||0); }, 0);
+  const flaggedTaxCount = _srOrders.filter(function(o){
+    return o._taxLines && o._taxLines.some(function(t){ return !srIsApprovedTaxName(t.name); });
+  }).length;
   if (summaryEl) {
-    summaryEl.style.gridTemplateColumns = 'repeat(3,1fr)';
+    summaryEl.style.gridTemplateColumns = 'repeat(4,1fr)';
     summaryEl.innerHTML =
       '<div class="laz-stat-card"><div class="laz-stat-label">Orders</div><div class="laz-stat-value">' + _srOrders.length + '</div><div class="laz-stat-sub">matching filters</div></div>' +
       '<div class="laz-stat-card"><div class="laz-stat-label">Total Value</div><div class="laz-stat-value accent">' + srFmt(totalAmt) + '</div><div class="laz-stat-sub">order totals</div></div>' +
-      '<div class="laz-stat-card"><div class="laz-stat-label">Avg Order</div><div class="laz-stat-value">' + srFmt(_srOrders.length?totalAmt/_srOrders.length:0) + '</div><div class="laz-stat-sub">per order</div></div>';
+      '<div class="laz-stat-card"><div class="laz-stat-label">Avg Order</div><div class="laz-stat-value">' + srFmt(_srOrders.length?totalAmt/_srOrders.length:0) + '</div><div class="laz-stat-sub">per order</div></div>' +
+      '<div class="laz-stat-card"><div class="laz-stat-label">Unapproved Tax</div><div class="laz-stat-value' + (flaggedTaxCount ? ' warning' : '') + '">' + flaggedTaxCount + '</div><div class="laz-stat-sub">orders to review</div></div>';
   }
 
   if (!rows.length) { resultsEl.innerHTML = '<div style="padding:16px;text-align:center;color:var(--muted);font-size:0.82rem">No orders match these filters</div>'; return; }
@@ -9711,25 +9813,40 @@ function srRenderList() {
     return '<th onclick="srSetSort(\''+k+'\')" style="padding:6px 8px;font-size:0.7rem;color:var(--muted);font-weight:500;text-align:'+(align||'left')+';cursor:pointer;white-space:nowrap;user-select:none">' + label + arrow(k) + '</th>';
   }
 
+  function srTaxCellHtml(o) {
+    if (o._taxAmount === null) return '<span style="color:var(--muted)">—</span>';
+    if (!o._taxLines || !o._taxLines.length) return '<span style="color:var(--muted)">' + srFmt(0) + '</span>';
+    return o._taxLines.map(function(t) {
+      const approved = srIsApprovedTaxName(t.name);
+      const color = approved ? 'var(--muted)' : 'var(--danger)';
+      const title = approved ? '' : ' title="Not in your approved tax names list"';
+      const flag = approved ? '' : ' ⚠';
+      return '<div' + title + ' style="color:' + color + ';white-space:nowrap">' + escHtml(t.name) + ': ' + srFmt(t.amount) + flag + '</div>';
+    }).join('');
+  }
+
   const body = rows.map(function(o) {
-    const partner = (o.partner_id && o.partner_id[1]) ? escHtml(o.partner_id[1]) : '—';
-    const rep     = (o.user_id && o.user_id[1]) ? escHtml(o.user_id[1]) : '—';
-    const type    = o.is_rental_order ? 'Rental' : 'Sales';
-    const stage   = srStageLabel(o.state);
-    const color   = srStageColor(o.state);
-    const date    = o._deliveryDate ? String(o._deliveryDate).slice(0,10) : '—';
+    const partner  = (o.partner_id && o.partner_id[1]) ? escHtml(o.partner_id[1]) : '—';
+    const rep      = (o.user_id && o.user_id[1]) ? escHtml(o.user_id[1]) : '—';
+    const type     = o.is_rental_order ? 'Rental' : 'Sales';
+    const stage    = srStageLabel(o.state);
+    const color    = srStageColor(o.state);
+    const date     = o._deliveryDate ? String(o._deliveryDate).slice(0,10) : '—';
+    const location = (o.partner_shipping_id && o.partner_shipping_id[1]) ? escHtml(o.partner_shipping_id[1]) : '—';
     return '<tr><td style="padding:5px 8px;font-size:0.78rem;color:var(--text)">' + escHtml(o.name||'') + '</td>'
          + '<td style="padding:5px 8px;font-size:0.78rem;color:var(--muted)">' + partner + '</td>'
          + '<td style="padding:5px 8px;font-size:0.78rem;color:var(--muted)">' + rep + '</td>'
          + '<td style="padding:5px 8px;font-size:0.78rem;color:var(--muted)">' + type + '</td>'
          + '<td style="padding:5px 8px;font-size:0.78rem;color:' + color + '">' + stage + '</td>'
          + '<td style="padding:5px 8px;font-size:0.78rem;color:var(--muted)">' + date + '</td>'
-         + '<td style="padding:5px 8px;font-size:0.78rem;color:var(--accent);font-family:monospace;text-align:right">' + srFmt(o.amount_total) + '</td></tr>';
+         + '<td style="padding:5px 8px;font-size:0.78rem;color:var(--muted)">' + location + '</td>'
+         + '<td style="padding:5px 8px;font-size:0.78rem;color:var(--accent);font-family:monospace;text-align:right">' + srFmt(o.amount_total) + '</td>'
+         + '<td style="padding:5px 8px;font-size:0.78rem;font-family:monospace;text-align:right">' + srTaxCellHtml(o) + '</td></tr>';
   }).join('');
 
   resultsEl.innerHTML = '<table style="width:100%;border-collapse:collapse">'
     + '<thead><tr style="border-bottom:1px solid var(--border)">'
-    + th('Order','name') + th('Customer','partner') + th('Rep','rep') + th('Type','type') + th('Stage','stage') + th('Delivery Date','_deliveryDate') + th('Total','amount','right')
+    + th('Order','name') + th('Customer','partner') + th('Rep','rep') + th('Type','type') + th('Stage','stage') + th('Delivery Date','_deliveryDate') + th('Location','location') + th('Total','amount','right') + th('Tax','tax','right')
     + '</tr></thead><tbody>' + body + '</tbody></table>';
 }
 
