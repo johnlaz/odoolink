@@ -1,0 +1,14 @@
+# Local secrets and tokens (created by server.py / Gmail authorization)
+app/credentials.json
+app/token.json
+credentials.json
+token.json
+
+# Local backups and scratch
+*.bak
+*.orig
+*.tmp
+.DS_Store
+Thumbs.db
+__pycache__/
+*.pyc
