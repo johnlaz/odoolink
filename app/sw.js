@@ -1,26 +1,24 @@
 // OdooLink App Service Worker
 // Scope: /odoolink/app/
-const CACHE_NAME = 'odoolink-app-v15.17';
+// VERSION must match <meta name="oel-version"> in index.html (without the "v").
+const VERSION = '15.31';
+const CACHE_NAME = 'odoolink-app-v' + VERSION;
 const STATIC_ASSETS = [
   '/odoolink/app/',
   '/odoolink/app/index.html',
   '/odoolink/app/manifest.json',
-  '/odoolink/app/icons/icon-192.png',
-  '/odoolink/app/icons/icon-512.png',
-  'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap'
+  '/odoolink/app/icon-192.png',
+  '/odoolink/app/icon-512.png'
 ];
+// Third-party hosts whose GET responses are cached at runtime so fonts and the
+// Excel libraries keep working offline. Everything else cross-origin goes to network.
+const CACHEABLE_HOSTS = ['fonts.googleapis.com', 'fonts.gstatic.com', 'cdnjs.cloudflare.com'];
 
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      const local    = STATIC_ASSETS.filter(u => !u.startsWith('http'));
-      const external = STATIC_ASSETS.filter(u =>  u.startsWith('http'));
-      return cache.addAll(local).then(() =>
-        Promise.allSettled(
-          external.map(url => fetch(url).then(r => cache.put(url, r)).catch(() => {}))
-        )
-      );
-    }).then(() => self.skipWaiting())
+    caches.open(CACHE_NAME)
+      .then(cache => cache.addAll(STATIC_ASSETS))
+      .then(() => self.skipWaiting())
   );
 });
 
@@ -33,27 +31,57 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
-  const url = new URL(event.request.url);
+  const req = event.request;
+  if (req.method !== 'GET') return;
+  const url = new URL(req.url);
 
-  // Let API/backend requests go straight to network
-  const isApiCall =
-    url.hostname !== location.hostname ||
-    url.port === '7842' || url.port === '7843' ||  // Python proxy servers
-    url.pathname.includes('/api/') ||
-    url.hostname.includes('api.groq.com') ||
-    url.hostname.includes('googleapis');
+  // Local Python servers, API calls, and anything not explicitly cacheable: straight to network
+  if (url.hostname !== location.hostname) {
+    if (!CACHEABLE_HOSTS.includes(url.hostname)) return;
+    event.respondWith(staleWhileRevalidate(req));
+    return;
+  }
+  if (url.port === '7842' || url.port === '7843' || url.pathname.includes('/api/')) return;
 
-  if (isApiCall) return;
+  // HTML / navigations: network first so a new deploy is picked up immediately
+  if (req.mode === 'navigate' || (req.headers.get('accept') || '').includes('text/html')) {
+    event.respondWith(
+      fetch(req).then(res => {
+        if (res && res.status === 200) {
+          const copy = res.clone();
+          caches.open(CACHE_NAME).then(c => c.put(req, copy));
+        }
+        return res;
+      }).catch(() =>
+        caches.match(req, { ignoreSearch: true }).then(r => r || caches.match('/odoolink/app/index.html'))
+      )
+    );
+    return;
+  }
 
+  // Same-origin assets: cache first
   event.respondWith(
-    caches.match(event.request).then(cached => {
+    caches.match(req).then(cached => {
       if (cached) return cached;
-      return fetch(event.request).then(response => {
-        if (!response || response.status !== 200 || response.type === 'opaque') return response;
-        const clone = response.clone();
-        caches.open(CACHE_NAME).then(c => c.put(event.request, clone));
-        return response;
-      }).catch(() => caches.match('/odoolink/app/index.html'));
+      return fetch(req).then(res => {
+        if (res && res.status === 200 && res.type === 'basic') {
+          const copy = res.clone();
+          caches.open(CACHE_NAME).then(c => c.put(req, copy));
+        }
+        return res;
+      });
     })
   );
 });
+
+function staleWhileRevalidate(req) {
+  return caches.open(CACHE_NAME).then(cache =>
+    cache.match(req).then(cached => {
+      const network = fetch(req).then(res => {
+        if (res && (res.status === 200 || res.type === 'opaque')) cache.put(req, res.clone());
+        return res;
+      }).catch(() => cached);
+      return cached || network;
+    })
+  );
+}
