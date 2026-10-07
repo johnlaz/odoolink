@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 320" width="1280" height="320" role="img" aria-labelledby="t d">
+  <title id="t">OdooLink</title>
+  <desc id="d">OdooLink: AI-powered sales operations command center for Odoo</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1b1710"/><stop offset="1" stop-color="#0d0c09"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#d9b04a"/><stop offset="1" stop-color="#9a7a1c"/>
+    </linearGradient>
+  </defs>
+  <rect width="1280" height="320" rx="20" fill="url(#bg)"/>
+  <rect x="1" y="1" width="1278" height="318" rx="19" fill="none" stroke="#c9a227" stroke-opacity=".35"/>
+  <!-- mark -->
+  <rect x="64" y="72" width="176" height="176" rx="38" fill="url(#gold)"/>
+  <g fill="#14110a">
+    <rect x="94" y="110" width="76" height="14" rx="3"/><circle cx="196" cy="117" r="17"/>
+    <rect x="94" y="142" width="116" height="14" rx="3"/>
+    <rect x="94" y="174" width="84" height="14" rx="3"/>
+    <rect x="94" y="206" width="116" height="14" rx="3"/>
+  </g>
+  <text x="280" y="152" font-family="Georgia, 'Times New Roman', serif" font-size="76" font-weight="700" fill="#f5f0e8">OdooLink</text>
+  <text x="284" y="196" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="26" fill="#d9b04a">Your inbox, Odoo CRM and AI in one command center</text>
+  <g font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="17" fill="#e8dfc8">
+    <rect x="284" y="226" width="118" height="34" rx="17" fill="#c9a227" fill-opacity=".16" stroke="#c9a227" stroke-opacity=".5"/><text x="343" y="248" text-anchor="middle">IMAP / Gmail</text>
+    <rect x="414" y="226" width="118" height="34" rx="17" fill="#c9a227" fill-opacity=".16" stroke="#c9a227" stroke-opacity=".5"/><text x="473" y="248" text-anchor="middle">Odoo 19 CRM</text>
+    <rect x="544" y="226" width="126" height="34" rx="17" fill="#c9a227" fill-opacity=".16" stroke="#c9a227" stroke-opacity=".5"/><text x="607" y="248" text-anchor="middle">Groq AI drafts</text>
+    <rect x="682" y="226" width="104" height="34" rx="17" fill="#c9a227" fill-opacity=".16" stroke="#c9a227" stroke-opacity=".5"/><text x="734" y="248" text-anchor="middle">Quotes</text>
+  </g>
+</svg>

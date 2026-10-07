@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 460" width="1200" height="460" role="img" aria-labelledby="t d">
+  <title id="t">OdooLink architecture</title>
+  <desc id="d">The OdooLink PWA runs in the browser and talks to two local Python servers on ports 7842 and 7843, directly to Groq, and to Odoo through the local proxy.</desc>
+  <defs><marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#d9b04a"/></marker></defs>
+  <rect width="1200" height="460" rx="18" fill="#14110a"/>
+  <rect x="1" y="1" width="1198" height="458" rx="17" fill="none" stroke="#c9a227" stroke-opacity=".35"/>
+  <g font-family="'Segoe UI', Helvetica, Arial, sans-serif" fill="#f5f0e8" text-anchor="middle">
+    <text x="600" y="44" font-family="Georgia, serif" font-size="26" font-weight="700" fill="#d9b04a">Architecture</text>
+    <!-- your PC -->
+    <rect x="30" y="70" width="700" height="340" rx="16" fill="none" stroke="#c9a227" stroke-opacity=".45" stroke-dasharray="6 6"/>
+    <text x="52" y="96" text-anchor="start" font-size="13" fill="#d9b04a" letter-spacing="2">YOUR PC  (start.bat launches the servers)</text>
+    <rect x="60" y="140" width="250" height="220" rx="14" fill="#1f1b12" stroke="#c9a227"/>
+    <text x="185" y="176" font-size="20" font-weight="600">OdooLink PWA</text>
+    <text x="185" y="204" font-size="14" fill="#c9bfa5">app/index.html</text>
+    <text x="185" y="238" font-size="14" fill="#c9bfa5">Single file, no build step</text>
+    <text x="185" y="260" font-size="14" fill="#c9bfa5">Settings kept in localStorage</text>
+    <text x="185" y="294" font-size="14" fill="#c9bfa5">manifest.json + sw.js</text>
+    <text x="185" y="316" font-size="14" fill="#c9bfa5">(installable, works offline)</text>
+    <rect x="440" y="120" width="260" height="110" rx="14" fill="#1f1b12" stroke="#c9a227" stroke-opacity=".7"/>
+    <text x="570" y="152" font-size="18" font-weight="600">server.py  :7842</text>
+    <text x="570" y="178" font-size="13" fill="#c9bfa5">Odoo XML-RPC CORS proxy</text>
+    <text x="570" y="198" font-size="13" fill="#c9bfa5">+ Gmail API</text>
+    <rect x="440" y="260" width="260" height="110" rx="14" fill="#1f1b12" stroke="#c9a227" stroke-opacity=".7"/>
+    <text x="570" y="292" font-size="18" font-weight="600">imap_server.py  :7843</text>
+    <text x="570" y="318" font-size="13" fill="#c9bfa5">IMAP / SMTP, inbox scan,</text>
+    <text x="570" y="338" font-size="13" fill="#c9bfa5">lead capture, body parsing</text>
+    <!-- external -->
+    <rect x="860" y="120" width="300" height="80" rx="14" fill="#1f1b12" stroke="#8a7a52"/>
+    <text x="1010" y="152" font-size="18" font-weight="600">Odoo 19 (odoo.com)</text>
+    <text x="1010" y="176" font-size="13" fill="#c9bfa5">CRM, sales, projects, accounting</text>
+    <rect x="860" y="230" width="300" height="80" rx="14" fill="#1f1b12" stroke="#8a7a52"/>
+    <text x="1010" y="262" font-size="18" font-weight="600">Mail provider</text>
+    <text x="1010" y="286" font-size="13" fill="#c9bfa5">Turbify / Yahoo IMAP, Gmail</text>
+    <rect x="860" y="340" width="300" height="80" rx="14" fill="#1f1b12" stroke="#8a7a52"/>
+    <text x="1010" y="372" font-size="18" font-weight="600">Groq API</text>
+    <text x="1010" y="396" font-size="13" fill="#c9bfa5">api.groq.com, your own key</text>
+  </g>
+  <g stroke="#d9b04a" stroke-width="2.5" fill="none" marker-end="url(#ar)">
+    <path d="M312 215H436"/><path d="M312 315H436"/>
+    <path d="M702 175H856"/><path d="M702 300Q780 300 780 270T856 270"/>
+    <path d="M310 380Q310 430 600 430T856 395" stroke-dasharray="7 5"/>
+  </g>
+  <text x="600" y="446" text-anchor="middle" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" fill="#a89f8a">AI calls go straight from the browser to Groq (dashed)</text>
+  <text x="1010" y="104" text-anchor="middle" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#d9b04a" letter-spacing="2">INTERNET</text>
+</svg>

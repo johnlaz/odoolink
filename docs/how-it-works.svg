@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 360" width="1200" height="360" role="img" aria-labelledby="t d">
+  <title id="t">How OdooLink works</title>
+  <desc id="d">Emails and requests come in, Groq AI extracts and drafts, you review, and the result is pushed to Odoo or sent by email.</desc>
+  <defs><marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#d9b04a"/></marker></defs>
+  <rect width="1200" height="360" rx="18" fill="#14110a"/>
+  <rect x="1" y="1" width="1198" height="358" rx="17" fill="none" stroke="#c9a227" stroke-opacity=".35"/>
+  <g font-family="'Segoe UI', Helvetica, Arial, sans-serif" fill="#f5f0e8" text-anchor="middle">
+    <text x="600" y="48" font-family="Georgia, serif" font-size="26" font-weight="700" fill="#d9b04a">How it works</text>
+    <g>
+      <rect x="40" y="100" width="240" height="170" rx="14" fill="#1f1b12" stroke="#c9a227" stroke-opacity=".5"/>
+      <text x="160" y="136" font-size="14" fill="#d9b04a" letter-spacing="2">1  CAPTURE</text>
+      <text x="160" y="176" font-size="18">Inbox, leads, requests</text>
+      <text x="160" y="204" font-size="14" fill="#c9bfa5">IMAP, Gmail, Odoo inbox,</text>
+      <text x="160" y="224" font-size="14" fill="#c9bfa5">pasted quote requests</text>
+    </g>
+    <g>
+      <rect x="320" y="100" width="240" height="170" rx="14" fill="#1f1b12" stroke="#c9a227" stroke-opacity=".5"/>
+      <text x="440" y="136" font-size="14" fill="#d9b04a" letter-spacing="2">2  UNDERSTAND</text>
+      <text x="440" y="176" font-size="18">Groq AI reads it</text>
+      <text x="440" y="204" font-size="14" fill="#c9bfa5">Extracts contact, dates,</text>
+      <text x="440" y="224" font-size="14" fill="#c9bfa5">equipment; matches catalog</text>
+    </g>
+    <g>
+      <rect x="600" y="100" width="240" height="170" rx="14" fill="#1f1b12" stroke="#c9a227" stroke-opacity=".5"/>
+      <text x="720" y="136" font-size="14" fill="#d9b04a" letter-spacing="2">3  REVIEW</text>
+      <text x="720" y="176" font-size="18">You stay in control</text>
+      <text x="720" y="204" font-size="14" fill="#c9bfa5">Edit drafts and quote lines,</text>
+      <text x="720" y="224" font-size="14" fill="#c9bfa5">duplicates are flagged</text>
+    </g>
+    <g>
+      <rect x="880" y="100" width="280" height="170" rx="14" fill="#1f1b12" stroke="#c9a227" stroke-opacity=".5"/>
+      <text x="1020" y="136" font-size="14" fill="#d9b04a" letter-spacing="2">4  ACT</text>
+      <text x="1020" y="176" font-size="18">Push to Odoo or send</text>
+      <text x="1020" y="204" font-size="14" fill="#c9bfa5">CRM leads, sale orders, notes,</text>
+      <text x="1020" y="224" font-size="14" fill="#c9bfa5">activities, and email replies</text>
+    </g>
+  </g>
+  <g stroke="#d9b04a" stroke-width="3" fill="none" marker-end="url(#ar)">
+    <path d="M282 185H316"/><path d="M562 185H596"/><path d="M842 185H876"/>
+  </g>
+  <text x="600" y="326" text-anchor="middle" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" fill="#a89f8a">Nothing is sent or pushed until you confirm it.</text>
+</svg>
