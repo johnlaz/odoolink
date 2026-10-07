@@ -3,7 +3,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <meta name="oel-version" content="v15.31">
+  <meta name="oel-version" content="v15.32">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="mobile-web-app-capable" content="yes">
@@ -2950,9 +2950,9 @@ Support Team"></textarea>
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
           <div>
             <div style="font-family:'DM Serif Display',serif;font-size:1.3rem;color:var(--text)">OdooLink</div>
-            <div style="font-size:0.75rem;color:var(--muted);margin-top:2px">Quick Reference Guide · v15.31</div>
+            <div style="font-size:0.75rem;color:var(--muted);margin-top:2px">Quick Reference Guide · v15.32</div>
           </div>
-          <span style="font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace">v15.31</span>
+          <span style="font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace">v15.32</span>
         </div>
 
         <!-- Setup -->
@@ -3234,7 +3234,7 @@ Support Team"></textarea>
         <div class="card" style="margin-bottom:14px">
           <div class="card-title">🔧 Troubleshooting</div>
           <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
-            <p style="margin:0 0 4px"><strong style="color:var(--text)">App not updating after deploy:</strong> Updates now load automatically (HTML is fetched network-first). If a stale copy persists, hard refresh with Ctrl+Shift+R. Service worker cache key = odoolink-app-v15.31.</p>
+            <p style="margin:0 0 4px"><strong style="color:var(--text)">App not updating after deploy:</strong> Updates now load automatically (HTML is fetched network-first). If a stale copy persists, hard refresh with Ctrl+Shift+R. Service worker cache key = odoolink-app-v15.32.</p>
             <p style="margin:0 0 4px"><strong style="color:var(--text)">Odoo calls failing:</strong> Confirm server.py is running on port 7842. Check status lights in Settings. All domains must be flat arrays for Odoo 19 — no nested | operators. The header Connect button retries automatically (up to 3x) since the public CORS proxies it cycles through in Proxy mode can be individually flaky — "retry 1/2" in the status text is normal, not an error. If it still fails after retries, switch to Local Server mode in Settings.</p>
             <p style="margin:0 0 4px"><strong style="color:var(--text)">IMAP not working:</strong> Confirm imap_server.py is running on port 7843. Gmail requires an App Password. Turbify uses standard IMAP credentials.</p>
             <p style="margin:0 0 4px"><strong style="color:var(--text)">AI drafts failing:</strong> Check Groq API key in Settings. Verify model name — default is qwen/qwen3.8-27b.</p>
@@ -3243,7 +3243,7 @@ Support Team"></textarea>
         </div>
 
         <div style="text-align:center;font-size:0.72rem;color:var(--muted);padding:12px 0">
-          OdooLink v15.31 · Built by Lazzaro · Powered by Groq AI + Odoo 19
+          OdooLink v15.32 · Built by Lazzaro · Powered by Groq AI + Odoo 19
         </div>
 
       </div>
@@ -3353,7 +3353,7 @@ Support Team"></textarea>
           <div class="card-title" style="font-family:'DM Serif Display',serif;font-size:1.2rem;margin-bottom:6px">Dashboard</div>
           <div class="card-subtitle" style="margin-bottom:16px">Pipeline, opportunities, and team performance from Odoo.</div>
           <div style="display:inline-flex;align-items:center;gap:6px;margin-bottom:8px">
-            <span style="font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace;box-shadow:0 0 8px rgba(201,168,76,0.35),0 0 20px rgba(201,168,76,0.12);animation:versionGlow 3s ease-in-out infinite alternate">OdooLink v15.31</span>
+            <span style="font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace;box-shadow:0 0 8px rgba(201,168,76,0.35),0 0 20px rgba(201,168,76,0.12);animation:versionGlow 3s ease-in-out infinite alternate">OdooLink v15.32</span>
             <span style="font-size:0.68rem;color:var(--muted)">Built by Lazzaro</span>
           </div>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px">
@@ -4608,7 +4608,7 @@ Thank you</textarea>
         <div class="field-hint">All models are free. qwen/qwen3.8-27b gives the best email quality.</div>
         <div style="display:flex;align-items:center;gap:10px;margin-top:8px;flex-wrap:wrap">
           <button type="button" class="btn btn-ghost" id="model-refresh-btn" onclick="oelRefreshGroqModels()" style="padding:5px 12px;font-size:0.76rem">↻ Refresh models</button>
-          <span id="model-refresh-status" role="status" style="font-size:0.74rem;color:var(--muted)"></span>
+          <span id="model-refresh-status" role="status" style="font-size:0.74rem;color:var(--muted)">Uses the key typed above. Press Connect to save it.</span>
         </div>
       </div>
     </div>
@@ -32174,7 +32174,13 @@ Thanks,`
         headers: { 'Authorization': 'Bearer ' + key },
         signal: AbortSignal.timeout(10000)
       });
-      if (!r.ok) throw new Error('HTTP ' + r.status);
+      if (!r.ok) {
+        let detail = '';
+        try { const eb = await r.json(); detail = (eb && eb.error && eb.error.message) || ''; } catch (x) {}
+        const err = new Error('HTTP ' + r.status);
+        err.status = r.status; err.detail = detail;
+        throw err;
+      }
       const j = await r.json();
       const ids = (j.data || [])
         .filter(m => m && m.id && m.active !== false && !NON_CHAT.test(m.id))
@@ -32193,7 +32199,19 @@ Thanks,`
         status('✓ ' + ids.length + ' chat models available, ' + added + ' new added. Your selection is unchanged.', 'var(--success)');
       }
     } catch (e) {
-      status('Could not refresh models (' + e.message + '). Existing list kept.', 'var(--danger)');
+      let msg;
+      if (e && e.status === 401) {
+        const hints = [];
+        if (!key.startsWith('gsk_')) hints.push('It does not start with gsk_, so it may not be a Groq key.');
+        if (/\s/.test(key)) hints.push('It contains a space or line break.');
+        msg = 'Groq rejected this key (401' + (e.detail ? ': ' + e.detail : '') + '). Key length ' + key.length + ' (Groq keys are about 56). ' +
+              hints.join(' ') + ' Create a fresh key at console.groq.com/keys, paste it, and try again. Existing list kept.';
+      } else if (e && e.status === 429) {
+        msg = 'Groq says too many requests (429). Wait a minute and try again. Existing list kept.';
+      } else {
+        msg = 'Could not refresh models (' + (e && e.message || 'network error') + '). Existing list kept.';
+      }
+      status(msg, 'var(--danger)');
     }
   };
 
