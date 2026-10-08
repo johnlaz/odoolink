@@ -6,7 +6,6 @@
 <title>OdooLink — Unified Business Command Center</title>
 <meta name="description" content="Every business task. Every inbox. Every CRM action — unified in one AI-powered command center. OdooLink by LAZLAB.">
 <meta name="theme-color" content="#0f0f0f">
-<link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" href="app/icon-192.png">
 <link rel="apple-touch-icon" href="app/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1297,43 +1296,14 @@
   </div>
 </footer>
 
-<!-- INSTALL BANNER -->
-<div id="install-banner">
-  <img class="banner-ico" src="app/icon-192.png" alt="OdooLink">
-  <div class="banner-copy">
-    <strong>Add OdooLink to Home Screen</strong>
-    <span>Install for instant access from your desktop.</span>
-  </div>
-  <button class="btn-install" id="install-btn">Install</button>
-  <button class="btn-x" id="banner-close">✕</button>
-</div>
-
 <script>
   document.getElementById('yr').textContent = new Date().getFullYear();
 
-  let deferredPrompt;
-  const banner = document.getElementById('install-banner');
-  const installBtn = document.getElementById('install-btn');
-  const closeBtn = document.getElementById('banner-close');
-
-  window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-    banner.classList.add('visible');
-  });
-
-  installBtn.addEventListener('click', async () => {
-    if (!deferredPrompt) return;
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    deferredPrompt = null;
-    banner.classList.remove('visible');
-  });
-
-  closeBtn.addEventListener('click', () => banner.classList.remove('visible'));
-
+  // The landing page is no longer a PWA. Clear any service worker an earlier version registered.
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js').catch(() => {});
+    navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => {
+      if (new URL(r.scope).pathname === '/odoolink/') r.unregister();
+    })).catch(() => {});
   }
 </script>
 </body>
