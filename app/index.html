@@ -16166,8 +16166,73 @@ function lazBuildIntakeReply(x, bodyLower, em) {
   const qs = (Array.isArray(x.other_questions) ? x.other_questions : []).map(q => String(q || '').trim()).filter(Boolean);
   if (qs.length) out.push(qs.map(q => '[ANSWER BEFORE SENDING: ' + q + ']').join('\n'));
   out.push(ask.length ? "Once I have the details above, I'll send a tailored quote right away." : 'I have what I need and will send a tailored quote right away.');
-  out.push('Best,\n{{my_name}}');
-  return { text: out.join('\n\n'), missing };
+  out.push('Warm regards,\n{{my_name}}');
+  return { text: out.join('\n\n'), missing, known, goal, personal };
+}
+
+// Warm, natural rewrite of the safe template draft. Falls back to the template (returns null) if the rewrite
+// drops a required question, loses a date/answer placeholder, mentions a price, or fails to parse.
+async function lazPolishIntake(built, x, em, isForm, groqKey, model) {
+  const L = { dates:'event date(s)', venue:'venue/location', attendance:'expected attendance', event_type:'type of event',
+              equipment:'equipment they need (or the goal, and you will recommend a setup)', load_times:'load-in / load-out times',
+              recurring:'recurring or upcoming events they want pricing comparisons for' };
+  const K = { dates:'dates', venue:'venue', attendance:'attendance', event_type:'event type', equipment:'equipment', load_times:'load times', recurring:'recurring events' };
+  const factLines = Object.keys(built.known).filter(k => built.known[k]).map(k => '- ' + K[k] + ': ' + built.known[k]);
+  if (built.goal) factLines.push('- goal: ' + built.goal);
+  const askLines = built.missing.map(k => '- ' + L[k]);
+  const prompt = `Rewrite the DRAFT below as a warm, natural reply from John at Total Rental Solutions (AV and event equipment rental) to a customer.
+
+FACTS THE CUSTOMER ALREADY GAVE (never ask about these):
+${factLines.join('\n') || '(none)'}
+
+STILL NEEDED (ask these, and only these, as "- " bullets):
+${askLines.join('\n') || '(nothing)'}
+
+RULES:
+- Keep the greeting line and the sign-off exactly as in the draft (sign-off is "Warm regards," then "{{my_name}}").
+- Thank them for contacting Total Rental Solutions. If it is a personal event such as a wedding or birthday, add one short warm line about it (congratulations).
+- Mention what they told you in a natural sentence, using their exact dates, names and numbers. Do not add details they did not give.
+- You may add at most 2 short extra bullets that are specific to the equipment they named (for example for a projector: what they will display, indoor or outdoor), but never about anything listed under FACTS.
+- Do not state prices. Do not promise availability. Do not describe equipment or services we did not mention.
+- Keep every line that starts with [ANSWER BEFORE SENDING: word for word, on its own line.
+- Keep the closing promise to send a tailored quote.
+- Plain text, no markdown, no emoji. Use only standard ASCII characters. Under 170 words.
+
+DRAFT:
+${built.text}
+
+Return raw JSON only: {"subject": "short friendly subject line", "draft": "the full email, using \\n for line breaks"}`;
+  try {
+    const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${groqKey}` },
+      body: JSON.stringify({ model, reasoning_effort:'none', reasoning_format:'hidden', max_tokens: 900, temperature: 0.4,
+        messages: [{ role: 'user', content: prompt }] }),
+      signal: AbortSignal.timeout(30000)
+    });
+    const data = await r.json();
+    let raw = (data.choices?.[0]?.message?.content || '').trim()
+      .replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'').replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g,'');
+    const m = raw.match(/\{[\s\S]*\}/);
+    if (!m) return null;
+    const j = JSON.parse(m[0]);
+    let d = String(j.draft || '').trim();
+    if (!d || d.length > built.text.length * 2.2) return null;
+    if (!d.includes('{{my_name}}')) return null;
+    if (/\$\s?\d|\bper (day|hour)\b/i.test(d)) return null;                        // no prices
+    if (/[“”‘’]/.test(d)) d = d.replace(/[“”]/g,'"').replace(/[‘’]/g,"'");
+    // every answer placeholder must survive
+    const ph = built.text.match(/\[ANSWER BEFORE SENDING:[^\]]*\]/g) || [];
+    if (ph.some(p => !d.includes(p))) return null;
+    // a known date must still be in there
+    const dt = String(built.known.dates || '').match(/[A-Za-z0-9\/]+/g);
+    if (dt && dt.length && !d.includes(dt[0])) return null;
+    // every missing item must still be asked about
+    const KW = { dates:/date/i, venue:/venue|location/i, attendance:/attend|guest|head ?count|people/i, event_type:/type of event|kind of event/i,
+                 equipment:/equipment|goal|setup|set-up/i, load_times:/load|set ?up|pick ?up|strike|timing|times/i, recurring:/recurring|future|upcoming/i };
+    if (built.missing.some(k => !KW[k].test(d))) return null;
+    return { draft: d, subject: String(j.subject || '').trim() };
+  } catch(e) { return null; }
 }
 
 async function lazGenerateDraft(em, body) {
@@ -16211,10 +16276,14 @@ async function lazGenerateDraft(em, body) {
                                       : 'All intake details provided - ready to quote');
     const qs = (Array.isArray(x.other_questions) ? x.other_questions : []).filter(q => q && String(q).trim());
     if (qs.length) bullets.push('Customer also asked (placeholders added to the draft, answer them): ' + qs.join(' / '));
+    // Warm rewrite on top of the safe draft; keep the template draft if the rewrite fails any check
+    const pol = await lazPolishIntake(built, x, em, !!form, groqKey, model);
+    let subj = (x.subject && /^re:/i.test(x.subject)) ? x.subject : `Re: ${em.subject||''}`;
+    if (pol && form && pol.subject && pol.subject.length <= 90) subj = pol.subject;   // form leads have no thread to keep
     return {
       email: em, body: body, bullets,
-      subject: (x.subject && /^re:/i.test(x.subject)) ? x.subject : `Re: ${em.subject||''}`,
-      draft: lazFillVariables(built.text, em),
+      subject: subj,
+      draft: lazFillVariables(pol ? pol.draft : built.text, em),
       templateId: null,
       replyTo: form ? form.email : '',
     };
