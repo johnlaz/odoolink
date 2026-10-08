@@ -3,7 +3,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <meta name="oel-version" content="v15.33">
+  <meta name="oel-version" content="v15.38">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="mobile-web-app-capable" content="yes">
@@ -1278,6 +1278,9 @@
             <textarea id="laz-draft-body" class="laz-draft-area" placeholder="Draft will appear here — edit freely before sending."></textarea>
             <!-- Actions -->
             <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+              <button class="btn btn-ghost" onclick="lazVersionStep(-1)" title="Previous version" style="padding:6px 10px;font-size:0.78rem">&#9664;</button>
+              <span id="laz-ver-label" style="font-size:0.74rem;color:var(--muted);align-self:center;min-width:80px;text-align:center">Version 1 / 1</span>
+              <button class="btn btn-ghost" onclick="lazVersionStep(1)" title="Next version (version 2 is the plain template draft)" style="padding:6px 10px;font-size:0.78rem">&#9654;</button>
               <button class="btn btn-ghost" onclick="lazRegenerateDraft()" style="padding:6px 12px;font-size:0.78rem;gap:5px">
                 <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M9 2.5A4 4 0 1 0 9.8 6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"></path><path d="M8 1v2.5h2.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"></path></svg>
                 Regenerate
@@ -2422,14 +2425,14 @@ Support Team"></textarea>
 
         <div style="margin-bottom:20px">
           <div style="font-family:'DM Serif Display',serif;font-size:1.15rem;color:var(--text)">Request Desk</div>
-          <div style="font-size:0.76rem;color:var(--muted);margin-top:3px">Paste a raw quote request — AI extracts contact info, drafts a professional response, and connects to Odoo</div>
+          <div style="font-size:0.76rem;color:var(--muted);margin-top:3px">Paste a quote request or website form entry — AI reads it, checks the required quote info, and drafts a reply that asks only for what is missing</div>
         </div>
 
         <!-- Step 1: Paste raw request -->
         <div class="card" style="margin-bottom:14px">
           <div class="card-title">1 · Paste the raw request</div>
-          <div class="card-subtitle" style="margin-bottom:10px">Copy-paste the email, text, or voicemail you received — contact info, requirements, anything</div>
-          <textarea id="qd-raw" style="width:100%;min-height:130px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:11px 13px;color:var(--text);font-size:0.83rem;font-family:'DM Sans',sans-serif;line-height:1.7;resize:vertical;outline:none;box-sizing:border-box" placeholder="Hi, need a 40-ton crane and 2 lifts for a job in Tampa next month. Budget around 15k. Call me — Mike 813-555-0199"></textarea>
+          <div class="card-subtitle" style="margin-bottom:10px">Copy-paste the email, form entry, or text you received. Required info (date, venue, attendance, event type, equipment, load-in/out, recurring) is checked in step 3.</div>
+          <textarea id="qd-raw" style="width:100%;min-height:130px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:11px 13px;color:var(--text);font-size:0.83rem;font-family:'DM Sans',sans-serif;line-height:1.7;resize:vertical;outline:none;box-sizing:border-box" placeholder="Paste the customer's email or website form entry here. Example: Hi, I'm planning a conference at the Hilton Orlando on 11/12 for about 150 people. We need a projector, screen and 2 wireless mics. Load-in is 8am. Thanks, Sam 407-555-0199"></textarea>
           <div style="display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap">
             <button class="btn btn-primary" onclick="qdExtract()" id="qd-extract-btn" style="padding:8px 20px;font-size:0.83rem;gap:6px">
               <svg width="12" height="12" viewBox="0 0 13 13" fill="none"><path d="M6.5 1l1 3L11 5.5l-3 1-1 3-1-3-3-1 3-1z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
@@ -2505,7 +2508,31 @@ Support Team"></textarea>
                 <option value="concise">Concise</option>
                 <option value="sales">Sales-focused</option>
               </select>
+              <button class="btn btn-ghost" onclick="qdVersionStep(-1)" title="Previous version" style="padding:4px 9px;font-size:0.76rem">&#9664;</button>
+              <span id="qd-ver-label" style="font-size:0.72rem;color:var(--muted);align-self:center;min-width:76px;text-align:center">Version 1 / 1</span>
+              <button class="btn btn-ghost" onclick="qdVersionStep(1)" title="Next version (version 2 is the plain template draft)" style="padding:4px 9px;font-size:0.76rem">&#9654;</button>
               <button class="btn btn-ghost" onclick="qdRegenerate()" style="padding:4px 12px;font-size:0.76rem">↻ Regenerate</button>
+            </div>
+          </div>
+          <div id="qd-build-note" style="font-size:0.68rem;color:var(--muted);font-family:'DM Mono',monospace;margin:-4px 0 10px"></div>
+          <!-- Required info: confirm what the AI read before sending -->
+          <div id="qd-req-panel" style="display:none;margin-bottom:12px;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:10px">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:8px">
+              <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted);font-weight:600">Required info &mdash; confirm before sending</div>
+              <label style="font-size:0.74rem;color:var(--muted);display:flex;align-items:center;gap:5px;cursor:pointer"><input type="checkbox" id="qd-req-personal"> One-time personal event (skip recurring question)</label>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:8px">
+              <div><label style="font-size:0.68rem;color:var(--muted);display:block;margin-bottom:3px">Event date(s)</label><input type="text" id="qd-req-dates" oninput="qdReqMark(this)" placeholder="Not provided - will be asked" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:6px 9px;color:var(--text);font-size:0.8rem;outline:none;box-sizing:border-box;font-family:'DM Sans',sans-serif"></div>
+              <div><label style="font-size:0.68rem;color:var(--muted);display:block;margin-bottom:3px">Venue / location</label><input type="text" id="qd-req-venue" oninput="qdReqMark(this)" placeholder="Not provided - will be asked" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:6px 9px;color:var(--text);font-size:0.8rem;outline:none;box-sizing:border-box;font-family:'DM Sans',sans-serif"></div>
+              <div><label style="font-size:0.68rem;color:var(--muted);display:block;margin-bottom:3px">Expected attendance</label><input type="text" id="qd-req-attendance" oninput="qdReqMark(this)" placeholder="Not provided - will be asked" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:6px 9px;color:var(--text);font-size:0.8rem;outline:none;box-sizing:border-box;font-family:'DM Sans',sans-serif"></div>
+              <div><label style="font-size:0.68rem;color:var(--muted);display:block;margin-bottom:3px">Type of event</label><input type="text" id="qd-req-event_type" oninput="qdReqMark(this)" placeholder="Not provided - will be asked" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:6px 9px;color:var(--text);font-size:0.8rem;outline:none;box-sizing:border-box;font-family:'DM Sans',sans-serif"></div>
+              <div><label style="font-size:0.68rem;color:var(--muted);display:block;margin-bottom:3px">Equipment (or goal)</label><input type="text" id="qd-req-equipment" oninput="qdReqMark(this)" placeholder="Not provided - will be asked" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:6px 9px;color:var(--text);font-size:0.8rem;outline:none;box-sizing:border-box;font-family:'DM Sans',sans-serif"></div>
+              <div><label style="font-size:0.68rem;color:var(--muted);display:block;margin-bottom:3px">Load-in / load-out times</label><input type="text" id="qd-req-load_times" oninput="qdReqMark(this)" placeholder="Not provided - will be asked" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:6px 9px;color:var(--text);font-size:0.8rem;outline:none;box-sizing:border-box;font-family:'DM Sans',sans-serif"></div>
+              <div><label style="font-size:0.68rem;color:var(--muted);display:block;margin-bottom:3px">Recurring / upcoming events</label><input type="text" id="qd-req-recurring" oninput="qdReqMark(this)" placeholder="Not provided - will be asked" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:6px 9px;color:var(--text);font-size:0.8rem;outline:none;box-sizing:border-box;font-family:'DM Sans',sans-serif"></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;margin-top:9px;flex-wrap:wrap">
+              <button class="btn btn-ghost" onclick="qdRebuildFromRequired()" style="padding:5px 12px;font-size:0.76rem">&#8635; Rebuild draft from these</button>
+              <span style="font-size:0.72rem;color:var(--muted)">Highlighted (empty) fields will be asked for in the reply. Fix anything the AI got wrong, then rebuild.</span>
             </div>
           </div>
           <div style="margin-bottom:8px">
@@ -11282,6 +11309,12 @@ async function qdExtract() {
       fields = m ? JSON.parse(m[0]) : { name:'', phone:'', email:'', company:'', notes: raw };
     }
     _qdExtracted = fields;
+    // Coming from the Inbox: the sender is not always inside the message text, so fill any gaps from the email header
+    if (window._qdPrefill) {
+      fields.name  = fields.name  || window._qdPrefill.name  || '';
+      fields.email = fields.email || window._qdPrefill.email || '';
+      window._qdPrefill = null;
+    }
 
     // Populate contact fields
     document.getElementById('qd-name').value    = fields.name    || '';
@@ -11306,12 +11339,141 @@ async function qdExtract() {
   if (btn) btn.disabled = false;
 }
 
-async function qdDraftResponse() {
+// Shows which page build and IMAP server build are running, so stale local files are obvious
+async function qdBuildStatus() {
+  const el = document.getElementById('qd-build-note');
+  if (!el) return;
+  const appV = (document.querySelector('meta[name="oel-version"]')?.content || '').replace(/^v/, '');
+  let srv = 'offline';
+  try {
+    const r = await fetch(`${IMAP_SERVER}/ping`, { signal: AbortSignal.timeout(2000) });
+    const j = await r.json();
+    srv = j.build || 'old';
+  } catch(e) {}
+  const NEED_MINOR = 37;   // oldest imap_server.py build this page works with (15.37)
+  const minor = parseInt(String(srv).split('.')[1] || '0', 10);
+  const ok = srv !== 'offline' && srv !== 'old' && minor >= NEED_MINOR;
+  el.style.color = ok ? 'var(--muted)' : '#d9a441';
+  el.textContent = 'Page v' + appV + ' · IMAP server: ' +
+    (srv === 'offline' ? 'not reachable (run start.bat)'
+     : srv === 'old'   ? 'OLD build — copy the new imap_server.py, then run start.bat'
+     : ok              ? 'build ' + srv + ' (up to date)'
+     :                   'build ' + srv + ' is too old — copy the new imap_server.py, then run start.bat');
+}
+
+// Required-info panel: shows what the AI read so the user can confirm it before sending
+const QD_REQ_IDS = ['dates','venue','attendance','event_type','equipment','load_times','recurring'];
+let _qdLastIntake = null;
+function qdReqMark(el) {
+  if (!el) return;
+  el.style.borderColor = el.value.trim() ? 'var(--border)' : '#d9a441';
+}
+function qdFillRequiredPanel(intake) {
+  const panel = document.getElementById('qd-req-panel');
+  if (!panel) return;
+  if (!intake) { panel.style.display = 'none'; _qdLastIntake = null; return; }   // not a quote request: nothing to confirm
+  _qdLastIntake = intake;
+  panel.style.display = 'block';
+  QD_REQ_IDS.forEach(k => {
+    const el = document.getElementById('qd-req-' + k);
+    if (!el) return;
+    el.value = (k === 'equipment') ? (intake.equipment || intake.goal || '') : (intake[k] || '');
+    qdReqMark(el);
+  });
+  const p = document.getElementById('qd-req-personal');
+  if (p) p.checked = !!intake.personal_event;
+}
+async function qdRebuildFromRequired() {
+  const v = id => (document.getElementById('qd-req-' + id)?.value || '').trim();
+  const prev = _qdLastIntake || {};
+  const name  = document.getElementById('qd-name')?.value  || '';
+  const email = document.getElementById('qd-email')?.value || '';
+  const intake = {
+    dates: v('dates'), venue: v('venue'), attendance: v('attendance'), event_type: v('event_type'),
+    equipment: v('equipment'), goal: '', load_times: v('load_times'), recurring: v('recurring'),
+    personal_event: !!document.getElementById('qd-req-personal')?.checked,
+    followup_reply: !!prev.followup_reply,
+    other_questions: prev.other_questions || [],
+    first_name: name.trim().split(/\s+/)[0] || '',
+  };
+  QD_REQ_IDS.forEach(k => qdReqMark(document.getElementById('qd-req-' + k)));
+  qdSetStatus('<div class="dot spin" style="display:inline-block;margin-right:5px"></div> Rebuilding from confirmed info…');
+  try {
+    const sender = ((name ? name + ' ' : '') + (email ? '<' + email + '>' : '')).trim();
+    const res = await lazDraftFromIntake(intake, { sender, sender_email: email, subject: '', date: '' });
+    const bodyEl = document.getElementById('qd-body'), subjectEl = document.getElementById('qd-subject');
+    if (_qdVersions.length) _qdVersions[_qdVi] = bodyEl ? bodyEl.value : _qdVersions[_qdVi];
+    _qdVersions.push(res.draft);
+    _qdVi = _qdVersions.length - 1;
+    if (res.alt && res.alt !== res.draft) _qdVersions.push(res.alt);
+    if (bodyEl) bodyEl.value = res.draft;
+    if (subjectEl && !subjectEl.value.trim()) subjectEl.value = res.subject;
+    qdShowVersionLabel();
+    qdSetStatus(res.missing.length ? '✓ Rebuilt — asking for ' + res.missing.length + ' missing item' + (res.missing.length > 1 ? 's' : '')
+                                   : '✓ Rebuilt — all info provided', 'var(--success)');
+  } catch(e) {
+    qdSetStatus('Error: ' + e.message, 'var(--danger)');
+  }
+}
+
+// Version history for the Request Desk draft (v1 warm, v2 plain template, then each Regenerate)
+let _qdVersions = [], _qdVi = 0;
+function qdShowVersionLabel() {
+  const el = document.getElementById('qd-ver-label');
+  if (el) el.textContent = 'Version ' + (_qdVi + 1) + ' / ' + Math.max(1, _qdVersions.length);
+}
+function qdVersionStep(dir) {
+  if (!_qdVersions.length) return;
+  const bodyEl = document.getElementById('qd-body');
+  _qdVersions[_qdVi] = bodyEl.value;
+  _qdVi = Math.max(0, Math.min(_qdVersions.length - 1, _qdVi + dir));
+  bodyEl.value = _qdVersions[_qdVi];
+  qdShowVersionLabel();
+}
+
+// Called from an Inbox row: load the email into the Request Desk and run its read + required-info check
+async function oelSendToDesk(info) {
+  const body = String(info.body || '').trim();
+  const isForm = !!lazParseFormNotification(body);
+  // Website-form entries already contain the customer's details; the form title would only mislead, so leave the subject out
+  const raw = isForm ? body : ('From: ' + (info.sender || info.email || '') + '\nSubject: ' + (info.subject || '') + '\n\n' + body);
+  const addr = (String(info.email || '').match(/[^\s<>"']+@[^\s<>"']+/) || String(info.sender || '').match(/[^\s<>"']+@[^\s<>"']+/) || [''])[0];
+  const disp = String(info.sender || '').split('<')[0].replace(/["']/g, '').trim();
+  window._qdPrefill = isForm ? null : { name: (disp && !/@/.test(disp)) ? disp : '', email: addr };
+  navTo('quotedesk');
+  const rawEl = document.getElementById('qd-raw');
+  if (rawEl) rawEl.value = raw;
+  await qdExtract();
+}
+
+async function qdDraftResponse(keepHistory) {
   const name    = document.getElementById('qd-name')?.value    || '';
   const notes   = document.getElementById('qd-notes')?.value   || '';
   const company = document.getElementById('qd-company')?.value || '';
   const raw     = document.getElementById('qd-raw')?.value     || '';
+  const qdEmail = document.getElementById('qd-email')?.value   || '';
   const customPrompt = (localStorage.getItem('oel_qd_prompt') || '').trim();
+
+  // Default path: same read-the-email pipeline as the Inbox draft. Fix the Name/Email fields above and hit Regenerate to correct a misread.
+  if (!customPrompt) {
+    const sender = (name ? name + ' ' : '') + (qdEmail ? '<' + qdEmail + '>' : '');
+    const res = await lazGenerateDraft({ sender: sender.trim(), sender_email: qdEmail, subject: '', date: '' }, raw || notes);
+    const subjectEl = document.getElementById('qd-subject');
+    const bodyEl    = document.getElementById('qd-body');
+    const text = res.draft || '';
+    if (keepHistory && _qdVersions.length) {
+      _qdVersions[_qdVi] = bodyEl ? bodyEl.value : _qdVersions[_qdVi];
+      _qdVersions.push(text); _qdVi = _qdVersions.length - 1;
+    } else {
+      _qdVersions = [text]; if (res.alt && res.alt !== text) _qdVersions.push(res.alt); _qdVi = 0;
+    }
+    if (subjectEl) subjectEl.value = (res.subject || '').replace(/^re:\s*$/i, '') || 'Your rental request - Total Rental Solutions';
+    if (bodyEl)    bodyEl.value    = text;
+    qdShowVersionLabel();
+    qdFillRequiredPanel(res.intake);
+    qdBuildStatus();
+    return;
+  }
 
   // Default Total Rental Solutions (TRSAV) intake prompt — user can override in Request Desk settings.
   // Reads the customer's message, repeats back what they already gave, asks only for what is missing.
@@ -11368,10 +11530,12 @@ async function qdDraftResponse() {
 }
 
 async function qdRegenerate() {
+  const panel = document.getElementById('qd-req-panel');
+  if (panel && panel.style.display !== 'none') { return qdRebuildFromRequired(); }   // keep the user's confirmed fields
   const btn = document.getElementById('qd-extract-btn');
   qdSetStatus('<div class="dot spin" style="display:inline-block;margin-right:5px"></div> Regenerating…');
   try {
-    await qdDraftResponse();
+    await qdDraftResponse(true);
     qdSetStatus('✓ Regenerated', 'var(--success)');
   } catch(e) {
     qdSetStatus('Error: ' + e.message, 'var(--danger)');
@@ -14623,6 +14787,37 @@ function _renderInboxRow(em, src, idx) {
   };
   actions.appendChild(draftBtn);
 
+  // → Desk: hand this email to the Request Desk (required-info check, editable fields, version arrows)
+  const deskBtn = document.createElement('button');
+  deskBtn.textContent = '\u2192 Desk';
+  deskBtn.title = 'Open in Request Desk: checks the required quote info before drafting';
+  deskBtn.style.cssText = draftBtn.style.cssText;
+  deskBtn.onmouseover = () => { deskBtn.style.borderColor=color; deskBtn.style.color=color; };
+  deskBtn.onmouseout  = () => { deskBtn.style.borderColor='var(--border)'; deskBtn.style.color='var(--muted)'; };
+  deskBtn.onclick = async (e) => {
+    e.stopPropagation();
+    deskBtn.textContent = '\u23F3';
+    deskBtn.disabled = true;
+    try {
+      let body = em.body || em.preview || '';
+      if (!body && em.uid && src === 'turbify') {
+        try {
+          const br = await fetch(IMAP_SERVER+'/body', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ config: getImapConfig(), uid: em.uid }),
+            signal: AbortSignal.timeout(15000)
+          });
+          const bd = await br.json();
+          if (bd.body) { body = bd.body; em.body = body; }
+        } catch(_) {}
+      }
+      await oelSendToDesk({ sender: sender || emailTo, email: emailTo, subject: subject, body: body });
+    } catch(err) {}
+    deskBtn.textContent = '\u2192 Desk';
+    deskBtn.disabled = false;
+  };
+  actions.appendChild(deskBtn);
+
   // Log Note button
   const logBtn = document.createElement('button');
   logBtn.textContent = '📋 Log';
@@ -14773,6 +14968,23 @@ function _showInlineDraft(wrapper, draftText, toEmail, subject, src, idx, result
 
   const copyBtn = _makeSmallBtn('Copy', () => navigator.clipboard.writeText(ta.value));
 
+  // Version history: v1 = warm draft, v2 = plain template draft (when available), then each Regenerate
+  const versions = [ta.value];
+  if (resultObj && resultObj.alt && resultObj.alt !== ta.value) versions.push(resultObj.alt);
+  let vcur = 0;
+  const verLabel = document.createElement('span');
+  verLabel.style.cssText = 'font-size:0.7rem;color:var(--muted);align-self:center;min-width:74px;text-align:center';
+  verLabel.textContent = 'Version 1 / ' + versions.length;
+  const showVer = (i) => {
+    versions[vcur] = ta.value;
+    vcur = Math.max(0, Math.min(versions.length - 1, i));
+    ta.value = versions[vcur];
+    verLabel.textContent = 'Version ' + (vcur + 1) + ' / ' + versions.length;
+  };
+  const prevBtn = _makeSmallBtn('\u25C0', () => showVer(vcur - 1));
+  const nextBtn = _makeSmallBtn('\u25B6', () => showVer(vcur + 1));
+  prevBtn.title = 'Previous version'; nextBtn.title = 'Next version (version 2 is the plain template draft)';
+
   const sendBtn = _makeSmallBtn('Send', () => {
     if (window.openQuickCompose) openQuickCompose({ to: toEmail, subject: 'Re: '+subject, body: ta.value });
   }, 'var(--success)');
@@ -14803,7 +15015,9 @@ function _showInlineDraft(wrapper, draftText, toEmail, subject, src, idx, result
       }
       if (!regenBody) regenBody = subject;
       const regenResult = await lazGenerateDraft({ sender: toEmail, subject, date: em.date||'' }, regenBody);
-      ta.value = typeof regenResult === 'object' ? (regenResult.draft || '') : String(regenResult||'');
+      const nt = typeof regenResult === 'object' ? (regenResult.draft || '') : String(regenResult||'');
+      versions[vcur] = ta.value; versions.push(nt); vcur = versions.length - 1; ta.value = nt;
+      verLabel.textContent = 'Version ' + (vcur + 1) + ' / ' + versions.length;
     } catch(e) { ta.value = '[Regeneration failed: ' + e.message + ']'; }
     regenBtn.textContent = 'Regenerate';
     regenBtn.disabled = false;
@@ -14811,7 +15025,7 @@ function _showInlineDraft(wrapper, draftText, toEmail, subject, src, idx, result
 
   const closeBtn = _makeSmallBtn('✕', () => draftDiv.remove());
 
-  btns.append(copyBtn, sendBtn, logDraftBtn, regenBtn, closeBtn);
+  btns.append(prevBtn, verLabel, nextBtn, copyBtn, sendBtn, logDraftBtn, regenBtn, closeBtn);
   draftDiv.append(label, ta, btns);
   wrapper.appendChild(draftDiv);
 }
@@ -16066,7 +16280,7 @@ function lazParseFormNotification(body) {
 async function lazExtractIntake(em, cleanBody, groqKey, model) {
   const prompt = `You read ONE email sent to Total Rental Solutions (AV, staging and event equipment rental) and extract facts. Return raw JSON only.
 
-RULES: Copy only what the customer explicitly wrote in THEIR OWN message. Website-form answers (Name, Email, Phone, Event Type, Additional Requirements) count as the customer's own words. Ignore our signature, disclaimers and older quoted messages. If something is not stated, use "". Never guess or infer. A form Event Type of "Other" means "".
+RULES: Judge the email by what the customer actually wrote in the body, not by its subject or form title. Copy only what the customer explicitly wrote in THEIR OWN message. Website-form answers (Name, Email, Phone, Event Type, Additional Requirements) count as the customer's own words. Ignore our signature, disclaimers and older quoted messages. If something is not stated, use "". Never guess or infer. A form Event Type of "Other" means "".
 
 EMAIL
 FROM: ${em.sender}
@@ -16117,8 +16331,8 @@ function lazGrounded(val, bodyLower) {
 }
 
 // Build the quote-request reply in code from John's standard template, so we never ask for what the customer already gave.
-function lazBuildIntakeReply(x, bodyLower, em) {
-  const g = k => (lazGrounded(x[k], bodyLower) ? String(x[k]).trim() : '');
+function lazBuildIntakeReply(x, bodyLower, em, trusted) {
+  const g = k => { const v = String(x[k] || '').trim(); return v && (trusted || lazGrounded(v, bodyLower)) ? v : ''; };
   const known = { dates: g('dates'), venue: g('venue'), attendance: g('attendance'), event_type: g('event_type'),
                   equipment: g('equipment'), load_times: g('load_times'), recurring: g('recurring') };
   const goal = known.equipment ? '' : g('goal');
@@ -16132,7 +16346,7 @@ function lazBuildIntakeReply(x, bodyLower, em) {
   if (known.equipment)  knownLines.push('Equipment: ' + known.equipment);
   else if (goal)        knownLines.push('Goal: ' + goal);
   if (known.load_times) knownLines.push('Load-in / load-out: ' + known.load_times);
-  if (known.recurring)  knownLines.push('Recurring / upcoming events: ' + known.recurring);
+  if (known.recurring && !personal) knownLines.push('Recurring / upcoming events: ' + known.recurring);
 
   const ask = []; const missing = [];
   if (!known.dates)      { ask.push('Event date(s)'); missing.push('dates'); }
@@ -16147,7 +16361,7 @@ function lazBuildIntakeReply(x, bodyLower, em) {
   const _un = (document.getElementById('odoo-user')?.value?.split('@')[0] || '').split(/[._\-]/)[0].toLowerCase();
   const isMe = n => !!n && (n.toLowerCase() === _un || n.toLowerCase() === 'john');   // never greet the customer with our own name
   let first = String(x.first_name || '').trim().split(/\s+/)[0];
-  if (!lazGrounded(first, ((em.sender || '') + ' ' + bodyLower).toLowerCase()) || isMe(first)) first = '';
+  if ((!trusted && !lazGrounded(first, ((em.sender || '') + ' ' + bodyLower).toLowerCase())) || isMe(first)) first = '';
   if (!first) {
     const disp = (em.sender || '').split('<')[0].replace(/["']/g, '').trim();
     const df = disp.split(/\s+/)[0];
@@ -16167,7 +16381,7 @@ function lazBuildIntakeReply(x, bodyLower, em) {
   if (qs.length) out.push(qs.map(q => '[ANSWER BEFORE SENDING: ' + q + ']').join('\n'));
   out.push(ask.length ? "Once I have the details above, I'll send a tailored quote right away." : 'I have what I need and will send a tailored quote right away.');
   out.push('Warm regards,\n{{my_name}}');
-  return { text: out.join('\n\n'), missing, known, goal, personal };
+  return { text: out.join('\n\n'), missing, known, goal, personal, first };
 }
 
 // Warm, natural rewrite of the safe template draft. Falls back to the template (returns null) if the rewrite
@@ -16235,6 +16449,20 @@ Return raw JSON only: {"subject": "short friendly subject line", "draft": "the f
   } catch(e) { return null; }
 }
 
+// Build (and warm up) a reply from fields the user has confirmed. No re-reading of the email.
+async function lazDraftFromIntake(intake, em) {
+  const groqKey = document.getElementById('gemini-key')?.value?.trim() || '';
+  const model   = document.getElementById('gemini-model')?.value || 'qwen/qwen3.8-27b';
+  const built = lazBuildIntakeReply(intake, '', em, true);
+  const pol = await lazPolishIntake(built, intake, em, false, groqKey, model);
+  return {
+    draft: lazFillVariables(pol ? pol.draft : built.text, em),
+    alt:   pol ? lazFillVariables(built.text, em) : '',
+    subject: (pol && pol.subject && pol.subject.length <= 90) ? pol.subject : 'Your rental request - Total Rental Solutions',
+    missing: built.missing,
+  };
+}
+
 async function lazGenerateDraft(em, body) {
   // If this is a website-form notification, the real customer is inside the body: reply to THEM, not to our own site address
   const form = lazParseFormNotification(body);
@@ -16265,8 +16493,13 @@ async function lazGenerateDraft(em, body) {
   }
   const bodyLower = (String(em.subject || '') + '\n' + cleanBody).toLowerCase();
 
+  // The form's own title (e.g. "Party Invitation RSVP Form") is just a website label and misleads the model, so hide it
+  const emModel = form ? Object.assign({}, em, { subject: '(website contact form submission to Total Rental Solutions)' }) : em;
+
   // Step 1: strict read of the email (classify + facts). Quote requests are then built in code from the standard template.
-  const x = await lazExtractIntake(em, cleanBody, groqKey, model);
+  let x = await lazExtractIntake(emModel, cleanBody, groqKey, model);
+  // Every submission from our website rental form is an inquiry; if the read failed, still use the standard template
+  if (form) { x = x || {}; x.quote_request = true; }
   if (x && x.quote_request === true) {
     const built = lazBuildIntakeReply(x, bodyLower, em);
     const labels = { dates:'dates', venue:'venue', attendance:'attendance', event_type:'event type',
@@ -16279,11 +16512,16 @@ async function lazGenerateDraft(em, body) {
     // Warm rewrite on top of the safe draft; keep the template draft if the rewrite fails any check
     const pol = await lazPolishIntake(built, x, em, !!form, groqKey, model);
     let subj = (x.subject && /^re:/i.test(x.subject)) ? x.subject : `Re: ${em.subject||''}`;
-    if (pol && form && pol.subject && pol.subject.length <= 90) subj = pol.subject;   // form leads have no thread to keep
+    if (form) subj = (pol && pol.subject && pol.subject.length <= 90) ? pol.subject : 'Your rental request - Total Rental Solutions';  // form leads have no thread to keep
     return {
       email: em, body: body, bullets,
       subject: subj,
       draft: lazFillVariables(pol ? pol.draft : built.text, em),
+      alt: pol ? lazFillVariables(built.text, em) : '',   // plain template version, offered as version 2
+      intake: { dates: built.known.dates, venue: built.known.venue, attendance: built.known.attendance, event_type: built.known.event_type,
+                equipment: built.known.equipment, goal: built.goal, load_times: built.known.load_times, recurring: built.known.recurring,
+                personal_event: built.personal, followup_reply: x.followup_reply === true,
+                other_questions: Array.isArray(x.other_questions) ? x.other_questions : [] },
       templateId: null,
       replyTo: form ? form.email : '',
     };
@@ -16302,7 +16540,7 @@ SIGN-OFF: end the draft exactly with "Best,\\n{{my_name}}". Never put an email a
 
 Email received:
 FROM: ${em.sender}${form ? '\n(Website form submission. The FROM above is the customer who filled it in' + (form.phone ? ', phone ' + form.phone : '') + '. Reply to them.)' : ''}
-SUBJECT: ${em.subject}
+SUBJECT: ${emModel.subject}
 DATE: ${em.date}
 
 BODY:
@@ -16417,6 +16655,9 @@ function lazRenderWorkspacePage() {
   // Draft panel
   document.getElementById('laz-draft-subject').value = d.subject || '';
   document.getElementById('laz-draft-body').value    = d.draft   || '';
+  if (!d.versions) { d.versions = [d.draft || '']; if (d.alt && d.alt !== d.draft) d.versions.push(d.alt); d.vi = 0; }
+  const verEl = document.getElementById('laz-ver-label');
+  if (verEl) verEl.textContent = 'Version ' + ((d.vi || 0) + 1) + ' / ' + d.versions.length;
 
   // Template chips
   const chipsEl = document.getElementById('laz-template-chips');
@@ -16455,13 +16696,29 @@ function lazApplyTemplate(tmpl) {
   if (lazDrafts[lazDraftPage]) lazDrafts[lazDraftPage].templateId = tmpl.id;
 }
 
+function lazVersionStep(dir) {
+  const d = lazDrafts[lazDraftPage];
+  if (!d || !d.versions) return;
+  const ta = document.getElementById('laz-draft-body');
+  d.versions[d.vi || 0] = ta.value;
+  d.vi = Math.max(0, Math.min(d.versions.length - 1, (d.vi || 0) + dir));
+  ta.value = d.versions[d.vi];
+  d.draft = ta.value;
+  const verEl = document.getElementById('laz-ver-label');
+  if (verEl) verEl.textContent = 'Version ' + (d.vi + 1) + ' / ' + d.versions.length;
+}
+
 async function lazRegenerateDraft() {
   if (!_lazCurrentEmail) return;
   const statusEl = document.getElementById('laz-scan-status');
   statusEl.textContent = 'Regenerating…';
   const em   = _lazCurrentEmail;
   const body = em.body || '';
+  const prev = lazDrafts[lazDraftPage];
+  const history = (prev && prev.versions) ? prev.versions.slice() : [];
+  if (prev && prev.versions) history[prev.vi || 0] = document.getElementById('laz-draft-body').value;
   const newDraft = await lazGenerateDraft(em, body);
+  if (history.length) { history.push(newDraft.draft); newDraft.versions = history; newDraft.vi = history.length - 1; }
   lazDrafts[lazDraftPage] = newDraft;
   lazRenderWorkspacePage();
   statusEl.textContent = 'Regenerated ✓';

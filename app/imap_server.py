@@ -19,6 +19,7 @@ PORT       = 7843
 PROXY_PORT = 7842
 GROQ_ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions'
 GROQ_MODEL    = 'llama-3.3-70b-versatile'
+BUILD         = '15.37'   # keep equal to <meta name="oel-version"> in index.html
 
 # ─── Scan progress (polled via GET /status) ───────────────────────────────────
 
@@ -380,7 +381,7 @@ class IMAPHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         path = urlparse(self.path).path
         if path == '/ping':
-            self._json({'ok': True, 'service': 'imap_server', 'port': PORT})
+            self._json({'ok': True, 'service': 'imap_server', 'port': PORT, 'build': BUILD})
         elif path == '/status':
             self._json(gp())
         else:
