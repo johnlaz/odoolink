@@ -3,7 +3,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <meta name="oel-version" content="v15.32">
+  <meta name="oel-version" content="v15.33">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="mobile-web-app-capable" content="yes">
@@ -7474,13 +7474,17 @@ async function fetchChatterHistory(res_model, res_id) {
       return `[${m.date}] ${author} (${m.message_type})${subj}\n${body}`;
     });
 
-  // Hard cap total history at ~4000 chars to stay within TPM limits
-  let history = '';
-  for (const msg of formatted) {
-    if ((history + msg).length > 4000) break;
-    history += (history ? '\n\n' : '') + msg;
+  // Hard cap total history at ~4000 chars to stay within TPM limits.
+  // Walk newest-first so the cap drops the OLDEST messages, never the latest note.
+  const kept = [];
+  let total = 0;
+  for (let i = formatted.length - 1; i >= 0; i--) {
+    const add = formatted[i].length + (kept.length ? 2 : 0);
+    if (total + add > 4000) break;
+    kept.unshift(formatted[i]);
+    total += add;
   }
-  return history || 'No previous messages found.';
+  return kept.join('\n\n') || 'No previous messages found.';
 }
 
 function stripHtml(html) {
@@ -7536,9 +7540,9 @@ ${history}
 2. If a referenced date, order, delivery, or event has already passed, write as someone following up AFTER it — ask how it went, confirm it's handled, or check on next steps. Do NOT ask if it's "still happening," "going to happen," or "on track" for something that has already occurred.
 3. If the expected closing date has already passed and the deal doesn't appear closed, don't just ask "are we still closing on schedule" — acknowledge the date has passed and ask for a real status update.
 4. Determine the appropriate follow-up type given the above (check-in, proposal follow-up, post-event wrap-up, meeting request, etc.)
-5. Reference relevant details from the conversation history naturally
+5. Reference relevant details from the conversation history naturally, but ONLY facts that appear in the data above. Never invent or assume dates, quantities, prices, equipment, venues, quotes sent, attachments, calls or things the customer said. If something is not in the data, leave it out or ask about it.
 6. Include a clear call-to-action
-7. Keep it concise — no more than 3-4 short paragraphs
+7. Keep it tight — 2-3 short paragraphs, roughly 100 words
 8. Use the contact's actual name — do NOT use placeholder text
 9. Do NOT include a signature block
 
@@ -7562,7 +7566,7 @@ BODY:
       body: JSON.stringify({
         model,
         reasoning_effort:'none', reasoning_format:'hidden', max_tokens: 1024,
-        temperature: 0.7,
+        temperature: 0.4,
         messages: [{ role: 'user', content: prompt }]
       })
     });
@@ -11309,36 +11313,27 @@ async function qdDraftResponse() {
   const raw     = document.getElementById('qd-raw')?.value     || '';
   const customPrompt = (localStorage.getItem('oel_qd_prompt') || '').trim();
 
-  // Default TRSAV AV rental prompt — user can override in Request Desk settings
+  // Default Total Rental Solutions (TRSAV) intake prompt — user can override in Request Desk settings.
+  // Reads the customer's message, repeats back what they already gave, asks only for what is missing.
   const defaultPrompt =
-    'You are a sales assistant for TRSAV, a professional AV and technology rental company. ' +
+    'You are the sales contact for Total Rental Solutions (TRSAV), a professional AV and technology rental company. ' +
     'We rent audio-visual equipment, staging, lighting, microphones, projectors, screens, ' +
     'Wi-Fi solutions, registration equipment (iPads/tablets), office gear, and event technology. ' +
-    'When responding to a quote request:\n' +
-    '1. Open with a warm, professional thank-you addressed to the customer by first name.\n' +
-    '2. Briefly confirm what they are asking for (if enough info was provided).\n' +
-    '3. Ask the clarifying questions needed to prepare an accurate quote. ' +
-    'Use emoji bullets (📋 🎯 💰) to organize sections — Details to Confirm, Additional Rentals, Budget. ' +
-    'Standard questions to consider (only ask what is relevant or unknown):\n' +
-    '   • Event date(s)\n' +
-    '   • Location / venue name\n' +
-    '   • Indoor or outdoor\n' +
-    '   • Audience size and room layout\n' +
-    '   • Setup access time and strike timing\n' +
-    '   • Power availability\n' +
-    '   • Specific equipment needed\n' +
-    '   • Additional rentals (mics, projectors, screens, iPads, staging, lighting, Wi-Fi, office gear)\n' +
-    '   • Budget range\n' +
-    '4. Close by saying you will prepare a tailored quote once you have the details, ' +
-    'and thank them for considering TRSAV.\n' +
-    'Do NOT invent prices or confirm availability. Use plain text with emoji bullets — no markdown, no HTML.';
+    'Write the reply email to the customer message below. Start with "Hi <first name>," if a name is known. ' +
+    'Do not add a signature.\n\n' +
+    RENTAL_INTAKE_RULES + '\n\n' +
+    'OUTPUT FORMAT (follow exactly):\n' +
+    'KNOWN: <the items the customer stated, short>\n' +
+    'MISSING: <the items not stated>\n' +
+    'EMAIL:\n' +
+    '<the email body only>';
 
   const systemPrompt = customPrompt || defaultPrompt;
 
   const userContent =
     'Customer name: ' + (name || '(unknown)') + '\n' +
     (company ? 'Company: ' + company + '\n' : '') +
-    'Their request:\n' + (notes || raw);
+    'Their message (read all of it before answering):\n' + (raw || notes).slice(0, 4000);
 
   const subjectPrompt =
     'Write a short email subject line (max 8 words) for an AV rental quote response to:\n' +
@@ -11353,7 +11348,7 @@ async function qdDraftResponse() {
     fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + groqKey },
-      body: JSON.stringify({ model, reasoning_effort:'none', reasoning_format:'hidden', max_tokens: 800, temperature: 0.5,
+      body: JSON.stringify({ model, reasoning_effort:'none', reasoning_format:'hidden', max_tokens: 1000, temperature: 0.3,
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user',   content: userContent }
@@ -11367,7 +11362,9 @@ async function qdDraftResponse() {
   const subjectEl = document.getElementById('qd-subject');
   const bodyEl    = document.getElementById('qd-body');
   if (subjectEl) subjectEl.value = subjectResp.replace(/^["']|["']$/g, '');
-  if (bodyEl)    bodyEl.value    = bodyResp;
+  // Strip the KNOWN/MISSING scratch lines the default prompt asks for; keep only the email
+  const emailMatch = bodyResp.match(/(?:^|\n)\s*EMAIL:\s*\n?([\s\S]*)$/);
+  if (bodyEl)    bodyEl.value    = (emailMatch ? emailMatch[1] : bodyResp).trim();
 }
 
 async function qdRegenerate() {
@@ -14203,6 +14200,39 @@ const LAZ_PERSONA = `You are a 20-year rental industry veteran — specifically 
 - Signs off with first name only.
 Never mention you are an AI. Draft as if YOU are writing this reply.`;
 
+// Shared intake rules for new rental quote requests (used by Laz draft + Request Desk).
+// Goal: read the email, repeat back what the customer already told us, ask ONLY for what is missing.
+// ASCII only on purpose (the Laz draft path returns JSON).
+const RENTAL_INTAKE_FIELDS = [
+  ['dates',      'Event date(s)'],
+  ['venue',      'Venue/location'],
+  ['attendance', 'Expected attendance'],
+  ['event_type', 'Type of event (meeting, conference, performance, etc.)'],
+  ['equipment',  'Equipment you know you will need (or the goal, and I will recommend a setup)'],
+  ['load_times', 'Load-in / load-out times'],
+  ['recurring',  'Any recurring or upcoming events you would like pricing comparisons for']
+];
+const RENTAL_INTAKE_RULES = `RENTAL QUOTE INTAKE (applies when the email is a new request for a rental quote, pricing, or availability):
+Total Rental Solutions cannot build a quote until these 7 items are known. Before writing, read the customer's email and fill in each item ONLY from what the customer explicitly wrote in their own message. Do not use their signature or older quoted messages as the source. If an item is not stated, it is UNKNOWN. Never guess or infer.
+  dates      = event date(s)
+  venue      = venue or location
+  attendance = expected attendance
+  event_type = type of event (meeting, conference, performance, etc.)
+  equipment  = equipment they named, OR the goal they described
+  load_times = load-in / load-out times
+  recurring  = recurring or upcoming events they want pricing for
+
+HOW TO WRITE THE REPLY:
+1. Open with "Thank you for contacting Total Rental Solutions." and one short sentence saying you are happy to help make sure they get the right equipment. EXCEPTION: if this email is the customer replying to questions we already sent, do not thank them for contacting us again. Open with "Thanks for the details." instead.
+2. If at least one item is KNOWN, write "Here is what I have so far:" followed by one "- " bullet per KNOWN item, restated briefly with the customer's exact dates, names and numbers. Add nothing they did not say.
+3. Ask ONLY about the UNKNOWN items, as "- " bullets under a line like "To put together an accurate quote, could you share a few details?" NEVER ask about an item that is known. Do not add any other questions, unless something the customer wrote is genuinely unclear (then ask that one thing).
+4. If equipment is unknown, ask for the equipment they know they will need, or tell them to share the goal and you will recommend a setup. If they described only a goal, restate the goal and say you will recommend a setup.
+5. If recurring is unknown, include that item as a bullet and add this sentence before the close: "If you prefer, I can also send a comparison quote for recurring rentals or future events so you can plan ahead and see where savings might apply."
+6. Close with "Once I have the details above, I'll send a tailored quote right away." If NOTHING is unknown, ask no questions and close with "I have what I need and will send a tailored quote right away."
+7. If NOTHING is known, skip step 2 and ask about all 7 items.
+8. Never state prices. Never confirm availability. Never promise delivery or installation.
+9. Plain text only: "- " bullets, no markdown, no bold, no emoji.`;
+
 // ── Unlock ────────────────────────────────────────────────
 
 function promptLazUnlock() {
@@ -16039,21 +16069,29 @@ DATE: ${em.date}
 BODY:
 ${cleanBody}
 
-${tmpl ? `Use this reply template as a base (adapt to this specific email):\n${tmplBody}\n` : ''}
+${tmpl ? `Use this reply template as a base (adapt to this specific email). If this is a rental quote request, keep the template's wording and tone but still follow the intake rules below about what is known and what is missing:\n${tmplBody}\n` : ''}
 
-Respond with a JSON object using these exact keys. Use only standard ASCII characters — no smart quotes, no em-dashes, no special symbols:
+${RENTAL_INTAKE_RULES}
+
+Decide first: is this email a NEW or ONGOING rental quote / pricing / availability request? If NOT (billing, support, scheduling, vendor, thanks, anything else), set "quote_request" to false, leave "known" and "missing" empty, and just write a normal reply in your usual style. Ignore the intake rules for those.
+
+Respond with a JSON object using these exact keys, in this order. Use only standard ASCII characters — no smart quotes, no em-dashes, no special symbols:
 {
   "bullets": ["What they are asking for, plain language", "Second key ask if any", "Third key point if any"],
+  "quote_request": true,
+  "known": { "dates": "", "venue": "", "attendance": "", "event_type": "", "equipment": "", "load_times": "", "recurring": "" },
+  "missing": ["keys from the list above that are UNKNOWN"],
   "subject": "Re: subject line here",
   "draft": "Full reply text here. Use \\n for line breaks."
 }
+In "known", put the customer's own words for each item, or "" if not stated. "missing" must list exactly the items left empty. The draft must ask only about the items in "missing".
 IMPORTANT: Return raw JSON only. No markdown fences. No special characters outside standard ASCII.`;
 
   try {
     const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${groqKey}` },
-      body: JSON.stringify({ model, reasoning_effort:'none', reasoning_format:'hidden', max_tokens: 900, temperature: 0.4,
+      body: JSON.stringify({ model, reasoning_effort:'none', reasoning_format:'hidden', max_tokens: 1400, temperature: 0.3,
         messages: [{ role: 'user', content: prompt }]
       }),
       signal: AbortSignal.timeout(30000)
@@ -16083,10 +16121,19 @@ IMPORTANT: Return raw JSON only. No markdown fences. No special characters outsi
     }
 
     const filled = lazFillVariables(parsed.draft||'', em);
+    const summaryBullets = Array.isArray(parsed.bullets) ? parsed.bullets.slice() : [];
+    // For quote requests, show at a glance what the draft is asking for
+    if (parsed.quote_request === true && Array.isArray(parsed.missing)) {
+      const labels = { dates:'dates', venue:'venue', attendance:'attendance', event_type:'event type',
+                       equipment:'equipment/goal', load_times:'load-in/out times', recurring:'recurring events' };
+      const need = parsed.missing.map(k => labels[k]).filter(Boolean);
+      summaryBullets.push(need.length ? 'Still needed from customer: ' + need.join(', ')
+                                      : 'All intake details provided - ready to quote');
+    }
     return {
       email:      em,
       body:       body,
-      bullets:    Array.isArray(parsed.bullets) ? parsed.bullets : [],
+      bullets:    summaryBullets,
       subject:    parsed.subject || `Re: ${em.subject||''}`,
       draft:      filled || `Hi,\n\nThanks for reaching out.\n\nBest,\n{{my_name}}`,
       templateId: tmpl?.id || null,
