@@ -51,6 +51,7 @@ def decode_mime(value):
     return ' '.join(out)
 
 def strip_html(text):
+    import html as _html
     # Preserve angle-bracket email addresses BEFORE stripping tags
     text = re.sub(r'<([a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,})>',
                   r'[\1]', text)
@@ -58,39 +59,43 @@ def strip_html(text):
     text = re.sub(r'<(br|p|div|tr|li|h[1-6])\b[^>]*>', '\n', text, flags=re.IGNORECASE)
     text = re.sub(r'</(p|div|tr|li|h[1-6])>', '\n', text, flags=re.IGNORECASE)
     text = re.sub(r'<[^>]+>', '', text)
-    for ent, ch in [('&amp;','&'),('&lt;','<'),('&gt;','>'),('&nbsp;',' '),
-                    ('&quot;','"'),('&#39;',"'"),('&ndash;','–'),('&mdash;','—')]:
-        text = text.replace(ent, ch)
+    text = _html.unescape(text).replace('\xa0', ' ')
+    text = re.sub(r'[ \t]+\n', '\n', text)
     text = re.sub(r'\n{3,}', '\n\n', text)
     return text.strip()
 
+def _decode_part(part):
+    payload = part.get_payload(decode=True)
+    if payload is None:
+        return ''
+    return payload.decode(part.get_content_charset() or 'utf-8', errors='replace')
+
 def get_text_body(msg):
-    """Extract plain text, preferring text/plain but stripping HTML if needed."""
-    plain = html = None
-    if msg.is_multipart():
-        for part in msg.walk():
-            ct = part.get_content_type()
-            cd = str(part.get('Content-Disposition', ''))
-            if 'attachment' in cd:
-                continue
-            if ct == 'text/plain' and plain is None:
-                charset = part.get_content_charset() or 'utf-8'
-                plain = part.get_payload(decode=True).decode(charset, errors='replace')
-            elif ct == 'text/html' and html is None:
-                charset = part.get_content_charset() or 'utf-8'
-                html = part.get_payload(decode=True).decode(charset, errors='replace')
-    else:
-        charset = msg.get_content_charset() or 'utf-8'
-        raw = msg.get_payload(decode=True).decode(charset, errors='replace')
-        if msg.get_content_type() == 'text/html':
-            html = raw
-        else:
-            plain = raw
-    if plain and plain.strip():
+    """Extract readable text from a message, including forwarded/attached messages.
+    Collects EVERY text/plain and text/html part (not just the first), then keeps whichever
+    version has more real content. Fixes forwards where the first text part is an empty stub."""
+    plains, htmls = [], []
+    for part in msg.walk():
+        if part.is_multipart():
+            continue
+        ct = part.get_content_type()
+        cd = str(part.get('Content-Disposition', ''))
+        if 'attachment' in cd and not part.get_filename() is None and ct not in ('text/plain', 'text/html'):
+            continue
+        if ct == 'text/plain':
+            t = _decode_part(part)
+            if t.strip():
+                plains.append(t.strip())
+        elif ct == 'text/html':
+            t = strip_html(_decode_part(part))
+            if t.strip():
+                htmls.append(t.strip())
+    plain = '\n\n'.join(plains)
+    html = '\n\n'.join(htmls)
+    # Prefer plain text unless the HTML version clearly carries more content
+    if plain and (not html or len(plain) >= 0.6 * len(html)):
         return plain
-    if html:
-        return strip_html(html)
-    return ''
+    return html or plain
 
 # ─── IMAP ─────────────────────────────────────────────────────────────────────
 

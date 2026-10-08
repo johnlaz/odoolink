@@ -16061,6 +16061,115 @@ function lazParseFormNotification(body) {
 
 // ── Generate draft via Groq ───────────────────────────────
 
+// Strict, low-temperature read of the email: classify it and pull out the intake facts.
+// Returns an object, or null if the model reply could not be parsed.
+async function lazExtractIntake(em, cleanBody, groqKey, model) {
+  const prompt = `You read ONE email sent to Total Rental Solutions (AV, staging and event equipment rental) and extract facts. Return raw JSON only.
+
+RULES: Copy only what the customer explicitly wrote in THEIR OWN message. Website-form answers (Name, Email, Phone, Event Type, Additional Requirements) count as the customer's own words. Ignore our signature, disclaimers and older quoted messages. If something is not stated, use "". Never guess or infer. A form Event Type of "Other" means "".
+
+EMAIL
+FROM: ${em.sender}
+SUBJECT: ${em.subject}
+BODY:
+${cleanBody}
+
+Return exactly these keys, using only standard ASCII characters:
+{
+  "bullets": ["up to 3 plain-language points about what the customer wants"],
+  "quote_request": true or false  (true if the customer is asking for a rental quote, pricing, availability or equipment, new or ongoing; false for billing, support, vendors, thanks, pickups, anything else),
+  "followup_reply": true or false  (true only if the customer is answering questions we sent earlier),
+  "personal_event": true or false  (true if it is a one-time personal event: wedding, birthday, party, anniversary),
+  "first_name": "first name of the person who SENT this email (from the sender name or their signature), never the person it is addressed to; empty if unknown",
+  "dates": "event date(s) as written",
+  "venue": "venue or location",
+  "attendance": "expected attendance or headcount",
+  "event_type": "kind of event, e.g. wedding, conference, meeting",
+  "equipment": "equipment items they named",
+  "goal": "what they want to achieve, ONLY if they named no equipment",
+  "load_times": "load-in / load-out / setup / strike times",
+  "recurring": "recurring or future events they want pricing for",
+  "other_questions": ["specific questions they asked that are not about the items above"],
+  "subject": "Re: subject line"
+}`;
+  try {
+    const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${groqKey}` },
+      body: JSON.stringify({ model, reasoning_effort:'none', reasoning_format:'hidden', max_tokens: 700, temperature: 0,
+        messages: [{ role: 'user', content: prompt }] }),
+      signal: AbortSignal.timeout(30000)
+    });
+    const data = await r.json();
+    let raw = (data.choices?.[0]?.message?.content || '').trim()
+      .replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'').replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g,'');
+    const m = raw.match(/\{[\s\S]*\}/);
+    return m ? JSON.parse(m[0]) : null;
+  } catch(e) { return null; }
+}
+
+// A fact only counts as "known" if some word from it really appears in the email text.
+function lazGrounded(val, bodyLower) {
+  const v = String(val || '').trim();
+  if (!v) return false;
+  const toks = (v.toLowerCase().match(/[a-z0-9]+/g) || []).filter(t => t.length >= 3 || /\d/.test(t));
+  return toks.length ? toks.some(t => bodyLower.includes(t)) : false;
+}
+
+// Build the quote-request reply in code from John's standard template, so we never ask for what the customer already gave.
+function lazBuildIntakeReply(x, bodyLower, em) {
+  const g = k => (lazGrounded(x[k], bodyLower) ? String(x[k]).trim() : '');
+  const known = { dates: g('dates'), venue: g('venue'), attendance: g('attendance'), event_type: g('event_type'),
+                  equipment: g('equipment'), load_times: g('load_times'), recurring: g('recurring') };
+  const goal = known.equipment ? '' : g('goal');
+  const personal = x.personal_event === true;
+
+  const knownLines = [];
+  if (known.event_type) knownLines.push('Type of event: ' + known.event_type);
+  if (known.dates)      knownLines.push('Event date(s): ' + known.dates);
+  if (known.venue)      knownLines.push('Venue/location: ' + known.venue);
+  if (known.attendance) knownLines.push('Expected attendance: ' + known.attendance);
+  if (known.equipment)  knownLines.push('Equipment: ' + known.equipment);
+  else if (goal)        knownLines.push('Goal: ' + goal);
+  if (known.load_times) knownLines.push('Load-in / load-out: ' + known.load_times);
+  if (known.recurring)  knownLines.push('Recurring / upcoming events: ' + known.recurring);
+
+  const ask = []; const missing = [];
+  if (!known.dates)      { ask.push('Event date(s)'); missing.push('dates'); }
+  if (!known.venue)      { ask.push('Venue/location'); missing.push('venue'); }
+  if (!known.attendance) { ask.push('Expected attendance'); missing.push('attendance'); }
+  if (!known.event_type) { ask.push('Type of event (meeting, conference, performance, etc.)'); missing.push('event_type'); }
+  if (!known.equipment && !goal) { ask.push("Equipment you know you'll need (or tell me the goal and I'll recommend a setup)"); missing.push('equipment'); }
+  if (!known.load_times) { ask.push('Load-in / load-out times'); missing.push('load_times'); }
+  const askRecurring = !known.recurring && !personal;
+  if (askRecurring)      { ask.push("Any recurring or upcoming events you'd like pricing comparisons for"); missing.push('recurring'); }
+
+  const _un = (document.getElementById('odoo-user')?.value?.split('@')[0] || '').split(/[._\-]/)[0].toLowerCase();
+  const isMe = n => !!n && (n.toLowerCase() === _un || n.toLowerCase() === 'john');   // never greet the customer with our own name
+  let first = String(x.first_name || '').trim().split(/\s+/)[0];
+  if (!lazGrounded(first, ((em.sender || '') + ' ' + bodyLower).toLowerCase()) || isMe(first)) first = '';
+  if (!first) {
+    const disp = (em.sender || '').split('<')[0].replace(/["']/g, '').trim();
+    const df = disp.split(/\s+/)[0];
+    if (disp && !/@|total rental|trsav/i.test(disp) && !isMe(df)) first = df;
+  }
+
+  const out = [];
+  out.push(first ? `Hi ${first},` : 'Hi,');
+  out.push(x.followup_reply === true
+    ? 'Thanks for the details.'
+    : "Thank you for contacting Total Rental Solutions. I'd be happy to help with your upcoming rental needs and make sure you get the right equipment for your event.");
+  if (knownLines.length) out.push("Here's what I have so far:\n" + knownLines.map(l => '- ' + l).join('\n'));
+  if (goal && !known.equipment) out.push("I'll recommend a setup based on that.");
+  if (ask.length) out.push('To put together an accurate quote, could you share a few details?\n' + ask.map(l => '- ' + l).join('\n'));
+  if (askRecurring) out.push('If you prefer, I can also send a comparison quote for recurring rentals or future events so you can plan ahead and see where savings might apply.');
+  const qs = (Array.isArray(x.other_questions) ? x.other_questions : []).map(q => String(q || '').trim()).filter(Boolean);
+  if (qs.length) out.push(qs.map(q => '[ANSWER BEFORE SENDING: ' + q + ']').join('\n'));
+  out.push(ask.length ? "Once I have the details above, I'll send a tailored quote right away." : 'I have what I need and will send a tailored quote right away.');
+  out.push('Best,\n{{my_name}}');
+  return { text: out.join('\n\n'), missing };
+}
+
 async function lazGenerateDraft(em, body) {
   // If this is a website-form notification, the real customer is inside the body: reply to THEM, not to our own site address
   const form = lazParseFormNotification(body);
@@ -16070,22 +16179,57 @@ async function lazGenerateDraft(em, body) {
   const groqKey = document.getElementById('gemini-key')?.value?.trim() || '';
   const model   = document.getElementById('gemini-model')?.value || 'qwen/qwen3.8-27b';
 
-  // Find best matching template
-  const tmpl     = lazMatchTemplate(body + ' ' + (em.subject||''));
-  const tmplBody = tmpl ? tmpl.body : '';
-
   // Sanitize body — strip control chars that break JSON
   const cleanBody = (body||'')
     .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')  // control chars except \n \r \t
+    .replace(/&#8217;|&rsquo;/g, "'").replace(/&#8220;|&#8221;|&ldquo;|&rdquo;/g, '"').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&')
     .replace(/\r\n/g, '\n').replace(/\r/g, '\n')
     .slice(0, 3500);
 
+  // Never let the AI write from nothing: if we could not read the email text, say so instead of guessing from the subject
+  const bodyNorm = cleanBody.replace(/\s+/g, ' ').trim().toLowerCase();
+  const subjNorm = String(em.subject || '').replace(/\s+/g, ' ').trim().toLowerCase();
+  if (!bodyNorm || bodyNorm === subjNorm || bodyNorm.startsWith('(could not fetch')) {
+    return {
+      email: em, body: body,
+      bullets: ['Could not read this email\'s text (only the subject came through). Check that the IMAP server is running and up to date, or open the email and paste the text.'],
+      subject: `Re: ${em.subject||''}`,
+      draft: '[Could not read the email body, so no draft was written.]',
+      templateId: null, replyTo: form ? form.email : '',
+    };
+  }
+  const bodyLower = (String(em.subject || '') + '\n' + cleanBody).toLowerCase();
+
+  // Step 1: strict read of the email (classify + facts). Quote requests are then built in code from the standard template.
+  const x = await lazExtractIntake(em, cleanBody, groqKey, model);
+  if (x && x.quote_request === true) {
+    const built = lazBuildIntakeReply(x, bodyLower, em);
+    const labels = { dates:'dates', venue:'venue', attendance:'attendance', event_type:'event type',
+                     equipment:'equipment/goal', load_times:'load-in/out times', recurring:'recurring events' };
+    const bullets = (Array.isArray(x.bullets) ? x.bullets.filter(Boolean).slice(0, 3) : []);
+    bullets.push(built.missing.length ? 'Still needed from customer: ' + built.missing.map(k => labels[k]).join(', ')
+                                      : 'All intake details provided - ready to quote');
+    const qs = (Array.isArray(x.other_questions) ? x.other_questions : []).filter(q => q && String(q).trim());
+    if (qs.length) bullets.push('Customer also asked (placeholders added to the draft, answer them): ' + qs.join(' / '));
+    return {
+      email: em, body: body, bullets,
+      subject: (x.subject && /^re:/i.test(x.subject)) ? x.subject : `Re: ${em.subject||''}`,
+      draft: lazFillVariables(built.text, em),
+      templateId: null,
+      replyTo: form ? form.email : '',
+    };
+  }
+
+  // Step 2: anything else (not a quote request, or the read failed): normal reply in the usual style
+  const tmpl     = lazMatchTemplate(body + ' ' + (em.subject||''));
+  const tmplBody = tmpl ? tmpl.body : '';
+  const readFailed = !x;
+
   const prompt = `${LAZ_PERSONA}
 
-YOUR ROLE: You work for Total Rental Solutions (TRSAV), an AV, staging and event equipment rental company. The email below was sent TO us by a customer or prospect. It may be a website contact-form or quote-request notification: in that case the customer's name, phone, email and needs are written inside the BODY, and the FROM address may just be the website. You are REPLYING to that customer as our staff. Never pitch our services as if we were the ones reaching out, never mention vendor relationships, catalogs, rate sheets, calls or calendars unless the customer asked, and never invent anything that is not written in the email.
-GREETING: "Hi <first name>," using the customer's name from the body (or the sender name). If there is no name anywhere, just "Hi,".
-SIGN-OFF: end the draft exactly with "Best,\n{{my_name}}". Never put an email address in the sign-off.
-If the BODY is empty or only repeats the subject, do not make up a request: treat every intake item as unknown.
+YOUR ROLE: You work for Total Rental Solutions (TRSAV), an AV, staging and event equipment rental company. The email below was sent TO us by a customer, vendor or contact. It may be a website contact-form notification: in that case the sender's name, phone, email and message are written inside the BODY. You are REPLYING to that person as our staff. Never pitch our services as if we were the ones reaching out, and never invent anything that is not written in the email.
+GREETING: "Hi <first name>," using the name from the body or sender. If there is no name anywhere, just "Hi,".
+SIGN-OFF: end the draft exactly with "Best,\\n{{my_name}}". Never put an email address in the sign-off.
 
 Email received:
 FROM: ${em.sender}${form ? '\n(Website form submission. The FROM above is the customer who filled it in' + (form.phone ? ', phone ' + form.phone : '') + '. Reply to them.)' : ''}
@@ -16095,47 +16239,34 @@ DATE: ${em.date}
 BODY:
 ${cleanBody}
 
-${tmpl ? `Use this reply template as a base (adapt to this specific email). If this is a rental quote request, keep the template's wording and tone but still follow the intake rules below about what is known and what is missing:\n${tmplBody}\n` : ''}
-
-${RENTAL_INTAKE_RULES}
-
-Decide first: is this email a NEW or ONGOING rental quote / pricing / availability request? If NOT (billing, support, scheduling, vendor, thanks, anything else), set "quote_request" to false, leave "known" and "missing" empty, and just write a normal reply in your usual style. Ignore the intake rules for those.
-
-Respond with a JSON object using these exact keys, in this order. Use only standard ASCII characters — no smart quotes, no em-dashes, no special symbols:
+${tmpl ? `Use this reply template as a base (adapt to this specific email):\n${tmplBody}\n` : ''}
+${readFailed ? '\n' + RENTAL_INTAKE_RULES + '\n(Only apply the intake rules above if this email is a rental quote request.)\n' : ''}
+Respond with a JSON object using these exact keys. Use only standard ASCII characters — no smart quotes, no em-dashes, no special symbols:
 {
   "bullets": ["What they are asking for, plain language", "Second key ask if any", "Third key point if any"],
-  "quote_request": true,
-  "known": { "dates": "", "venue": "", "attendance": "", "event_type": "", "equipment": "", "load_times": "", "recurring": "" },
-  "missing": ["keys from the list above that are UNKNOWN"],
   "subject": "Re: subject line here",
   "draft": "Full reply text here. Use \\n for line breaks."
 }
-In "known", put the customer's own words for each item, or "" if not stated. "missing" must list exactly the items left empty (never list recurring for a one-time personal event). The draft must ask only about the items in "missing".
 IMPORTANT: Return raw JSON only. No markdown fences. No special characters outside standard ASCII.`;
 
   try {
     const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${groqKey}` },
-      body: JSON.stringify({ model, reasoning_effort:'none', reasoning_format:'hidden', max_tokens: 1400, temperature: 0.3,
+      body: JSON.stringify({ model, reasoning_effort:'none', reasoning_format:'hidden', max_tokens: 1000, temperature: 0.3,
         messages: [{ role: 'user', content: prompt }]
       }),
       signal: AbortSignal.timeout(30000)
     });
     const data = await r.json();
     let raw = data.choices?.[0]?.message?.content?.trim() || '{}';
-
-    // Strip markdown fences
     raw = raw.replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'').trim();
-
-    // Strip control characters from the raw JSON string before parsing
     raw = raw.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '');
 
     let parsed = {};
     try {
       parsed = JSON.parse(raw);
     } catch(parseErr) {
-      // Try extracting fields with regex as fallback
       const bulletsMatch = raw.match(/"bullets"\s*:\s*\[([^\]]*)\]/s);
       const subjectMatch = raw.match(/"subject"\s*:\s*"([^"]+)"/);
       const draftMatch   = raw.match(/"draft"\s*:\s*"([\s\S]+?)(?:"\s*}|",\s*")/);
@@ -16147,19 +16278,10 @@ IMPORTANT: Return raw JSON only. No markdown fences. No special characters outsi
     }
 
     const filled = lazFillVariables(parsed.draft||'', em);
-    const summaryBullets = Array.isArray(parsed.bullets) ? parsed.bullets.slice() : [];
-    // For quote requests, show at a glance what the draft is asking for
-    if (parsed.quote_request === true && Array.isArray(parsed.missing)) {
-      const labels = { dates:'dates', venue:'venue', attendance:'attendance', event_type:'event type',
-                       equipment:'equipment/goal', load_times:'load-in/out times', recurring:'recurring events' };
-      const need = parsed.missing.map(k => labels[k]).filter(Boolean);
-      summaryBullets.push(need.length ? 'Still needed from customer: ' + need.join(', ')
-                                      : 'All intake details provided - ready to quote');
-    }
     return {
       email:      em,
       body:       body,
-      bullets:    summaryBullets,
+      bullets:    Array.isArray(parsed.bullets) ? parsed.bullets : (x && Array.isArray(x.bullets) ? x.bullets : []),
       subject:    parsed.subject || `Re: ${em.subject||''}`,
       draft:      filled || `Hi,\n\nThanks for reaching out.\n\nBest,\n{{my_name}}`,
       templateId: tmpl?.id || null,
@@ -16195,7 +16317,8 @@ function lazMatchTemplate(text) {
 function lazFillVariables(text, em) {
   const now = new Date();
   const dateStr = now.toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
-  const myName = document.getElementById('odoo-user')?.value?.split('@')[0] || 'Laz';
+  const _un = (document.getElementById('odoo-user')?.value?.split('@')[0] || 'Laz').split(/[._\-]/)[0];
+  const myName = _un.charAt(0).toUpperCase() + _un.slice(1);
   return text
     .replace(/\{\{customer_name\}\}/gi, em.sender?.split('<')[0].trim() || 'there')
     .replace(/\{\{subject\}\}/gi, em.subject || '')
