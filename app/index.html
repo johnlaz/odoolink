@@ -14227,7 +14227,7 @@ HOW TO WRITE THE REPLY:
 2. If at least one item is KNOWN, write "Here is what I have so far:" followed by one "- " bullet per KNOWN item, restated briefly with the customer's exact dates, names and numbers. Add nothing they did not say.
 3. Ask ONLY about the UNKNOWN items, as "- " bullets under a line like "To put together an accurate quote, could you share a few details?" NEVER ask about an item that is known. Do not add any other questions, unless something the customer wrote is genuinely unclear (then ask that one thing).
 4. If equipment is unknown, ask for the equipment they know they will need, or tell them to share the goal and you will recommend a setup. If they described only a goal, restate the goal and say you will recommend a setup.
-5. If recurring is unknown, include that item as a bullet and add this sentence before the close: "If you prefer, I can also send a comparison quote for recurring rentals or future events so you can plan ahead and see where savings might apply."
+5. Website form fields (Name, Email, Phone, Event Type, Additional Requirements) are the customer's own answers and count as stated. An Event Type of "Other" means unspecified; if their message says more (for example a wedding), use the message. EXCEPTION for recurring: if the event is a personal one-time event (wedding, birthday, party, anniversary, etc.), recurring does not apply. Leave it out completely, do not list it as missing, and skip the comparison sentence below. Otherwise, if recurring is unknown, include that item as a bullet and add this sentence before the close: "If you prefer, I can also send a comparison quote for recurring rentals or future events so you can plan ahead and see where savings might apply."
 6. Close with "Once I have the details above, I'll send a tailored quote right away." If NOTHING is unknown, ask no questions and close with "I have what I need and will send a tailored quote right away."
 7. If NOTHING is known, skip step 2 and ask about all 7 items.
 8. Never state prices. Never confirm availability. Never promise delivery or installation.
@@ -14735,6 +14735,7 @@ function _renderInboxRow(em, src, idx) {
 }
 
 function _showInlineDraft(wrapper, draftText, toEmail, subject, src, idx, resultObj) {
+  if (resultObj && resultObj.replyTo) toEmail = resultObj.replyTo;  // website-form lead: send to the customer, not our own site address
   const existing = wrapper.querySelector('.inline-draft-area');
   if (existing) existing.remove();
 
@@ -16043,9 +16044,29 @@ async function lazDraftSelected() {
   lazRenderWorkspacePage();
 }
 
+// ── Website-form notifications (WPForms etc.) ─────────────
+// The email arrives FROM our own site address; the customer's name/email/phone are in the body.
+// Returns {name, email, phone} or null if the body is not a labelled form notification.
+function lazParseFormNotification(body) {
+  const lines = String(body || '').split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+  const grab = label => {
+    const i = lines.findIndex(l => l.toLowerCase().replace(/[:*]/g, '').trim() === label);
+    return i >= 0 && lines[i + 1] ? lines[i + 1] : '';
+  };
+  const email = grab('email');
+  const name  = grab('name');
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !name) return null;
+  return { name, email, phone: grab('phone') };
+}
+
 // ── Generate draft via Groq ───────────────────────────────
 
 async function lazGenerateDraft(em, body) {
+  // If this is a website-form notification, the real customer is inside the body: reply to THEM, not to our own site address
+  const form = lazParseFormNotification(body);
+  if (form) {
+    em = Object.assign({}, em, { sender: form.name + ' <' + form.email + '>', sender_email: form.email, email_from: form.email, _formLead: true });
+  }
   const groqKey = document.getElementById('gemini-key')?.value?.trim() || '';
   const model   = document.getElementById('gemini-model')?.value || 'qwen/qwen3.8-27b';
 
@@ -16061,8 +16082,13 @@ async function lazGenerateDraft(em, body) {
 
   const prompt = `${LAZ_PERSONA}
 
+YOUR ROLE: You work for Total Rental Solutions (TRSAV), an AV, staging and event equipment rental company. The email below was sent TO us by a customer or prospect. It may be a website contact-form or quote-request notification: in that case the customer's name, phone, email and needs are written inside the BODY, and the FROM address may just be the website. You are REPLYING to that customer as our staff. Never pitch our services as if we were the ones reaching out, never mention vendor relationships, catalogs, rate sheets, calls or calendars unless the customer asked, and never invent anything that is not written in the email.
+GREETING: "Hi <first name>," using the customer's name from the body (or the sender name). If there is no name anywhere, just "Hi,".
+SIGN-OFF: end the draft exactly with "Best,\n{{my_name}}". Never put an email address in the sign-off.
+If the BODY is empty or only repeats the subject, do not make up a request: treat every intake item as unknown.
+
 Email received:
-FROM: ${em.sender}
+FROM: ${em.sender}${form ? '\n(Website form submission. The FROM above is the customer who filled it in' + (form.phone ? ', phone ' + form.phone : '') + '. Reply to them.)' : ''}
 SUBJECT: ${em.subject}
 DATE: ${em.date}
 
@@ -16084,7 +16110,7 @@ Respond with a JSON object using these exact keys, in this order. Use only stand
   "subject": "Re: subject line here",
   "draft": "Full reply text here. Use \\n for line breaks."
 }
-In "known", put the customer's own words for each item, or "" if not stated. "missing" must list exactly the items left empty. The draft must ask only about the items in "missing".
+In "known", put the customer's own words for each item, or "" if not stated. "missing" must list exactly the items left empty (never list recurring for a one-time personal event). The draft must ask only about the items in "missing".
 IMPORTANT: Return raw JSON only. No markdown fences. No special characters outside standard ASCII.`;
 
   try {
@@ -16137,6 +16163,7 @@ IMPORTANT: Return raw JSON only. No markdown fences. No special characters outsi
       subject:    parsed.subject || `Re: ${em.subject||''}`,
       draft:      filled || `Hi,\n\nThanks for reaching out.\n\nBest,\n{{my_name}}`,
       templateId: tmpl?.id || null,
+      replyTo:    form ? form.email : '',
     };
   } catch(e) {
     return {
@@ -20084,7 +20111,7 @@ async function supportGenerateDraft(em, body) {
   const prompt = `${SUPPORT_PERSONA}
 
 Support email received:
-FROM: ${em.sender}
+FROM: ${em.sender}${form ? '\n(Website form submission. The FROM above is the customer who filled it in' + (form.phone ? ', phone ' + form.phone : '') + '. Reply to them.)' : ''}
 SUBJECT: ${em.subject}
 BODY:
 ${cleanBody}
