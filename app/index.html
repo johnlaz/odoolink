@@ -31964,7 +31964,7 @@ Thanks,`
       const vals = { product_qty: l.qty, name: l.productName, date_planned: plannedDate };
       if (l.productId) {
         vals.product_id = l.productId;
-        if (_rfqUomCache[l.productId]) vals.product_uom = _rfqUomCache[l.productId];
+        if (_rfqUomCache[l.productId]) vals.product_uom_id = _rfqUomCache[l.productId];
       }
       if (l.price !== '' && l.price !== null && !isNaN(l.price)) vals.price_unit = l.price;
       return [0, 0, vals];
