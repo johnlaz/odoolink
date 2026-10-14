@@ -3,7 +3,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <meta name="oel-version" content="v15.38">
+  <meta name="oel-version" content="v15.39">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="mobile-web-app-capable" content="yes">
@@ -605,6 +605,8 @@
   .activity-name { font-weight: 500; font-size: 0.93rem; }
   .activity-badge { font-size: 0.7rem; font-family: 'DM Mono', monospace; padding: 3px 8px; border-radius: 20px; background: var(--accent-dim); color: var(--accent); border: 1px solid rgba(201,168,76,0.2); flex-shrink: 0; }
   .activity-meta { display: flex; gap: 14px; flex-wrap: wrap; }
+  #rc-editor:empty:before { content: attr(data-placeholder); color: var(--muted); pointer-events: none; }
+  #rc-editor img { max-width: 100%; height: auto; }
   .meta-item { font-size: 0.76rem; color: var(--muted); font-weight: 300; }
   .meta-item span { color: var(--text); font-weight: 400; }
 
@@ -1777,6 +1779,7 @@
     <div class="section-panel" id="panel-activities">
       <div class="section-tabs">
         <button class="sec-tab active" id="act-tab-connect" onclick="actTab('connect')">Connect</button>
+        <button class="sec-tab" id="act-tab-recipients" onclick="actTab('recipients')">Recipients</button>
         <button class="sec-tab" id="act-tab-draft" onclick="actTab('draft')">Draft</button>
         <button class="sec-tab" id="act-tab-send" onclick="actTab('send')">Send</button>
         <button class="sec-tab" id="act-tab-tracker" onclick="actTab('tracker')">Follow-up Tracker</button>
@@ -1817,15 +1820,88 @@
         Draft emails
         <svg width="14" height="14" viewBox="0 0 14 14"><path d="M3 7h8M7 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
       </button>
+      <button class="btn btn-ghost hidden" id="btn-collect-top" onclick="actRcCollect()" style="gap:6px" title="No AI drafting — just pull the email address from every due activity so you can send your own email">
+        Skip drafting — collect recipients
+      </button>
     </div>
     <div class="status-box" id="connect-log"></div>
     <div id="step2-actions" class="btn-row hidden">
-      <div></div>
+      <button class="btn btn-ghost" id="btn-collect-bottom" onclick="actRcCollect()" title="No AI drafting — just pull the email address from every due activity so you can send your own email">Skip drafting — collect recipients</button>
       <button class="btn btn-primary" id="btn-proceed-draft" onclick="goToStep3()">
         Draft emails
         <svg width="14" height="14" viewBox="0 0 14 14"><path d="M3 7h8M7 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
       </button>
     </div>
+  </div>
+        </div>
+        <div id="act-panel-recipients" class="sub-panel">
+  <div class="card" id="rc-card-list">
+    <div class="card-title">Recipients — no AI drafting</div>
+    <div class="card-subtitle">Email addresses pulled straight from your due activities. Copy them, move them to Mass Mail, or open one pre-filled draft per person in your mail app. Nothing is sent or changed in Odoo until you press the finish button below.</div>
+    <div id="rc-empty" style="padding:18px;text-align:center;color:var(--muted);font-size:0.85rem">Nothing collected yet. On the <a onclick="actTab('connect')" style="color:var(--accent);cursor:pointer">Connect</a> tab, scan your activities and click <strong style="color:var(--text)">Skip drafting — collect recipients</strong>.</div>
+    <div id="rc-body" style="display:none">
+      <div id="rc-status" style="font-size:0.8rem;color:var(--muted);margin-bottom:10px"></div>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+        <label style="display:flex;align-items:center;gap:6px;font-size:0.82rem;color:var(--muted);cursor:pointer">
+          <input type="checkbox" id="rc-select-all" checked onchange="actRcToggleAll(this.checked)" style="accent-color:var(--accent);width:15px;height:15px"> Select all
+        </label>
+        <span id="rc-count" style="font-size:0.78rem;color:var(--muted)"></span>
+        <div style="flex:1"></div>
+        <button class="btn btn-ghost" onclick="actRcCopyEmails()" style="padding:7px 14px;font-size:0.82rem" title="Copies the selected addresses separated by semicolons — paste straight into Outlook's To/BCC">📋 Copy emails</button>
+        <button class="btn btn-ghost" onclick="actRcDownloadCsv()" style="padding:7px 14px;font-size:0.82rem" title="Name, email, company/record and activity for each selected recipient">⬇ CSV</button>
+        <button class="btn btn-primary" onclick="actRcToMassMail()" style="padding:7px 14px;font-size:0.82rem" title="Loads the selected recipients into the Mass Mail tab as its contact list">→ Move to Mass Mail</button>
+      </div>
+      <div id="rc-list" style="max-height:340px;overflow-y:auto;display:flex;flex-direction:column;gap:2px"></div>
+      <div id="rc-noemail" style="font-size:0.76rem;color:var(--warning,#d99a3f);margin-top:10px;line-height:1.6"></div>
+    </div>
+  </div>
+
+  <div class="card" id="rc-card-compose" style="display:none;margin-top:14px">
+    <div class="card-title">Open a draft per recipient</div>
+    <div class="card-subtitle">Write it once (or paste your finished email, images included). Each selected recipient gets their own separate draft, addressed only to them. <code style="background:var(--surface2);padding:1px 5px;border-radius:4px">{{first_name}}</code> and <code style="background:var(--surface2);padding:1px 5px;border-radius:4px">{{name}}</code> are filled in per person.</div>
+    <div class="field" style="margin-bottom:10px"><label>Subject</label><input type="text" id="rc-subject" oninput="actRcSaveDraft()" placeholder="e.g. Fall rental packages"></div>
+    <div class="field" style="margin-bottom:10px">
+      <label>Message</label>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px">
+        <button type="button" class="btn btn-ghost" onclick="actRcFmt('bold')" style="padding:3px 10px;font-size:0.76rem;font-weight:700">B</button>
+        <button type="button" class="btn btn-ghost" onclick="actRcFmt('italic')" style="padding:3px 10px;font-size:0.76rem;font-style:italic">I</button>
+        <button type="button" class="btn btn-ghost" onclick="actRcLink()" style="padding:3px 10px;font-size:0.76rem">🔗 Link</button>
+        <button type="button" class="btn btn-ghost" onclick="document.getElementById('rc-img-input').click()" style="padding:3px 10px;font-size:0.76rem">🖼 Insert image</button>
+        <button type="button" class="btn btn-ghost" onclick="actRcClearEditor()" style="padding:3px 10px;font-size:0.76rem">Clear</button>
+        <input type="file" id="rc-img-input" accept="image/*" multiple style="display:none" onchange="actRcInsertImages(this)">
+      </div>
+      <div id="rc-editor" contenteditable="true" data-placeholder="Type here, or paste your email from Outlook/Word — formatting and images come with it." oninput="actRcSaveDraft()" style="min-height:190px;max-height:420px;overflow:auto;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.86rem;line-height:1.55;outline:none"></div>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <button class="btn btn-primary" onclick="actRcOpenEml()" style="padding:8px 18px;font-size:0.84rem" title="One .eml draft per recipient, images included. Opens as an unsent message in Outlook / your default mail app.">✉ Open drafts in mail app (images OK)</button>
+      <button class="btn btn-ghost" onclick="actRcOpenNextMailto()" id="rc-mailto-btn" style="padding:8px 16px;font-size:0.84rem" title="Plain-text only — mailto links can't carry images or formatting. Opens one recipient per click.">Text-only draft — next recipient</button>
+      <span id="rc-compose-status" style="font-size:0.78rem;color:var(--muted)"></span>
+    </div>
+    <div style="font-size:0.72rem;color:var(--muted);margin-top:10px;line-height:1.6">
+      <strong style="color:var(--text)">How the mail-app button works:</strong> your browser downloads one small <code>.eml</code> file per recipient and your mail app opens each as an unsent draft with the images embedded — review, hit Send. To have them pop open automatically: after the first download, click the arrow next to it in Chrome's downloads and choose <em>Always open files of this type</em>. (You may need to allow multiple downloads once.) The text-only option is a plain <code>mailto:</code> link — no images or formatting.
+    </div>
+  </div>
+
+  <div class="card" id="rc-card-finish" style="display:none;margin-top:14px">
+    <div class="card-title">After you've sent them</div>
+    <div class="card-subtitle">It's assumed they went out. Pick what should happen in Odoo for each selected recipient — anything left unchecked is not touched.</div>
+    <div style="display:flex;flex-direction:column;gap:9px;margin-bottom:12px">
+      <label style="display:flex;align-items:center;gap:8px;font-size:0.83rem;cursor:pointer"><input type="checkbox" id="rc-opt-done" checked onchange="actRcSaveOpts()" style="accent-color:var(--accent);width:15px;height:15px"> Clear the activity (mark it done)</label>
+      <label style="display:flex;align-items:center;gap:8px;font-size:0.83rem;cursor:pointer"><input type="checkbox" id="rc-opt-note" checked onchange="actRcSaveOpts()" style="accent-color:var(--accent);width:15px;height:15px"> Log a note on the customer's record (subject + message text)</label>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <label style="display:flex;align-items:center;gap:8px;font-size:0.83rem;cursor:pointer"><input type="checkbox" id="rc-opt-fu" onchange="actRcSaveOpts()" style="accent-color:var(--accent);width:15px;height:15px"> Schedule a follow-up in</label>
+        <input type="number" id="rc-fu-days" min="1" max="365" value="14" onchange="actRcSaveOpts()" style="width:70px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-family:'DM Mono',monospace;font-size:0.8rem;outline:none">
+        <span style="font-size:0.8rem;color:var(--muted)">days (off = no new activity is created)</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <label for="rc-tag" style="font-size:0.83rem">🏷 Tag customer:</label>
+        <input type="text" id="rc-tag" list="rc-tag-list" placeholder="existing or new tag — comma-separate for several (blank = no tag)" style="flex:1;min-width:240px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.82rem;outline:none">
+        <datalist id="rc-tag-list"></datalist>
+      </div>
+    </div>
+    <button class="btn btn-primary" id="rc-finish-btn" onclick="actRcFinish()" style="padding:9px 20px;font-size:0.85rem">I sent them — apply to selected</button>
+    <div id="rc-finish-progress" style="font-size:0.78rem;color:var(--muted);margin-top:10px"></div>
+    <div id="rc-finish-results" style="display:flex;flex-direction:column;gap:3px;margin-top:8px;max-height:260px;overflow-y:auto"></div>
   </div>
         </div>
         <div id="act-panel-draft" class="sub-panel">
@@ -1886,10 +1962,20 @@
         <button class="btn btn-ghost" onclick="actCopyReportText()" title="Copies a plain-text version of the selected drafts to your clipboard, ready to paste straight into an email body" style="padding:7px 14px;font-size:0.82rem;gap:6px">📋 Copy as text</button>
         <button class="btn btn-primary" id="act-bulk-log-btn" onclick="actBulkLog()" title="Posts the drafted note, marks the original activity done, and schedules a follow-up on each selected record — no emails opened" style="padding:7px 16px;font-size:0.82rem;gap:6px">📋 Log &amp; follow up — selected</button>
       </div>
-      <label style="display:flex;align-items:center;gap:6px;font-size:0.78rem;color:var(--muted);cursor:pointer;margin-top:10px" title="Turn off when catching up someone else's activities — leaves their activity exactly as scheduled so they see it normally, with the drafted email waiting as a note">
-        <input type="checkbox" id="act-also-followup" checked onchange="actUpdateLogButtonLabels()" style="accent-color:var(--accent);width:14px;height:14px">
-        Also mark the original activity done &amp; schedule a follow-up
-      </label>
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:10px;font-size:0.78rem;color:var(--muted)">
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer" title="Uncheck when catching up someone else's activities — their activity stays scheduled exactly as is">
+          <input type="checkbox" id="act-opt-done" checked onchange="actUpdateLogButtonLabels()" style="accent-color:var(--accent);width:14px;height:14px">
+          Mark original activity done
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer" title="Uncheck to clear the activity without creating a new follow-up">
+          <input type="checkbox" id="act-opt-followup" checked onchange="actUpdateLogButtonLabels()" style="accent-color:var(--accent);width:14px;height:14px">
+          Schedule a follow-up
+        </label>
+        <label style="display:flex;align-items:center;gap:6px">
+          🏷 Tag customer
+          <input type="text" id="act-opt-tag" list="rc-tag-list" onfocus="actRcLoadTags()" placeholder="optional — comma-separate for several" style="width:240px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.78rem;outline:none">
+        </label>
+      </div>
       <div id="act-bulk-status" style="font-size:0.78rem;color:var(--muted);margin-top:8px"></div>
     </div>
 
@@ -3035,7 +3121,8 @@ Support Team"></textarea>
           <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
             <p style="margin:0 0 4px">Scans due Odoo activities and AI-drafts a follow-up email per contact using deal context and last chatter note. <strong style="color:var(--text)">"Catching up on activities for"</strong> defaults to you, but you can pick any rep on your team — switching it re-scans for that person without a full reconnect. <strong style="color:var(--text)">"Draft how many"</strong> caps the batch (oldest overdue first) so a rep with a huge backlog doesn't force one long run — the scan log tells you the true total so you know whether to raise it. A <strong style="color:var(--text)">Stop</strong> button appears while drafting is in progress and keeps whatever's already been drafted.</p>
             <p style="margin:0 0 4px"><strong style="color:var(--text)">Send tab:</strong> checkboxes on every card plus a bulk toolbar up top — Select all, a live count, and a bulk log button. Per card: Review &amp; edit (full modal — actually opens your mail client and logs) · ✉ Draft email (Quick Compose via IMAP) · 📋 Log (bulk or one at a time) · Skip (excludes it from bulk actions).</p>
-            <p style="margin:0 0 4px"><strong style="color:var(--text)">"Also mark the original activity done & schedule a follow-up"</strong> toggle controls what logging actually does — on (default) it posts the note, completes the original activity, and schedules the next one. Turn it off when catching up <em>someone else's</em> activities: it then just posts the drafted email as a note and leaves their activity exactly as scheduled, so they see it due normally in Odoo with the draft waiting to review and send themselves.</p>
+            <p style="margin:0 0 4px"><strong style="color:var(--text)">Log options (Send tab):</strong> logging always posts the note. <strong style="color:var(--text)">Mark original activity done</strong>, <strong style="color:var(--text)">Schedule a follow-up</strong> and <strong style="color:var(--text)">Tag customer</strong> are independent — e.g. clear the activity with no follow-up, or tag only. Uncheck both activity boxes when catching up <em>someone else's</em> activities and their activity stays scheduled exactly as is, with the drafted email waiting as a note.</p>
+            <p style="margin:0 0 4px"><strong style="color:var(--text)">Skip drafting — collect recipients:</strong> on the Connect tab, skips the AI entirely and opens the <strong style="color:var(--text)">Recipients</strong> tab with every due activity's email address (duplicates merged, missing emails listed). From there: 📋 copy the addresses, ⬇ CSV, <strong style="color:var(--text)">→ Move to Mass Mail</strong>, or write/paste one email (images supported; <code>{{first_name}}</code> is filled per person) and <strong style="color:var(--text)">Open drafts in mail app</strong> to get one separate unsent draft per recipient. Then <strong style="color:var(--text)">I sent them</strong> applies what you choose: clear the activity, log a note, schedule a follow-up (off by default), and tag the customer. Nothing in Odoo changes until you press it.</p>
             <p style="margin:0 0 4px"><strong style="color:var(--text)">📄 Export report</strong> downloads a standalone HTML file of the selected drafts — no login or Odoo connection needed to open it. Each entry shows contact, subject, and body in a click-to-select box, ready to hand to a rep who copies each one into their own email. <strong style="color:var(--text)">📋 Copy as text</strong> puts a plain-text version straight on your clipboard instead, for pasting directly into an email body. Both respect the current selection, same as the log buttons.</p>
             <p style="margin:0 0 4px">🔍 <strong style="color:var(--text)">Verify</strong> on a card shows the raw, unfiltered chatter messages actually on that Odoo record — useful for confirming whether a note genuinely posted when something seems off.</p>
             <p style="margin:0"><strong style="color:var(--text)">Follow-up Tracker:</strong> Shows leads pushed from Lead Capture that have no scheduled activity. Requires Odoo connection.</p>
@@ -6734,10 +6821,8 @@ async function goToStep2() {
     alert('Please fill in all Odoo fields before continuing.');
     return;
   }
-  if (!geminiKey) {
-    alert('Please enter your Groq API key. Get a free one at console.groq.com.');
-    return;
-  }
+  // Groq key is only needed for AI drafting (checked in goToStep3), so
+  // "Skip drafting — collect recipients" works without one.
 
   odooConfig = { url: url.replace(/\/+$/, ''), database: db, username: user, api_key: key };
   saveCredentials();
@@ -6747,6 +6832,10 @@ async function goToStep2() {
 }
 
 async function goToStep3() {
+  if (!document.getElementById('gemini-key')?.value?.trim()) {
+    alert('Please enter your Groq API key in Settings to AI-draft. Get a free one at console.groq.com.\n\nNo key? Use "Skip drafting — collect recipients" instead.');
+    return;
+  }
   navTo('activities');
   actTab('draft');
   await draftAllEmails();
@@ -6787,11 +6876,13 @@ async function actLogNote(idx) {
     // leaves the original activity exactly as scheduled. Note-only is for
     // catching up someone else's activities: they still see it due normally,
     // with the drafted email waiting as a note to review and send themselves.
-    if (actLoggingModeIsFull()) {
-      await logToOdoo(em, em.subject, em.body, null, null, false, em.followUpDays || followUpDays);
+    const o = actLogOpts();
+    if (o.markDone || o.schedule) {
+      await logToOdoo(em, em.subject, em.body, null, null, false, em.followUpDays || followUpDays, o);
     } else {
       await logNoteOnly(em);
     }
+    if (o.tags.length) await actTagRecord(em.res_model, em.res_id, em.contact_email, o.tags);
     if (badge) { badge.textContent = 'logged ✓'; badge.style.background = 'rgba(100,200,100,0.15)'; badge.style.color = 'var(--success)'; }
     const card = document.getElementById('email-card-' + idx);
     if (card) card.style.opacity = '0.6';
@@ -6875,6 +6966,9 @@ function goToStep4() { navTo('activities'); actTab('send'); renderEmailList(); }
     const parentHidden = document.getElementById('step2-actions')?.classList.contains('hidden');
     top.classList.toggle('hidden', !!parentHidden);
     top.disabled = src.disabled;
+    const haveActs = Array.isArray(activities) && activities.length > 0;
+    document.getElementById('btn-collect-top')?.classList.toggle('hidden', !!parentHidden || !haveActs);
+    document.getElementById('btn-collect-bottom')?.classList.toggle('hidden', !haveActs);
     // Mirror label (e.g. "No activities due") but keep the arrow icon
     const label = src.childNodes[0] && src.childNodes[0].nodeType === 3 ? src.childNodes[0].textContent.trim() : 'Draft emails';
     if (top.childNodes[0] && top.childNodes[0].nodeType === 3) top.childNodes[0].textContent = label + ' ';
@@ -7694,30 +7788,35 @@ function renderEmailList() {
   actUpdateLogButtonLabels();
 }
 
-// Whether logging should also mark the original activity done and schedule a
-// follow-up (the default), or just post the note and leave the activity alone
-// (for catching up someone else's activities — they still see it scheduled
-// normally, with the drafted email waiting as a note to review and send).
-function actLoggingModeIsFull() {
-  const cb = document.getElementById('act-also-followup');
-  return !cb || cb.checked;
+// What "Log" does on the Send tab: always posts the note, then (each optional)
+// marks the original activity done, schedules a follow-up, and tags the customer.
+// Clearing an activity and scheduling the next one are independent choices.
+function actLogOpts() {
+  const done = document.getElementById('act-opt-done');
+  const fu = document.getElementById('act-opt-followup');
+  const tagRaw = document.getElementById('act-opt-tag')?.value || '';
+  return {
+    markDone: !done || done.checked,
+    schedule: !fu || fu.checked,
+    tags: actParseTags(tagRaw),
+  };
 }
 
 function actUpdateLogButtonLabels() {
-  const full = actLoggingModeIsFull();
+  const o = actLogOpts();
+  const label = (o.markDone && o.schedule) ? 'Log & follow up'
+              : o.schedule ? 'Log & schedule follow-up'
+              : o.markDone ? 'Log & mark done'
+              : 'Log only';
+  const tip = [
+    'Posts the drafted note',
+    o.markDone ? 'marks the original activity done' : 'leaves the original activity exactly as scheduled',
+    o.schedule ? 'schedules a follow-up' : 'does not schedule a follow-up',
+    o.tags.length ? 'tags the customer' : null,
+  ].filter(Boolean).join(', ') + ' — no email client is opened';
   const bulkBtn = document.getElementById('act-bulk-log-btn');
-  if (bulkBtn) {
-    bulkBtn.innerHTML = full ? '📋 Log &amp; follow up — selected' : '📋 Log only — selected';
-    bulkBtn.title = full
-      ? "Posts the drafted note, marks the original activity done, and schedules a follow-up on each selected record — no emails opened"
-      : "Posts the drafted note only, on each selected record — the original activity and any follow-up schedule are left untouched";
-  }
-  document.querySelectorAll('.act-log-btn').forEach(btn => {
-    btn.innerHTML = full ? '📋 Log &amp; follow up' : '📋 Log only';
-    btn.title = full
-      ? 'Log this draft, mark the original activity done, and schedule a follow-up — without opening any email client'
-      : 'Just post this draft as a note — the original activity stays scheduled exactly as-is';
-  });
+  if (bulkBtn) { bulkBtn.innerHTML = '📋 ' + label + ' — selected'; bulkBtn.title = tip; }
+  document.querySelectorAll('.act-log-btn').forEach(btn => { btn.innerHTML = '📋 ' + label; btn.title = tip; });
 }
 
 // Posts the drafted email as a chatter note only — no activity changes at all.
@@ -7946,7 +8045,7 @@ async function actBulkLog() {
 
   if (!targets.length) { alert('Select at least one email first.'); return; }
 
-  const fullMode = actLoggingModeIsFull();
+  const o = actLogOpts();
   const statusEl = document.getElementById('act-bulk-status');
   let ok = 0, err = 0;
 
@@ -7955,11 +8054,12 @@ async function actBulkLog() {
     if (badge) { badge.textContent = 'logging…'; badge.style.background = 'rgba(201,168,76,0.15)'; }
     if (statusEl) statusEl.textContent = `Logging ${ok + err + 1} of ${targets.length}…`;
     try {
-      if (fullMode) {
-        await logToOdoo(em, em.subject, em.body, null, null, false, em.followUpDays || followUpDays);
+      if (o.markDone || o.schedule) {
+        await logToOdoo(em, em.subject, em.body, null, null, false, em.followUpDays || followUpDays, o);
       } else {
         await logNoteOnly(em);
       }
+      if (o.tags.length) await actTagRecord(em.res_model, em.res_id, em.contact_email, o.tags);
       ok++;
       if (badge) { badge.textContent = 'logged ✓'; badge.style.background = 'rgba(100,200,100,0.15)'; badge.style.color = 'var(--success)'; }
       const card = document.getElementById(`email-card-${i}`);
@@ -7970,7 +8070,7 @@ async function actBulkLog() {
     }
   }
 
-  const modeNote = fullMode ? '' : ' (note only — activities left untouched)';
+  const modeNote = (o.markDone || o.schedule) ? '' : ' (note only — activities left untouched)';
   if (statusEl) statusEl.textContent = `Done — ${ok} logged${err ? `, ${err} failed` : ''}${modeNote}`;
 }
 
@@ -8210,7 +8310,9 @@ async function sendFromModal() {
   setTimeout(() => closeModal(), 2000);
 }
 
-async function logToOdoo(em, subject, body, attachFile, assignUserId, assignImmediate, assignDays) {
+async function logToOdoo(em, subject, body, attachFile, assignUserId, assignImmediate, assignDays, opts) {
+  const markDone = !opts || opts.markDone !== false;
+  const scheduleNext = !opts || opts.schedule !== false;
   // 1. Log note to chatter — build clean HTML Odoo will render correctly
   const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
@@ -8249,13 +8351,16 @@ async function logToOdoo(em, subject, body, attachFile, assignUserId, assignImme
   }
 
   // 2. Mark activity as done
-  try {
-    await odooExecute(odooUid, 'mail.activity', 'action_feedback', [[em.activity_id]], {
-      feedback: 'Follow-up email sent via Odoo Email Link.'
-    });
-  } catch(e) {
-    await odooExecute(odooUid, 'mail.activity', 'unlink', [[em.activity_id]]);
+  if (markDone) {
+    try {
+      await odooExecute(odooUid, 'mail.activity', 'action_feedback', [[em.activity_id]], {
+        feedback: 'Follow-up email sent via Odoo Email Link.'
+      });
+    } catch(e) {
+      await odooExecute(odooUid, 'mail.activity', 'unlink', [[em.activity_id]]);
+    }
   }
+  if (!scheduleNext) return;
 
   // 3. Schedule follow-up activity
   const followUpDate = new Date();
@@ -26578,7 +26683,7 @@ function actTab(tab) {
   const btn = document.getElementById('act-tab-' + tab);
   if (btn) btn.classList.add('active');
 
-  ['act-panel-connect','act-panel-draft','act-panel-send','act-panel-tracker'].forEach(id => {
+  ['act-panel-connect','act-panel-recipients','act-panel-draft','act-panel-send','act-panel-tracker'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.classList.remove('active');
   });
@@ -26593,6 +26698,7 @@ function actTab(tab) {
   }
 
   if (tab === 'tracker' && typeof lftLoad === 'function') lftLoad();
+  if (tab === 'recipients' && typeof actRcOnShow === 'function') actRcOnShow();
 }
 
 // ── lazTab shim — now routes to inbox sub-tabs or nav sections ────────────
@@ -29059,6 +29165,583 @@ document.addEventListener('DOMContentLoaded', hslInit);
 })();
 </script>
 
+<!-- ── Activities: recipients without AI drafting ───────────────────────── -->
+<script>
+(function(){
+
+  const RC = { rows: [], noEmail: [], mailtoIdx: 0 };
+  const LS_DRAFT = 'oel_rc_draft', LS_OPTS = 'oel_rc_opts';
+  let _tagCache = null; // [{id,name}] — null = not loaded / load failed
+
+  const $ = id => document.getElementById(id);
+
+  // ── Tag helpers (shared with the Send tab) ───────────────────────────────
+  window.actParseTags = raw => Array.from(new Set(String(raw || '').split(/[,;]/).map(t => t.trim()).filter(Boolean)));
+
+  window.actRcLoadTags = async function(force) {
+    if (!odooUid) return null;
+    if (_tagCache && !force) return _tagCache;
+    try {
+      _tagCache = (await odooExecute(odooUid, 'res.partner.category', 'search_read', [[]],
+        { fields: ['id', 'name'], limit: 1000, order: 'name' })) || [];
+      const dl = $('rc-tag-list');
+      if (dl) dl.innerHTML = _tagCache.map(t => `<option value="${escHtml(t.name)}"></option>`).join('');
+    } catch(e) { _tagCache = null; }
+    return _tagCache;
+  };
+
+  async function ensureTagIds(names) {
+    const cache = await window.actRcLoadTags();
+    if (!cache) throw new Error('could not read existing tags from Odoo');
+    const ids = [];
+    for (const name of names) {
+      let hit = cache.find(t => (t.name || '').toLowerCase() === name.toLowerCase());
+      if (!hit) {
+        const id = await odooExecute(odooUid, 'res.partner.category', 'create', [{ name }]);
+        hit = { id, name };
+        cache.push(hit);
+        const dl = $('rc-tag-list');
+        if (dl) dl.insertAdjacentHTML('beforeend', `<option value="${escHtml(name)}"></option>`);
+      }
+      ids.push(hit.id);
+    }
+    return ids;
+  }
+
+  async function findPartnerByEmail(email) {
+    if (!email) return null;
+    let p = await odooExecute(odooUid, 'res.partner', 'search_read', [[['email', '=ilike', email]]], { fields: ['id'], limit: 1 });
+    return (p && p.length) ? p[0].id : null;
+  }
+
+  async function resolvePartnerId(model, id, email) {
+    if (model === 'res.partner') return id;
+    try {
+      const r = await odooExecute(odooUid, model, 'read', [[id]], { fields: ['partner_id'] });
+      const pid = r && r[0] && r[0].partner_id;
+      if (pid) return Array.isArray(pid) ? pid[0] : pid;
+    } catch(e) { /* model has no partner_id — fall through to email */ }
+    return findPartnerByEmail(email);
+  }
+
+  async function tagPartner(partnerId, tags) {
+    const ids = await ensureTagIds(tags);
+    await odooExecute(odooUid, 'res.partner', 'write', [[partnerId], { category_id: ids.map(i => [4, i]) }]);
+  }
+
+  // Used by the Send tab: tag the customer behind an activity's record.
+  window.actTagRecord = async function(model, id, email, tags) {
+    const pid = await resolvePartnerId(model, id, email);
+    if (!pid) throw new Error('no Odoo contact found to tag');
+    await tagPartner(pid, tags);
+  };
+
+  // ── Collect recipients ───────────────────────────────────────────────────
+  function cleanEmail(raw) {
+    const m = String(raw || '').match(/[^\s<>,;"']+@[^\s<>,;"']+\.[^\s<>,;"']+/);
+    return m ? m[0] : '';
+  }
+
+  async function readChunked(model, ids, fields) {
+    const out = [];
+    for (let i = 0; i < ids.length; i += 200) {
+      const part = await odooExecute(odooUid, model, 'read', [ids.slice(i, i + 200)], { fields });
+      if (part) out.push(...part);
+    }
+    return out;
+  }
+
+  window.actRcCollect = async function() {
+    if (!odooUid) { alert('Connect to Odoo first.'); return; }
+    if (!Array.isArray(activities) || !activities.length) { alert('No due activities loaded — scan first.'); return; }
+    actTab('recipients');
+    $('rc-empty').style.display = 'none';
+    $('rc-body').style.display = 'block';
+    $('rc-list').innerHTML = '';
+    $('rc-noemail').innerHTML = '';
+    const status = $('rc-status');
+    status.innerHTML = `<div class="dot spin" style="display:inline-block;margin-right:6px"></div>Looking up ${activities.length} record${activities.length !== 1 ? 's' : ''} in Odoo…`;
+
+    const byModel = {};
+    activities.forEach(a => { (byModel[a.res_model] = byModel[a.res_model] || []).push(a); });
+
+    const info = {}; // "model:id" -> {record, name, email, company, partnerId}
+    const partnerNeeded = new Set();
+
+    try {
+      for (const [model, acts] of Object.entries(byModel)) {
+        const ids = [...new Set(acts.map(a => a.res_id))];
+        const fields = model === 'crm.lead' ? ['name', 'partner_id', 'email_from', 'contact_name', 'partner_name']
+                     : model === 'res.partner' ? ['name', 'email', 'parent_id']
+                     : ['name', 'partner_id'];
+        let recs = [];
+        try { recs = await readChunked(model, ids, fields); }
+        catch(e) {
+          if (model === 'crm.lead' || model === 'res.partner') throw e;
+          try { recs = await readChunked(model, ids, ['name']); } catch(e2) { recs = []; }
+        }
+        recs.forEach(r => {
+          const k = model + ':' + r.id;
+          if (model === 'res.partner') {
+            info[k] = { record: r.name, name: r.name, email: cleanEmail(r.email), company: Array.isArray(r.parent_id) ? r.parent_id[1] : '', partnerId: r.id };
+          } else {
+            const pid = Array.isArray(r.partner_id) ? r.partner_id[0] : (r.partner_id || null);
+            if (pid) partnerNeeded.add(pid);
+            info[k] = { record: r.name, name: r.contact_name || '', email: cleanEmail(r.email_from), company: r.partner_name || '', partnerId: pid, _lead: true };
+          }
+        });
+      }
+      // one batched read for every linked partner — fills in missing emails/names
+      if (partnerNeeded.size) {
+        const ps = await readChunked('res.partner', [...partnerNeeded], ['name', 'email', 'parent_id']);
+        const pmap = {}; ps.forEach(p => pmap[p.id] = p);
+        Object.values(info).forEach(x => {
+          const p = x.partnerId && pmap[x.partnerId];
+          if (!p) return;
+          if (!x.email) x.email = cleanEmail(p.email);
+          if (!x.name) x.name = p.name || '';
+          if (!x.company && Array.isArray(p.parent_id)) x.company = p.parent_id[1];
+        });
+      }
+    } catch(e) {
+      status.innerHTML = `<span style="color:var(--danger)">Lookup failed: ${escHtml(e.message)}</span>`;
+      return;
+    }
+
+    RC.rows = []; RC.noEmail = []; RC.mailtoIdx = 0;
+    const byEmail = {};
+    activities.forEach(a => {
+      const x = info[a.res_model + ':' + a.res_id];
+      const entry = { activityId: a.id, model: a.res_model, resId: a.res_id, summary: a.summary || '', due: a.date_deadline || '',
+                      typeId: a.activity_type_id, recordName: x ? x.record : (a.res_model + ' #' + a.res_id) };
+      if (!x || !x.email) { RC.noEmail.push(entry); return; }
+      const key = x.email.toLowerCase();
+      let row = byEmail[key];
+      if (!row) {
+        row = byEmail[key] = { email: x.email, name: x.name || x.email.split('@')[0], company: x.company || '', partnerId: x.partnerId || null,
+                               entries: [], selected: true, status: '', drafted: false, mailto: false };
+        RC.rows.push(row);
+      }
+      if (!row.partnerId && x.partnerId) row.partnerId = x.partnerId;
+      row.entries.push(entry);
+    });
+
+    const dupes = activities.length - RC.noEmail.length - RC.rows.length;
+    status.textContent = `${RC.rows.length} recipient${RC.rows.length !== 1 ? 's' : ''} from ${activities.length} due activit${activities.length !== 1 ? 'ies' : 'y'}`
+      + (dupes > 0 ? ` · ${dupes} duplicate address${dupes !== 1 ? 'es' : ''} merged` : '');
+    if (RC.noEmail.length) {
+      $('rc-noemail').innerHTML = `⚠ ${RC.noEmail.length} activit${RC.noEmail.length !== 1 ? 'ies have' : 'y has'} no email on file and ${RC.noEmail.length !== 1 ? 'are' : 'is'} not included: `
+        + RC.noEmail.slice(0, 12).map(e => escHtml(e.recordName)).join(', ') + (RC.noEmail.length > 12 ? ` …and ${RC.noEmail.length - 12} more` : '');
+    }
+    $('rc-select-all').checked = true;
+    $('rc-card-compose').style.display = RC.rows.length ? 'block' : 'none';
+    $('rc-card-finish').style.display = RC.rows.length ? 'block' : 'none';
+    $('rc-finish-results').innerHTML = ''; $('rc-finish-progress').textContent = '';
+    renderList();
+    restoreCompose();
+    window.actRcLoadTags();
+  };
+
+  window.actRcOnShow = function() {
+    restoreOpts();
+    if (RC.rows.length) renderList();
+  };
+
+  // ── List ─────────────────────────────────────────────────────────────────
+  function sel() { return RC.rows.filter(r => r.selected && r.status !== 'done'); }
+
+  function renderList() {
+    $('rc-list').innerHTML = RC.rows.map((r, i) => {
+      const acts = r.entries.map(e => e.summary || e.recordName).filter(Boolean);
+      const sub = acts.length ? acts[0] + (acts.length > 1 ? ` +${acts.length - 1} more` : '') : '';
+      const icon = r.status === 'done' ? '<span style="color:var(--success)" title="Applied in Odoo">✓</span>'
+                 : r.status === 'err' ? '<span style="color:var(--danger)" title="Some steps failed">✗</span>'
+                 : r.drafted ? '<span style="color:var(--accent)" title="Draft file created">✉</span>' : '';
+      return `<div style="display:flex;align-items:center;gap:9px;padding:6px 8px;border-radius:6px;font-size:0.82rem;${r.status === 'done' ? 'opacity:.55' : ''}" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background='transparent'">
+        <input type="checkbox" ${r.selected ? 'checked' : ''} ${r.status === 'done' ? 'disabled' : ''} onchange="actRcToggle(${i}, this.checked)" style="accent-color:var(--accent);width:15px;height:15px;flex-shrink:0">
+        <div style="flex:1;min-width:0">
+          <div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(r.name)} <span style="color:var(--muted)">&lt;${escHtml(r.email)}&gt;</span></div>
+          <div style="font-size:0.71rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.company ? escHtml(r.company) + ' · ' : ''}${escHtml(sub)}</div>
+        </div>
+        <span style="width:16px;text-align:center">${icon}</span>
+        <button class="btn btn-ghost" onclick="actRcOpenOne(${i})" style="padding:3px 9px;font-size:0.72rem" title="Open just this person's draft in your mail app">✉</button>
+      </div>`;
+    }).join('');
+    updateCount();
+  }
+
+  function updateCount() {
+    const n = sel().length;
+    $('rc-count').textContent = `${n} of ${RC.rows.length} selected`;
+    const fb = $('rc-finish-btn');
+    if (fb) fb.textContent = `I sent them — apply to ${n} selected`;
+    const mb = $('rc-mailto-btn');
+    if (mb) {
+      const left = sel().filter(r => !r.mailto).length;
+      mb.textContent = left && left !== n ? `Text-only draft — next recipient (${left} left)` : 'Text-only draft — next recipient';
+    }
+  }
+
+  window.actRcToggle = function(i, on) { if (RC.rows[i]) RC.rows[i].selected = on; updateCount(); };
+  window.actRcToggleAll = function(on) {
+    RC.rows.forEach(r => { if (r.status !== 'done') r.selected = on; });
+    renderList();
+  };
+
+  function needSel() {
+    const s = sel();
+    if (!s.length) alert('Select at least one recipient first.');
+    return s;
+  }
+
+  // ── Copy / CSV / Mass Mail ───────────────────────────────────────────────
+  window.actRcCopyEmails = async function() {
+    const s = needSel(); if (!s.length) return;
+    const list = s.map(r => r.email).join('; ');
+    const st = $('rc-status');
+    try { await navigator.clipboard.writeText(list); st.style.color = 'var(--success)'; st.textContent = `✓ Copied ${s.length} address${s.length !== 1 ? 'es' : ''} — paste into To/BCC`; }
+    catch(e) { st.style.color = 'var(--danger)'; st.textContent = 'Clipboard blocked — use CSV instead.'; }
+  };
+
+  function csvCell(v) { v = String(v == null ? '' : v); return /[",\n\r]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }
+
+  window.actRcDownloadCsv = function() {
+    const s = needSel(); if (!s.length) return;
+    const lines = [['Name', 'Email', 'Company', 'Record', 'Activity', 'Due'].join(',')];
+    s.forEach(r => {
+      const e = r.entries[0];
+      lines.push([r.name, r.email, r.company, e.recordName, r.entries.map(x => x.summary).filter(Boolean).join(' | '), e.due].map(csvCell).join(','));
+    });
+    const blob = new Blob(['\ufeff' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `activity-recipients-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  };
+
+  window.actRcToMassMail = function() {
+    const s = needSel(); if (!s.length) return;
+    if (typeof window.mmLoadContacts !== 'function') { alert('Mass Mail is not available in this build.'); return; }
+    navTo('massmail');
+    window.mmLoadContacts(s.map(r => ({ name: r.name, email: r.email })), `${s.length} recipient${s.length !== 1 ? 's' : ''} from due activities`);
+  };
+
+  // ── Compose editor ───────────────────────────────────────────────────────
+  function editor() { return $('rc-editor'); }
+
+  window.actRcFmt = function(cmd) { editor().focus(); document.execCommand(cmd, false, null); actRcSaveDraft(); };
+  window.actRcLink = function() {
+    const url = prompt('Link address (https://…):', 'https://');
+    if (!url || url === 'https://') return;
+    editor().focus(); document.execCommand('createLink', false, url); actRcSaveDraft();
+  };
+  window.actRcClearEditor = function() {
+    if (editor().innerHTML.trim() && !confirm('Clear the message?')) return;
+    editor().innerHTML = ''; actRcSaveDraft();
+  };
+
+  function fileToDataUrl(file) {
+    return new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.onerror = rej; fr.readAsDataURL(file); });
+  }
+  async function insertImageFile(file) {
+    const url = await fileToDataUrl(file);
+    editor().focus();
+    document.execCommand('insertHTML', false, `<img src="${url}" style="max-width:100%;height:auto"><br>`);
+  }
+  window.actRcInsertImages = async function(input) {
+    for (const f of Array.from(input.files || [])) { try { await insertImageFile(f); } catch(e) {} }
+    input.value = ''; actRcSaveDraft();
+  };
+
+  function composeStatus(msg, color) { const el = $('rc-compose-status'); if (el) { el.style.color = color || 'var(--muted)'; el.textContent = msg; } }
+
+  // Pasted content: keep formatting, rescue blob: images, and say so if the
+  // browser couldn't read an image (Word/Outlook sometimes paste file:/cid: links).
+  async function fixPastedImages() {
+    let bad = 0;
+    for (const img of Array.from(editor().querySelectorAll('img'))) {
+      const src = img.getAttribute('src') || '';
+      if (src.startsWith('blob:')) {
+        try { const b = await (await fetch(src)).blob(); img.setAttribute('src', await fileToDataUrl(b)); } catch(e) { bad++; }
+      } else if (!src.startsWith('data:') && !/^https?:/i.test(src)) bad++;
+      img.style.maxWidth = '100%'; img.style.height = 'auto';
+    }
+    if (bad) composeStatus(`⚠ ${bad} pasted image${bad !== 1 ? 's' : ''} can't be read by the browser — remove ${bad !== 1 ? 'them' : 'it'} and use 🖼 Insert image instead.`, 'var(--warning,#d99a3f)');
+    actRcSaveDraft();
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const ed = editor(); if (!ed) return;
+    ed.addEventListener('paste', async ev => {
+      const files = Array.from(ev.clipboardData?.files || []).filter(f => f.type.startsWith('image/'));
+      const hasHtml = ev.clipboardData?.types?.includes('text/html');
+      if (files.length && !hasHtml) {          // bare screenshot / copied image
+        ev.preventDefault();
+        for (const f of files) { try { await insertImageFile(f); } catch(e) {} }
+        actRcSaveDraft();
+      } else {
+        setTimeout(fixPastedImages, 60);
+      }
+    });
+  });
+
+  window.actRcSaveDraft = function() {
+    try {
+      const html = editor().innerHTML;
+      if (html.length > 1500000) { composeStatus('Message is large — it won\'t be remembered if you reload, but it will still work.', 'var(--warning,#d99a3f)'); return; }
+      localStorage.setItem(LS_DRAFT, JSON.stringify({ subject: $('rc-subject').value, html }));
+    } catch(e) {}
+  };
+  function restoreCompose() {
+    if ($('rc-subject').value || editor().innerHTML.trim()) return;
+    try {
+      const d = JSON.parse(localStorage.getItem(LS_DRAFT) || 'null');
+      if (d) { $('rc-subject').value = d.subject || ''; editor().innerHTML = d.html || ''; }
+    } catch(e) {}
+  }
+
+  // ── Per-recipient content ────────────────────────────────────────────────
+  function firstName(r) {
+    const n = (r.name || '').trim();
+    if (!n || n.includes('@')) return '';
+    return n.split(/\s+/)[0];
+  }
+  function fillTokens(str, r, asHtml) {
+    const fn = firstName(r) || 'there';
+    const full = (r.name && !r.name.includes('@') && r.name.trim()) || 'there';
+    const e = asHtml ? escHtml : (x => x);
+    return str.replace(/\{\{\s*first[_ ]?name\s*\}\}/gi, () => e(fn))
+              .replace(/\{\{\s*(?:full[_ ]?)?name\s*\}\}/gi, () => e(full));
+  }
+  function currentSubject(r) { return fillTokens($('rc-subject').value.trim(), r, false); }
+  function currentHtml(r) {
+    const clone = editor().cloneNode(true);
+    clone.removeAttribute('contenteditable'); clone.removeAttribute('id'); clone.removeAttribute('style'); clone.removeAttribute('data-placeholder');
+    return fillTokens(clone.innerHTML, r, true);
+  }
+  function htmlToText(html) {
+    const d = new DOMParser().parseFromString('<div>' + html + '</div>', 'text/html');
+    d.querySelectorAll('br').forEach(b => b.replaceWith('\n'));
+    d.querySelectorAll('a[href]').forEach(a => {
+      const h = a.getAttribute('href') || '';
+      if (h && !/^(mailto:|#)/i.test(h) && a.textContent.trim() !== h) a.append(' (' + h + ')');
+    });
+    d.querySelectorAll('p,div,li,h1,h2,h3,h4,h5,h6,tr').forEach(e => e.append('\n'));
+    return d.body.textContent.replace(/\u00a0/g, ' ').replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+  }
+  function needMessage() {
+    if (!$('rc-subject').value.trim() && !editor().textContent.trim() && !editor().querySelector('img')) {
+      alert('Write a subject or message first (or paste your email into the message box).'); return false;
+    }
+    return true;
+  }
+
+  // ── .eml builder (unsent draft; images embedded via cid:) ────────────────
+  function b64Utf8(str) {
+    const bytes = new TextEncoder().encode(str);
+    let bin = ''; for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+    return btoa(bin);
+  }
+  const wrap76 = s => s.replace(/(.{76})/g, '$1\r\n');
+  const encWord = s => /^[\x20-\x7e]*$/.test(s) ? s : '=?UTF-8?B?' + b64Utf8(s) + '?=';
+
+  function buildEml(r) {
+    const subject = currentSubject(r);
+    let html = currentHtml(r);
+    const images = [];
+    html = html.replace(/(<img\b[^>]*?\bsrc=)(["'])data:([a-z0-9.+\-\/]+);base64,([^"']*)\2/gi, (m, pre, q, mime, data) => {
+      const n = images.length + 1;
+      const ext = (mime.split('/')[1] || 'png').replace('jpeg', 'jpg').replace(/[^a-z0-9]/gi, '');
+      images.push({ cid: `img${n}.${Date.now().toString(36)}@oel`, mime, data, name: `image${n}.${ext}` });
+      return `${pre}${q}cid:${images[images.length - 1].cid}${q}`;
+    });
+    const fullHtml = `<html><head><meta charset="utf-8"></head><body style="font-family:Calibri,Arial,sans-serif;font-size:11pt">${html}</body></html>`;
+    const text = htmlToText(html);
+    const uid = Math.random().toString(36).slice(2, 10);
+    const REL = '=_rel_' + uid, ALT = '=_alt_' + uid;
+    const toName = (r.name && !r.name.includes('@')) ? r.name : '';
+    const toHdr = toName
+      ? (/^[\x20-\x7e]*$/.test(toName) ? `"${toName.replace(/["\\]/g, '')}" <${r.email}>` : `${encWord(toName)} <${r.email}>`)
+      : r.email;
+    const L = [];
+    L.push('X-Unsent: 1', `To: ${toHdr}`, `Subject: ${encWord(subject)}`, 'MIME-Version: 1.0');
+    L.push(`Content-Type: multipart/related; type="multipart/alternative"; boundary="${REL}"`, '');
+    L.push(`--${REL}`, `Content-Type: multipart/alternative; boundary="${ALT}"`, '');
+    L.push(`--${ALT}`, 'Content-Type: text/plain; charset="utf-8"', 'Content-Transfer-Encoding: base64', '', wrap76(b64Utf8(text)));
+    L.push(`--${ALT}`, 'Content-Type: text/html; charset="utf-8"', 'Content-Transfer-Encoding: base64', '', wrap76(b64Utf8(fullHtml)));
+    L.push(`--${ALT}--`);
+    images.forEach(im => {
+      L.push(`--${REL}`, `Content-Type: ${im.mime}; name="${im.name}"`, 'Content-Transfer-Encoding: base64',
+             `Content-ID: <${im.cid}>`, `Content-Disposition: inline; filename="${im.name}"`, '', wrap76(im.data.replace(/\s/g, '')));
+    });
+    L.push(`--${REL}--`, '');
+    return L.join('\r\n');
+  }
+
+  function downloadEml(r) {
+    const blob = new Blob([buildEml(r)], { type: 'message/rfc822' });
+    const a = document.createElement('a');
+    const safe = (r.name || r.email).normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9 ._-]+/gi, '').trim().slice(0, 40) || r.email.replace(/[^a-z0-9._-]+/gi, '_');
+    a.href = URL.createObjectURL(blob);
+    a.download = `Draft - ${safe}.eml`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    r.drafted = true;
+  }
+
+  window.actRcOpenEml = async function() {
+    if (!needMessage()) return;
+    const s = needSel(); if (!s.length) return;
+    if (s.length > 15 && !confirm(`This will create ${s.length} separate draft files. Your browser may ask permission to download multiple files.\n\nContinue?`)) return;
+    for (let i = 0; i < s.length; i++) {
+      composeStatus(`Creating draft ${i + 1} of ${s.length}…`);
+      downloadEml(s[i]);
+      await new Promise(r => setTimeout(r, 450));
+    }
+    composeStatus(`✓ ${s.length} draft${s.length !== 1 ? 's' : ''} created — open them from your downloads (or they open automatically if you chose “Always open”).`, 'var(--success)');
+    renderList();
+  };
+
+  window.actRcOpenOne = function(i) {
+    const r = RC.rows[i]; if (!r || !needMessage()) return;
+    downloadEml(r); composeStatus(`✓ Draft for ${r.name} created.`, 'var(--success)'); renderList();
+  };
+
+  window.actRcOpenNextMailto = function() {
+    if (!needMessage()) return;
+    const s = needSel(); if (!s.length) return;
+    let r = s.find(x => !x.mailto);
+    if (!r) {
+      if (!confirm('All selected recipients have already been opened. Start over from the first one?')) return;
+      s.forEach(x => x.mailto = false); r = s[0];
+    }
+    const subject = currentSubject(r);
+    const body = htmlToText(currentHtml(r));
+    let url = 'mailto:' + encodeURIComponent(r.email) + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+    let note = '';
+    if (url.length > 1900) { url = url.slice(0, 1900).replace(/%[0-9A-F]?$/i, ''); note = ' (message was long — it may be cut off; use the mail-app button for the full text)'; }
+    r.mailto = true;
+    window.location.href = url;
+    const left = s.filter(x => !x.mailto).length;
+    composeStatus(`Opened ${r.name}${left ? ` — ${left} more` : ' — that was the last one'}${note}.`, note ? 'var(--warning,#d99a3f)' : 'var(--muted)');
+    updateCount();
+  };
+
+  // ── Finish: clear activity / note / optional follow-up / tag ────────────
+  window.actRcSaveOpts = function() {
+    try {
+      localStorage.setItem(LS_OPTS, JSON.stringify({
+        done: $('rc-opt-done').checked, note: $('rc-opt-note').checked,
+        fu: $('rc-opt-fu').checked, days: parseInt($('rc-fu-days').value) || 14,
+      }));
+    } catch(e) {}
+  };
+  function restoreOpts() {
+    let o = null;
+    try { o = JSON.parse(localStorage.getItem(LS_OPTS) || 'null'); } catch(e) {}
+    if (o) {
+      $('rc-opt-done').checked = o.done !== false; $('rc-opt-note').checked = o.note !== false;
+      $('rc-opt-fu').checked = !!o.fu; $('rc-fu-days').value = o.days || 14;
+    } else {
+      $('rc-fu-days').value = (typeof followUpDays === 'number' && followUpDays) || 14;
+    }
+  }
+
+  const _modelIds = {};
+  async function modelId(model) {
+    if (_modelIds[model]) return _modelIds[model];
+    const ids = await odooExecute(odooUid, 'ir.model', 'search', [[['model', '=', model]]]);
+    if (!ids || !ids.length) throw new Error(`model ${model} not found`);
+    return (_modelIds[model] = ids[0]);
+  }
+
+  window.actRcFinish = async function() {
+    if (!odooUid) { alert('Connect to Odoo first.'); return; }
+    const s = needSel(); if (!s.length) return;
+    const o = {
+      done: $('rc-opt-done').checked, note: $('rc-opt-note').checked,
+      fu: $('rc-opt-fu').checked, days: Math.max(1, parseInt($('rc-fu-days').value) || 14),
+      tags: window.actParseTags($('rc-tag').value),
+    };
+    if (!o.done && !o.note && !o.fu && !o.tags.length) { alert('Nothing is checked — tick at least one thing to apply.'); return; }
+    const plan = [o.note && 'log a note', o.done && 'clear the activity', o.fu ? `schedule a follow-up in ${o.days} days` : 'NOT schedule a follow-up', o.tags.length && `tag with “${o.tags.join('”, “')}”`].filter(Boolean).join(' · ');
+    if (!confirm(`For ${s.length} recipient${s.length !== 1 ? 's' : ''}: ${plan}.\n\nOnly continue if the emails have actually gone out.`)) return;
+
+    const btn = $('rc-finish-btn'), prog = $('rc-finish-progress'), out = $('rc-finish-results');
+    btn.disabled = true; out.innerHTML = '';
+    const subject = $('rc-subject').value.trim() || '(no subject)';
+    const today = new Date().toISOString().slice(0, 10);
+    const due = new Date(Date.now() + o.days * 86400000).toISOString().slice(0, 10);
+    let defaultType = null;
+    if (o.fu) { try { const t = await odooExecute(odooUid, 'mail.activity.type', 'search', [[['category', '=', 'default']]]); defaultType = t && t[0] || null; } catch(e) {} }
+
+    let ok = 0, bad = 0;
+    for (let i = 0; i < s.length; i++) {
+      const r = s[i];
+      prog.textContent = `Processing ${i + 1} of ${s.length}…`;
+      const did = [], fail = [];
+
+      if (o.tags.length) {
+        try {
+          const pid = r.partnerId || await resolvePartnerId(r.entries[0].model, r.entries[0].resId, r.email);
+          if (!pid) throw new Error('no Odoo contact found');
+          r.partnerId = pid;
+          await tagPartner(pid, o.tags); did.push('tagged');
+        } catch(e) { fail.push('tag: ' + e.message); }
+      }
+
+      if (o.note) {
+        const text = (htmlToText(currentHtml(r)) || '').slice(0, 4000);
+        const noteText = ['Email sent via OdooLink (drafted in mail app)', '─────────────────────────────',
+                          `To: ${r.email}`, `Subject: ${currentSubject(r) || subject}`, '─────────────────────────────', text].join('\n');
+        const seen = new Set();
+        for (const e of r.entries) {
+          const k = e.model + ':' + e.resId; if (seen.has(k)) continue; seen.add(k);
+          try { await postVerifiedNote(e.model, e.resId, noteText); if (!did.includes('noted')) did.push('noted'); }
+          catch(err) { fail.push('note: ' + String(err.message).slice(0, 80)); }
+        }
+      }
+
+      if (o.done) {
+        let cleared = 0;
+        for (const e of r.entries) {
+          try {
+            try { await odooExecute(odooUid, 'mail.activity', 'action_feedback', [[e.activityId]], { feedback: 'Email sent via OdooLink.' }); }
+            catch(e1) { await odooExecute(odooUid, 'mail.activity', 'unlink', [[e.activityId]]); }
+            cleared++;
+          } catch(err) { fail.push('clear: ' + String(err.message).slice(0, 80)); }
+        }
+        if (cleared) did.push(cleared > 1 ? `${cleared} activities cleared` : 'activity cleared');
+      }
+
+      if (o.fu) {
+        try {
+          const e = r.entries[0];
+          const vals = { res_model_id: await modelId(e.model), res_id: e.resId, user_id: odooUid, date_deadline: due,
+                         summary: `Follow-up: ${e.summary || subject}`,
+                         note: `Scheduled after email sent on ${today}.\nSubject: ${subject}` };
+          const typeId = Array.isArray(e.typeId) ? e.typeId[0] : (e.typeId || defaultType);
+          if (typeId) vals.activity_type_id = typeId;
+          await odooExecute(odooUid, 'mail.activity', 'create', [vals]);
+          did.push('follow-up ' + due);
+        } catch(err) { fail.push('follow-up: ' + String(err.message).slice(0, 80)); }
+      }
+
+      const row = document.createElement('div');
+      row.style.cssText = 'font-size:0.76rem;color:var(--muted)';
+      if (fail.length) { bad++; r.status = 'err'; row.innerHTML = `✗ ${escHtml(r.name)} — ${escHtml(did.join(', ') || 'nothing applied')}; <span style="color:var(--danger)">${escHtml(fail.join('; '))}</span>`; }
+      else { ok++; r.status = 'done'; r.selected = false; row.innerHTML = `✓ ${escHtml(r.name)} — ${escHtml(did.join(', '))}`; }
+      out.appendChild(row);
+    }
+    btn.disabled = false;
+    prog.textContent = `Done — ${ok} applied${bad ? `, ${bad} with errors (left selected so you can retry)` : ''}`;
+    renderList();
+  };
+
+})();
+</script>
+
 <!-- ── Mass Mail ─────────────────────────────────────────────────────────── -->
 <script>
 (function(){
@@ -29142,6 +29825,30 @@ document.addEventListener('DOMContentLoaded', hslInit);
     const el = document.getElementById('mm-err-banner');
     if (el) { el.style.display = 'block'; el.textContent = msg; }
   }
+
+  // Called by Activities → Recipients ("Move to Mass Mail"): replaces the contact
+  // list with [{name,email}] exactly as if a spreadsheet had been uploaded.
+  window.mmLoadContacts = function(list, sourceLabel) {
+    const seen = new Set();
+    const contacts = [];
+    (list || []).forEach(c => {
+      const email = String(c.email || '').trim();
+      if (!email || !email.includes('@') || seen.has(email.toLowerCase())) return;
+      seen.add(email.toLowerCase());
+      contacts.push({ name: (c.name || '').trim() || email.split('@')[0], email, selected: true, status: '' });
+    });
+    if (!contacts.length) return;
+    MM.contacts = contacts;
+    MM.batchIdx = 0;
+    const errBanner = document.getElementById('mm-err-banner');
+    if (errBanner) errBanner.style.display = 'none';
+    const banner = document.getElementById('mm-file-banner');
+    if (banner) banner.textContent = `${sourceLabel || 'Imported list'} — ${contacts.length} contact${contacts.length !== 1 ? 's' : ''} loaded`;
+    document.getElementById('mm-list-card').style.display = 'block';
+    document.getElementById('mm-compose-card').style.display = 'block';
+    document.getElementById('mm-log-card').style.display = 'block';
+    mmRenderList();
+  };
 
   // ── Upload / parse ──────────────────────────────────────────────────────
   window.mmHandleDrop = function(ev) {
