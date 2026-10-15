@@ -3,7 +3,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <meta name="oel-version" content="v15.39">
+  <meta name="oel-version" content="v15.40">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="mobile-web-app-capable" content="yes">
@@ -663,6 +663,26 @@
   .lm-chip { padding: 5px 12px; border-radius: 20px; font-size: 0.74rem; border: 1px solid var(--border); background: var(--surface2); color: var(--muted); cursor: pointer; font-family: 'DM Mono', monospace; transition: all 0.15s; }
   .lm-chip:hover { border-color: var(--accent); color: var(--accent); }
   .lm-chip.active { border-color: var(--accent); background: var(--accent-dim); color: var(--accent); font-weight: 500; }
+
+  /* Briefing builder */
+  .bp-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+  .bp-cat { background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 6px; }
+  .bp-cat-head { display: flex; align-items: center; gap: 8px; font-size: 0.86rem; font-weight: 600; cursor: pointer; }
+  .bp-cat-sub { font-size: 0.72rem; color: var(--muted); margin: -2px 0 4px 24px; }
+  .bp-item { display: flex; gap: 9px; align-items: flex-start; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; background: var(--surface); transition: border-color .15s, background .15s; }
+  .bp-item:hover { border-color: var(--accent); }
+  .bp-item.on { border-color: var(--accent); background: var(--accent-dim); }
+  .bp-item input, .bp-cat-head input { accent-color: var(--accent); width: 15px; height: 15px; margin-top: 2px; flex-shrink: 0; cursor: pointer; }
+  .bp-item-label { font-size: 0.82rem; font-weight: 500; }
+  .bp-item-desc { font-size: 0.72rem; color: var(--muted); line-height: 1.4; margin-top: 1px; }
+  .bb-cat-head { display: flex; align-items: center; gap: 10px; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); font-weight: 600; margin: 20px 0 8px; }
+  .bb-cat-head i { flex: 1; height: 1px; background: var(--border); }
+  .bb-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; margin-bottom: 10px; }
+  .bb-card-title { font-size: 0.72rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+  .bb-chip { font-size: 0.74rem; padding: 3px 10px; border-radius: 20px; border: 1px solid var(--border); }
+  .bb-warning { color: var(--warning); border-color: var(--warning); }
+  .bb-danger { color: var(--danger); border-color: var(--danger); }
+  .bb-success { color: var(--success); border-color: var(--success); }
 
   .lead-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; margin-bottom: 8px; transition: transform 0.15s, border-color 0.15s, opacity 0.2s; animation: cardIn 0.18s ease both; }
   .lead-card:hover { border-color: var(--accent); transform: translateY(-1px); }
@@ -3338,7 +3358,7 @@ Support Team"></textarea>
         <div class="card" style="margin-bottom:14px">
           <div class="card-title">📊 Reports</div>
           <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
-            <p style="margin:0 0 4px"><strong style="color:var(--text)">Dashboard:</strong> 8 CRM cards + 4 accounting cards, click any for drill-down. ⚡ Daily AI Briefing summarizes pipeline, wins, due activities, stale deals. Quick reports: Aged AR · Top Customers (YTD) · Overdue Notices — print-ready.</p>
+            <p style="margin:0 0 4px"><strong style="color:var(--text)">Dashboard:</strong> 8 CRM cards + 4 accounting cards, click any for drill-down. ⚡ Daily Briefing opens a picker: tick the sections you want (My day, Sales, Accounting, Emails, Operations) and get a live company-wide report plus an optional AI summary. Quick reports: Aged AR · Top Customers (YTD) · Overdue Notices — print-ready.</p>
             <p style="margin:0"><strong style="color:var(--text)">Sales Reporting:</strong> filter rental/sales orders by rep, order type, stage, and delivery month, sortable on every column. <strong style="color:var(--text)">Commission estimate</strong> toggle restricts to confirmed orders, switches to delivery-date filtering, and totals goods-only revenue by <strong style="color:var(--text)">product category</strong> (not product type) — use ⚙ Categories to mark which categories count as services, and the rate chips (5% / 7% / 10% / custom) to set the payout percentage. The delivery-date field auto-detects from your Odoo schema and can be overridden in the dropdown if it guesses wrong.</p>
             <p style="margin:0 0 4px"><strong style="color:var(--text)">Location</strong> shows the order's delivery/shipping address. <strong style="color:var(--text)">Tax</strong> isn't pulled from Odoo's tax engine — it's whichever order line has "tax" in its name, shown by name and amount so you can tell NW Tax from Local Tax at a glance. Use <strong style="color:var(--text)">⚙ Tax names</strong> to maintain the approved list — any tax line that doesn't match gets flagged in red with a ⚠, and the "Unapproved Tax" summary card counts how many orders need a look.</p>
           </div>
@@ -3473,7 +3493,7 @@ Support Team"></textarea>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px">
             <select id="laz-pipeline-user" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.82rem;outline:none;cursor:pointer;max-width:220px"></select>
             <button class="btn btn-ghost" onclick="lazDashboardLoad()" title="Reload all dashboard stats from Odoo" style="padding:7px 16px;font-size:0.8rem">Refresh</button>
-            <button class="btn btn-ghost" onclick="lazGenerateBriefing()" title="Generate your AI daily briefing — pipeline, activities, wins, and optional flagged email scan" style="padding:7px 14px;font-size:0.8rem;gap:5px;border-color:var(--accent);color:var(--accent)">
+            <button class="btn btn-ghost" onclick="lazGenerateBriefing()" title="Build your briefing — pick sales, accounting, emails and operations sections" style="padding:7px 14px;font-size:0.8rem;gap:5px;border-color:var(--accent);color:var(--accent)">
               <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 1l1 3L10 5.5l-3 1-1 3-1-3-3-1 3-1z" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"></path></svg>
               Daily briefing
             </button>
@@ -5555,8 +5575,42 @@ Thank you</textarea>
   </div>
 
   <!-- Laz Daily Briefing Modal -->
+  <div id="briefing-picker-modal" class="modal-overlay hidden">
+    <div class="modal" style="max-width:780px">
+      <div class="modal-header">
+        <div class="modal-header-text">
+          <div class="record">⚡ Daily Briefing</div>
+          <div class="contact">Choose what goes into your report — numbers come live from Odoo</div>
+        </div>
+        <button class="modal-close" onclick="briefClosePicker()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+          <span style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted)">Quick pick</span>
+          <span id="bp-presets" style="display:flex;gap:6px;flex-wrap:wrap"></span>
+        </div>
+        <div id="bp-cats" class="bp-grid"></div>
+        <label class="bp-item" id="bp-ai-label" style="margin-top:14px;align-items:center">
+          <input type="checkbox" id="bp-ai" checked onchange="this.closest('.bp-item').classList.toggle('on', this.checked)">
+          <div><div class="bp-item-label">⚡ AI advisor summary on top</div><div class="bp-item-desc">Your priorities for today plus a company watch-list, written from the numbers you picked (uses your Groq key)</div></div>
+        </label>
+      </div>
+      <div class="modal-footer">
+        <span id="bp-count" style="font-size:0.78rem;color:var(--muted)"></span>
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-ghost" onclick="briefClosePicker()">Cancel</button>
+          <button class="btn btn-primary" id="bp-go" onclick="briefGenerate()" style="gap:6px">
+            <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 1l1 3L10 5.5l-3 1-1 3-1-3-3-1 3-1z" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"></path></svg>
+            Generate briefing
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Laz Daily Briefing Modal -->
   <div id="laz-briefing-modal" class="modal-overlay hidden">
-    <div class="modal" style="max-width:680px">
+    <div class="modal" style="max-width:820px">
       <div class="modal-header">
         <div class="modal-header-text">
           <div class="record">⚡ Daily Briefing</div>
@@ -5564,32 +5618,23 @@ Thank you</textarea>
         </div>
         <button class="modal-close" onclick="document.getElementById('laz-briefing-modal').classList.add('hidden')">✕</button>
       </div>
-      <div class="modal-body" id="briefing-body" style="min-height:200px;white-space:pre-wrap;font-family:'DM Sans',sans-serif;font-size:0.88rem;line-height:1.8;color:var(--text)">
-        <div style="display:flex;align-items:center;justify-content:center;height:160px;gap:10px;color:var(--muted)">
-          <div class="dot spin" style="display:inline-block"></div>
-          <span>AI is reading your pipeline…</span>
-        </div>
-      </div>
+      <div class="modal-body" id="briefing-body" style="min-height:200px;font-family:'DM Sans',sans-serif;font-size:0.88rem;line-height:1.6;color:var(--text)"></div>
       <div class="modal-footer">
-        <label style="display:flex;align-items:center;gap:7px;font-size:0.79rem;cursor:pointer;user-select:none;padding:5px 10px;border:1px solid var(--border);border-radius:8px;transition:all 0.15s" id="overachiever-label" title="Also scans your flagged emails and adds action suggestions">
-          <input type="checkbox" id="briefing-overachiever" style="accent-color:var(--accent);cursor:pointer" onchange="
-            const lbl=document.getElementById('overachiever-label');
-            lbl.style.borderColor=this.checked?'var(--accent)':'var(--border)';
-            lbl.style.color=this.checked?'var(--accent)':'var(--muted)';
-            lbl.style.background=this.checked?'var(--accent-dim)':'none';
-          ">
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1l1.2 3.6L11 5.5l-2.9 2.7.7 3.8L6 10.2l-2.8 1.8.7-3.8L1 5.5l3.8-.9z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"></path></svg>
-          Over Achiever
-        </label>
+        <button class="btn btn-ghost" onclick="lazBriefingOpenPicker()" style="gap:5px" title="Change which sections are included">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1.5 3h9M1.5 6h9M1.5 9h9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"></path></svg>
+          Choose sections
+        </button>
         <div style="flex:1"></div>
+        <button class="btn btn-ghost" onclick="briefingCopy()" id="briefing-copy-btn" title="Copy the whole briefing as text">Copy</button>
+        <button class="btn btn-ghost" onclick="briefingDownload()" title="Download as a .txt file">Download</button>
         <button class="btn btn-ghost" onclick="briefingSendToSelf()" style="gap:5px" id="briefing-send-btn" title="Send briefing to yourself via email">
           <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M1 1l9 4.5L1 10V6.5l6-2-6-2V1z" fill="currentColor"></path></svg>
           Send to myself
         </button>
         <button class="btn btn-ghost" onclick="document.getElementById('laz-briefing-modal').classList.add('hidden')">Close</button>
-        <button class="btn btn-ghost" onclick="lazGenerateBriefing()" style="gap:5px">
+        <button class="btn btn-ghost" onclick="lazRunBriefing()" style="gap:5px">
           <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M9 2.5A4 4 0 1 0 9.8 6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"></path><path d="M8 1v2.5h2.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-          Regenerate
+          Refresh
         </button>
       </div>
     </div>
@@ -24543,146 +24588,699 @@ async function ddBackToVelocity() {
 
 // ── Daily Briefing ────────────────────────────────────────
 
-async function lazGenerateBriefing() {
-  if (!odooUid) { alert('Connect to Odoo first (Steps 1-2).'); return; }
-  const modal = document.getElementById('laz-briefing-modal');
-  const body  = document.getElementById('briefing-body');
-  const sub   = document.getElementById('briefing-subtitle');
-  const overAchiever = document.getElementById('briefing-overachiever')?.checked || false;
-  modal.classList.remove('hidden');
-  body.style.padding = '20px 24px';
-  body.innerHTML = '<div style="display:flex;align-items:center;gap:10px;color:var(--muted)"><div class="dot spin" style="display:inline-block"></div><span>Loading your Odoo data…</span></div>';
+// ══════════════════════════════════════════════════════════════════════════
+// Briefing Builder — the Daily Briefing button opens a picker; the report is
+// assembled from live Odoo numbers (one card per checked item) with an
+// optional AI summary on top. Every item fails on its own, never the report.
+// ══════════════════════════════════════════════════════════════════════════
+async function lazGenerateBriefing() { lazBriefingOpenPicker(); }
 
-  const groqKey = document.getElementById('gemini-key')?.value?.trim() || '';
-  if (!groqKey) { body.innerHTML = '<div style="color:var(--danger)">No Groq key — add in Step 1</div>'; return; }
+(function(){
+  const LS = 'oel_briefing_prefs_v1';
 
-  const userId    = parseInt(document.getElementById('laz-pipeline-user')?.value) || odooUid;
-  const userFilter = [['user_id','=',userId]];
-  const today     = new Date().toISOString().split('T')[0];
-  const model     = document.getElementById('gemini-model')?.value || 'qwen/qwen3.8-27b';
-  sub.textContent = new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
-  if (overAchiever) sub.textContent += ' ⚡ Over Achiever';
+  const CATS = [
+    { id:'my',    icon:'☀️', title:'My day',          sub:'Your own items — the heart of the original briefing' },
+    { id:'sales', icon:'📈', title:'Sales',           sub:'Company-wide pipeline, wins and team activity' },
+    { id:'acct',  icon:'💰', title:'Accounting',      sub:'Receivables, revenue, payables and to-do' },
+    { id:'mail',  icon:'✉️', title:'Emails & inbox',  sub:'What is waiting on a reply' },
+    { id:'ops',   icon:'🛠️', title:'Operations',      sub:'Tasks, upcoming orders, purchasing, new contacts' },
+  ];
 
-  try {
-    // Base Odoo data fetch
-    const [opps, acts, inbox, won] = await Promise.all([
-      odooExecute(odooUid,'crm.lead','search_read',
-        [[...userFilter,['type','=','opportunity'],['probability','<',100],['active','=',true]]],
-        {fields:['name','expected_revenue','probability','stage_id','write_date','date_deadline'],limit:50}).catch(()=>[]),
-      odooExecute(odooUid,'mail.activity','search_read',
-        [[['user_id','=',userId],['date_deadline','<=',today]]],
-        {fields:['summary','date_deadline','res_name'],limit:20}).catch(()=>[]),
-      odooExecute(odooUid,'mail.message','search_read',
-        [[['needaction','=',true]]],
-        {fields:['subject','record_name'],limit:10}).catch(()=>[]),
-      odooExecute(odooUid,'crm.lead','search_read',
-        [[...userFilter,['type','=','opportunity'],['probability','=',100],['active','=',false]]],
-        {fields:['name','expected_revenue'],limit:5,order:'write_date desc'}).catch(()=>[]),
+  // run() is attached below; desc is what the checkbox promises.
+  const ITEMS = [
+    { id:'my_acts',     cat:'my',    label:'My due & overdue activities', desc:'Everything on your plate today, oldest first' },
+    { id:'my_pipeline', cat:'my',    label:'My pipeline',                 desc:'Open deals, stale deals to rescue, wins in the last 30 days' },
+    { id:'my_tasks',    cat:'my',    label:'My project tasks',            desc:'Open tasks assigned to you, due within 7 days' },
+    { id:'my_notes',    cat:'my',    label:'My sticky notes',             desc:'Your saved work notes' },
+
+    { id:'co_pipeline', cat:'sales', label:'Pipeline by stage & rep',     desc:'Open value, weighted value, where it sits and who owns it' },
+    { id:'co_won',      cat:'sales', label:'Wins & losses',               desc:'Won / lost this month vs last month, top closers' },
+    { id:'co_new',      cat:'sales', label:'New leads (7 days)',          desc:'What came in, and what nobody owns yet' },
+    { id:'co_stalled',  cat:'sales', label:'Stalled deals (30+ days)',    desc:'Value at risk across every rep' },
+    { id:'co_quotes',   cat:'sales', label:'Quotes & orders',             desc:'Open quotations, aging ones, confirmed orders this month' },
+    { id:'co_reps',     cat:'sales', label:'Overdue activities by rep',   desc:'Who is behind on follow-ups' },
+
+    { id:'ac_ar',       cat:'acct',  label:'Receivables & aging',         desc:'Open AR, overdue, aging buckets, biggest overdue customers' },
+    { id:'ac_rev',      cat:'acct',  label:'Revenue & collections',       desc:'Invoiced and collected this month vs last month' },
+    { id:'ac_ap',       cat:'acct',  label:'Payables',                    desc:'Vendor bills open, overdue and due in the next 7 days' },
+    { id:'ac_todo',     cat:'acct',  label:'Accounting to-do',            desc:'Drafts to post, unreconciled bank lines, expenses to approve' },
+
+    { id:'em_odoo',     cat:'mail',  label:'Odoo inbox',                  desc:'Unread messages and mentions waiting for you' },
+    { id:'em_flagged',  cat:'mail',  label:'Flagged emails (mailbox)',    desc:'Your flagged IMAP emails — needs the local server running' },
+    { id:'em_bounce',   cat:'mail',  label:'Bounced contacts',            desc:'Contacts tagged “Bounced Email” that need a fixed address' },
+
+    { id:'op_tasks',    cat:'ops',   label:'Overdue project tasks',       desc:'Company-wide, grouped by project' },
+    { id:'op_upcoming', cat:'ops',   label:'Upcoming orders & returns',   desc:'Orders/rentals in the next 7 days and overdue returns' },
+    { id:'op_purch',    cat:'ops',   label:'Purchasing',                  desc:'Open RFQs and purchase orders this month' },
+    { id:'op_contacts', cat:'ops',   label:'New contacts (7 days)',       desc:'Who was added to Odoo lately' },
+  ];
+
+  const PRESETS = {
+    myday: { label:'My day', ai:true,  items:['my_acts','my_pipeline','my_tasks','my_notes','em_odoo'] },
+    owner: { label:'Owner overview', ai:true, items:['my_acts','co_pipeline','co_won','co_quotes','co_reps','ac_ar','ac_rev','ac_ap','ac_todo','em_odoo','op_tasks','op_upcoming'] },
+    all:   { label:'Everything', ai:true, items:ITEMS.map(i=>i.id) },
+    none:  { label:'Clear', ai:false, items:[] },
+  };
+
+  // ── tiny helpers ────────────────────────────────────────────────────────
+  const $ = id => document.getElementById(id);
+  const pad = n => String(n).padStart(2,'0');
+  const ymd = d => d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+  const addDays = (d,n) => { const x = new Date(d); x.setDate(x.getDate()+n); return x; };
+  const nm = v => Array.isArray(v) ? v[1] : (v || '');
+  const idOf = v => Array.isArray(v) ? v[0] : v;
+  const fm = v => (v<0?'-':'') + ddFmt(Math.abs(v||0));
+  const plural = (n, w, p) => n + ' ' + (n===1 ? w : (p || w+'s'));
+  const sum = (arr, f) => arr.reduce((s,r)=>s+(Number(r[f])||0),0);
+  const dayDiff = (a, b) => Math.floor((new Date(a) - new Date(b)) / 864e5); // a - b in days (YYYY-MM-DD)
+
+  function dates() {
+    const T = new Date();
+    const lme = new Date(T.getFullYear(), T.getMonth(), 0);
+    return {
+      today: ymd(T),
+      monthStart: ymd(new Date(T.getFullYear(), T.getMonth(), 1)),
+      lastMonthStart: ymd(new Date(T.getFullYear(), T.getMonth()-1, 1)),
+      lastMonthEnd: ymd(lme),
+      sameDayLast: ymd(new Date(T.getFullYear(), T.getMonth()-1, Math.min(T.getDate(), lme.getDate()))),
+      d7ago: ymd(addDays(T,-7)), d14ago: ymd(addDays(T,-14)), d30ago: ymd(addDays(T,-30)),
+      d7ahead: ymd(addDays(T,7)),
+    };
+  }
+
+  async function sr(model, domain, fields, opts) {
+    const o = Object.assign({ fields, limit: 1000 }, opts || {});
+    const r = (await odooExecute(odooUid, model, 'search_read', [domain], o)) || [];
+    r.trunc = r.length >= o.limit;
+    return r;
+  }
+  const cnt = (model, domain) => odooExecute(odooUid, model, 'search_count', [domain]);
+
+  const _fields = {};
+  async function fieldsOf(model) {
+    if (_fields[model]) return _fields[model];
+    try { _fields[model] = (await odooExecute(odooUid, model, 'fields_get', [], { attributes: ['type','selection'] })) || {}; }
+    catch(e) { _fields[model] = {}; }
+    return _fields[model];
+  }
+
+  const link = (model, id, label) => (typeof ddOdooLink === 'function') ? ddOdooLink(odooConfig.url, model, id, label) : escHtml(label);
+
+  // ── rendering helpers ───────────────────────────────────────────────────
+  const R = {
+    tile: (label, val, sub, tone) =>
+      `<div class="laz-stat-card"><div class="laz-stat-label">${escHtml(label)}</div>` +
+      `<div class="laz-stat-value" style="${tone?`color:var(--${tone})`:''}">${val}</div>` +
+      (sub ? `<div style="font-size:0.7rem;color:var(--muted)">${sub}</div>` : '') + `</div>`,
+    tiles: arr => `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(125px,1fr));gap:8px;margin-bottom:10px">${arr.join('')}</div>`,
+    // rows: [{a: html main, b: text sub, c: text right, tone}]
+    rows: (arr, empty) => arr.length
+      ? `<div style="display:flex;flex-direction:column">` + arr.map(r =>
+          `<div style="display:flex;align-items:baseline;gap:10px;padding:5px 2px;border-top:1px solid var(--border);font-size:0.8rem">` +
+          `<div style="flex:1;min-width:0"><div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.a}</div>` +
+          (r.b ? `<div style="font-size:0.7rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(r.b)}</div>` : '') + `</div>` +
+          (r.c ? `<div style="font-family:'DM Mono',monospace;font-size:0.74rem;white-space:nowrap;color:${r.tone?`var(--${r.tone})`:'var(--muted)'}">${escHtml(r.c)}</div>` : '') + `</div>`
+        ).join('') + `</div>`
+      : `<div style="font-size:0.8rem;color:var(--muted);padding:4px 2px">${empty || 'Nothing to show.'}</div>`,
+    // bars: [{label, value, txt, tone}]
+    bars: arr => {
+      const max = Math.max(1, ...arr.map(b => b.value));
+      return arr.map(b =>
+        `<div style="display:flex;align-items:center;gap:8px;font-size:0.76rem;margin:3px 0">` +
+        `<div style="width:92px;color:var(--muted);flex-shrink:0">${escHtml(b.label)}</div>` +
+        `<div style="flex:1;height:8px;background:var(--surface);border-radius:4px;overflow:hidden"><div style="width:${Math.max(b.value>0?3:0, Math.round(b.value/max*100))}%;height:100%;background:var(--${b.tone||'accent'})"></div></div>` +
+        `<div style="width:88px;text-align:right;font-family:'DM Mono',monospace;font-size:0.72rem">${escHtml(b.txt)}</div></div>`
+      ).join('');
+    },
+    sub: t => `<div style="font-size:0.66rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin:10px 0 4px">${escHtml(t)}</div>`,
+    note: t => `<div style="font-size:0.8rem;color:var(--muted)">${t}</div>`,
+  };
+  const more = (arr, shown) => arr.length > shown ? `\n  …and ${arr.length - shown} more` : '';
+
+  // ── ITEM RUNNERS ────────────────────────────────────────────────────────
+  // each: async (x) => ({ html, text, flags:[{tone,text}] })
+  const RUN = {};
+
+  RUN.my_acts = async x => {
+    const dom = [['user_id','=',x.userId],['date_deadline','<=',x.d.today]];
+    const [rows, total, overdue] = await Promise.all([
+      sr('mail.activity', dom, ['summary','date_deadline','res_name','res_model','res_id'], { limit: 30, order: 'date_deadline asc' }),
+      cnt('mail.activity', dom),
+      cnt('mail.activity', [['user_id','=',x.userId],['date_deadline','<',x.d.today]]),
     ]);
+    const list = rows.slice(0, 8).map(a => {
+      const late = dayDiff(x.d.today, a.date_deadline);
+      return { a: link(a.res_model, a.res_id, a.res_name || a.summary || 'Record'), b: a.summary || '', c: late > 0 ? late+'d late' : 'today', tone: late > 0 ? 'danger' : 'warning' };
+    });
+    return {
+      html: R.tiles([R.tile('Due / overdue', total, '', total>5?'warning':''), R.tile('Overdue', overdue, '', overdue?'danger':'')]) + R.rows(list, 'Nothing due — you\'re clear.'),
+      text: `Due/overdue activities: ${total} (${overdue} overdue)\n` + rows.slice(0,8).map(a => `  - ${a.summary||'Follow up'} on ${a.res_name||'record'} (${a.date_deadline})`).join('\n') + more(rows, 8),
+      flags: overdue ? [{ tone:'warning', text: plural(overdue,'overdue activity','overdue activities') }] : [],
+    };
+  };
 
-    const now2         = new Date();
-    const stalePipeline = opps.filter(o => o.write_date && Math.floor((now2-new Date(o.write_date))/(1000*60*60*24))>=14);
-    const totalPipeline = opps.reduce((s,o)=>s+(o.expected_revenue||0),0);
+  RUN.my_pipeline = async x => {
+    const uf = [['user_id','=',x.userId]];
+    const open = await sr('crm.lead', [...uf, ['type','=','opportunity'], ['probability','<',100], ['active','=',true]], ['name','expected_revenue','probability','stage_id','write_date']);
+    const won = await closedLeads('won', x.d.d30ago, null, uf, ['name','expected_revenue']).catch(() => []);
+    const stale = open.filter(o => o.write_date && dayDiff(x.d.today, o.write_date.slice(0,10)) >= 14).sort((a,b) => (b.expected_revenue||0)-(a.expected_revenue||0));
+    const total = sum(open, 'expected_revenue');
+    const list = stale.slice(0,5).map(o => ({ a: link('crm.lead', o.id, o.name), b: nm(o.stage_id), c: fm(o.expected_revenue||0) + ' · ' + dayDiff(x.d.today, o.write_date.slice(0,10)) + 'd', tone:'warning' }));
+    return {
+      html: R.tiles([R.tile('Pipeline', fm(total), plural(open.length,'open deal'), 'accent'), R.tile('Stale 14d+', stale.length, stale.length ? fm(sum(stale,'expected_revenue')) + ' at risk' : '', stale.length?'warning':''), R.tile('Won (30d)', won.length, fm(sum(won,'expected_revenue')), won.length?'success':'')])
+        + R.sub('Stale deals to rescue') + R.rows(list, 'No stale deals.'),
+      text: `My pipeline: ${fm(total)} across ${open.length} open deals. Stale (14d+): ${stale.length}. Won last 30d: ${won.length} (${fm(sum(won,'expected_revenue'))}).\n` +
+            stale.slice(0,5).map(o => `  - ${o.name} (${fm(o.expected_revenue||0)}, stage: ${nm(o.stage_id)||'unknown'}, untouched ${dayDiff(x.d.today, o.write_date.slice(0,10))}d)`).join('\n'),
+      flags: stale.length ? [{ tone:'warning', text: plural(stale.length,'of your deals','of your deals') + ' stale' }] : [],
+      mine: true,
+    };
+  };
 
-    // ── Build context for Groq ───────────────────────────────
-    let flaggedEmails = [];
-    let imapOnline    = false;
-    let context = 'Today is '+sub.textContent.replace(' ⚡ Over Achiever','')+'.\n\n'+
-      'PIPELINE: '+ddFmt(totalPipeline)+' across '+opps.length+' open deals\n'+
-      'Stale deals (14+ days no activity): '+stalePipeline.length+'\n'+
-      'Top deals: '+opps.slice(0,3).map(o=>o.name+' ('+ddFmt(o.expected_revenue||0)+')').join(', ')+
-      '\n\nACTIVITIES DUE/OVERDUE: '+acts.length+
-      (acts.length?'\n'+acts.slice(0,8).map(a=>'- '+(a.summary||'Follow up')+' on '+(a.res_name||'record')+' ('+a.date_deadline+')').join('\n'):'')+
-      '\n\nODOO INBOX: '+inbox.length+' unread'+
-      (inbox.length?'\n'+inbox.slice(0,5).map(m=>'- "'+(m.subject||m.record_name)+'"').join('\n'):'')+
-      '\n\nRECENT WINS: '+(won.length?won.slice(0,3).map(w=>w.name+' ('+ddFmt(w.expected_revenue||0)+')').join(', '):'None this month yet')+
-      '\n\nSTALE DEALS TO RESCUE:\n'+(stalePipeline.slice(0,5).map(o=>'- '+o.name+' ('+ddFmt(o.expected_revenue||0)+', stage: '+(Array.isArray(o.stage_id)?o.stage_id[1]:'unknown')+')').join('\n')||'None');
+  RUN.my_tasks = async x => {
+    const open = await openTaskDomain();
+    const rows = await sr('project.task', [...open, ['user_ids','in',[x.userId]], ['date_deadline','!=',false], ['date_deadline','<=',x.d.d7ahead+' 23:59:59']], ['name','project_id','date_deadline'], { order:'date_deadline asc', limit: 40 });
+    const late = rows.filter(t => t.date_deadline.slice(0,10) < x.d.today).length;
+    const list = rows.slice(0,8).map(t => { const dd = dayDiff(x.d.today, t.date_deadline.slice(0,10)); return { a: link('project.task', t.id, t.name), b: nm(t.project_id), c: dd>0 ? dd+'d late' : dd===0 ? 'today' : 'in '+(-dd)+'d', tone: dd>0?'danger':dd===0?'warning':'' }; });
+    return {
+      html: R.tiles([R.tile('Due ≤ 7 days', rows.length, '', ''), R.tile('Overdue', late, '', late?'danger':'')]) + R.rows(list, 'No tasks due this week.'),
+      text: `My project tasks due within 7 days: ${rows.length} (${late} overdue)\n` + rows.slice(0,8).map(t => `  - ${t.name} [${nm(t.project_id)}] ${t.date_deadline.slice(0,10)}`).join('\n'),
+      flags: late ? [{ tone:'warning', text: plural(late,'overdue task of yours','overdue tasks of yours') }] : [],
+    };
+  };
 
-    // Add work notes to context
-    // Read notes directly from localStorage — guaranteed fresh
-    let workNotes = [];
-    try { workNotes = JSON.parse(localStorage.getItem('laz_notes')||'[]'); } catch(e) {}
-    const workNotesText = workNotes.filter(n=>n.text?.trim()).slice(0,8).map(n=>'- '+n.text.trim()).join('\n');
-    if (workNotesText) context += '\n\nMY WORK NOTES (sticky notes I left myself):\n'+workNotesText;
+  RUN.my_notes = async () => {
+    let notes = [];
+    try { notes = JSON.parse(localStorage.getItem('laz_notes') || '[]'); } catch(e) {}
+    notes = notes.filter(n => n.text && n.text.trim());
+    return {
+      html: notes.length ? R.rows(notes.slice(0,10).map(n => ({ a: escHtml(n.text.trim().slice(0,220)) })), '') : R.note('No sticky notes saved.'),
+      text: notes.length ? 'My work notes:\n' + notes.slice(0,8).map(n => '  - ' + n.text.trim()).join('\n') : '',
+      notes: notes.length,
+    };
+  };
 
-    // ── Over Achiever: fetch flagged emails (after context built) ─
-    if (overAchiever) {
-      body.innerHTML = '<div style="display:flex;align-items:center;gap:10px;color:var(--muted)"><div class="dot spin" style="display:inline-block"></div><span>Scanning flagged emails…</span></div>';
-      const imapCfg = getImapConfig();
-      if (!imapCfg.email || !imapCfg.password) {
-        context += '\n\nFLAGGED EMAILS: No IMAP inbox configured — set up IMAP in Step 5 to enable this.';
+  // won/lost helper — Odoo 17+ keeps won deals active; older keeps them inactive
+  async function closedLeads(kind, from, to, extra, fields) {
+    const dom = (dateField, statusLeaf) => [['type','=','opportunity'], statusLeaf,
+      ...(kind === 'lost' ? [['active','=',false]] : [['active','in',[true,false]]]),
+      [dateField,'>=',from], ...(to ? [[dateField,'<=',to]] : []), ...(extra || [])];
+    const wantFields = [...fields, 'user_id'];
+    const status = kind === 'won' ? [['won_status','=','won'], ['probability','=',100]] : [['won_status','=','lost'], ['probability','=',0]];
+    for (const df of ['date_closed','write_date']) {
+      for (const st of status) {
+        try { return await sr('crm.lead', dom(df, st), wantFields); } catch(e) { /* try next variant */ }
+      }
+    }
+    throw new Error('could not read won/lost deals');
+  }
+
+  RUN.co_pipeline = async x => {
+    const open = await sr('crm.lead', [['type','=','opportunity'],['probability','<',100],['active','=',true]], ['name','expected_revenue','probability','stage_id','user_id']);
+    const total = sum(open,'expected_revenue');
+    const weighted = open.reduce((s,o) => s + (o.expected_revenue||0)*(o.probability||0)/100, 0);
+    const group = (key) => { const m = {}; open.forEach(o => { const k = nm(o[key]) || (key==='user_id' ? 'Unassigned' : 'No stage'); (m[k] = m[k] || { n:0, v:0 }); m[k].n++; m[k].v += o.expected_revenue||0; }); return Object.entries(m).sort((a,b)=>b[1].v-a[1].v); };
+    const stages = group('stage_id'), reps = group('user_id');
+    return {
+      html: R.tiles([R.tile('Open pipeline', fm(total), plural(open.length,'deal') + (open.trunc?'+':''), 'accent'), R.tile('Weighted', fm(weighted), 'by probability', '')])
+        + R.sub('By stage') + R.bars(stages.slice(0,7).map(([k,v]) => ({ label:k, value:v.v, txt: fm(v.v)+' · '+v.n })))
+        + R.sub('By rep') + R.bars(reps.slice(0,6).map(([k,v]) => ({ label:k, value:v.v, txt: fm(v.v)+' · '+v.n, tone:'success' }))),
+      text: `Company pipeline: ${fm(total)} across ${open.length} open deals (weighted ${fm(weighted)}).\n  By stage: ${stages.slice(0,7).map(([k,v])=>`${k} ${fm(v.v)} (${v.n})`).join('; ')}\n  By rep: ${reps.slice(0,6).map(([k,v])=>`${k} ${fm(v.v)} (${v.n})`).join('; ')}`,
+      flags: [],
+    };
+  };
+
+  RUN.co_won = async x => {
+    const [wonM, wonL, lostM] = await Promise.all([
+      closedLeads('won', x.d.monthStart, null, [], ['name','expected_revenue']),
+      closedLeads('won', x.d.lastMonthStart, x.d.sameDayLast+' 23:59:59', [], ['name','expected_revenue']).catch(() => []),
+      closedLeads('lost', x.d.monthStart, null, [], ['name','expected_revenue']).catch(() => []),
+    ]);
+    const wv = sum(wonM,'expected_revenue'), lv = sum(wonL,'expected_revenue');
+    const delta = lv ? Math.round((wv-lv)/lv*100) : null;
+    const by = {}; wonM.forEach(o => { const k = nm(o.user_id) || 'Unassigned'; (by[k] = by[k] || { n:0, v:0 }); by[k].n++; by[k].v += o.expected_revenue||0; });
+    const top = Object.entries(by).sort((a,b)=>b[1].v-a[1].v).slice(0,5);
+    return {
+      html: R.tiles([R.tile('Won this month', fm(wv), plural(wonM.length,'deal'), 'success'), R.tile('Same period last month', fm(lv), plural(wonL.length,'deal') + (delta!==null ? ` · ${delta>=0?'▲':'▼'} ${Math.abs(delta)}%` : ''), ''), R.tile('Lost this month', lostM.length, fm(sum(lostM,'expected_revenue')), lostM.length?'danger':'')])
+        + R.sub('Top closers (month to date)') + R.rows(top.map(([k,v]) => ({ a: escHtml(k), c: fm(v.v)+' · '+v.n })), 'No wins yet this month.'),
+      text: `Wins this month: ${wonM.length} (${fm(wv)}) vs ${wonL.length} (${fm(lv)}) same period last month${delta!==null?` [${delta>=0?'+':''}${delta}%]`:''}. Lost: ${lostM.length} (${fm(sum(lostM,'expected_revenue'))}).\n  Top closers: ${top.map(([k,v])=>`${k} ${fm(v.v)}`).join('; ')||'none'}`,
+      flags: [],
+    };
+  };
+
+  RUN.co_new = async x => {
+    const rows = await sr('crm.lead', [['create_date','>=',x.d.d7ago]], ['name','partner_name','contact_name','user_id','expected_revenue','type'], { order:'create_date desc', limit: 200 });
+    const un = rows.filter(r => !r.user_id);
+    const list = rows.slice(0,6).map(r => ({ a: link('crm.lead', r.id, r.name), b: r.partner_name || r.contact_name || '', c: r.user_id ? nm(r.user_id) : 'UNASSIGNED', tone: r.user_id ? '' : 'warning' }));
+    return {
+      html: R.tiles([R.tile('New (7 days)', rows.length + (rows.trunc?'+':''), '', 'accent'), R.tile('Unassigned', un.length, '', un.length?'warning':'')]) + R.rows(list, 'No new leads this week.'),
+      text: `New leads last 7 days: ${rows.length} (${un.length} unassigned)\n` + rows.slice(0,6).map(r => `  - ${r.name}${r.user_id?'':' [unassigned]'}`).join('\n'),
+      flags: un.length ? [{ tone:'warning', text: plural(un.length,'new lead')+' with no owner' }] : [],
+    };
+  };
+
+  RUN.co_stalled = async x => {
+    const rows = await sr('crm.lead', [['type','=','opportunity'],['active','=',true],['probability','<',100],['write_date','<=',x.d.d30ago+' 23:59:59']], ['name','expected_revenue','user_id','stage_id','write_date']);
+    rows.sort((a,b) => (b.expected_revenue||0)-(a.expected_revenue||0));
+    const v = sum(rows,'expected_revenue');
+    const list = rows.slice(0,6).map(o => ({ a: link('crm.lead', o.id, o.name), b: [nm(o.user_id)||'Unassigned', nm(o.stage_id)].filter(Boolean).join(' · '), c: fm(o.expected_revenue||0)+' · '+dayDiff(x.d.today, o.write_date.slice(0,10))+'d', tone:'warning' }));
+    return {
+      html: R.tiles([R.tile('Stalled deals', rows.length + (rows.trunc?'+':''), '30+ days untouched', rows.length?'warning':''), R.tile('Value at risk', fm(v), '', rows.length?'danger':'')]) + R.rows(list, 'No stalled deals — nice.'),
+      text: `Stalled deals (30d+ untouched, all reps): ${rows.length}, ${fm(v)} at risk\n` + rows.slice(0,6).map(o => `  - ${o.name} (${fm(o.expected_revenue||0)}, ${nm(o.user_id)||'unassigned'})`).join('\n'),
+      flags: rows.length ? [{ tone:'warning', text: `${fm(v)} in stalled deals` }] : [],
+    };
+  };
+
+  RUN.co_quotes = async x => {
+    const [q, ord] = await Promise.all([
+      sr('sale.order', [['state','in',['draft','sent']]], ['name','partner_id','amount_total','date_order','user_id'], { order:'date_order asc' }),
+      sr('sale.order', [['state','in',['sale','done']],['date_order','>=',x.d.monthStart]], ['amount_total']),
+    ]);
+    const aged = q.filter(o => o.date_order && dayDiff(x.d.today, o.date_order.slice(0,10)) > 7);
+    const list = aged.slice(0,5).map(o => ({ a: link('sale.order', o.id, o.name), b: nm(o.partner_id), c: fm(o.amount_total||0)+' · '+dayDiff(x.d.today, o.date_order.slice(0,10))+'d', tone:'warning' }));
+    return {
+      html: R.tiles([R.tile('Open quotes', q.length + (q.trunc?'+':''), fm(sum(q,'amount_total')), 'accent'), R.tile('Older than 7d', aged.length, fm(sum(aged,'amount_total')), aged.length?'warning':''), R.tile('Orders this month', ord.length, fm(sum(ord,'amount_total')), 'success')])
+        + R.sub('Oldest unanswered quotes') + R.rows(list, 'No aging quotes.'),
+      text: `Quotes: ${q.length} open (${fm(sum(q,'amount_total'))}), ${aged.length} older than 7 days (${fm(sum(aged,'amount_total'))}). Confirmed orders this month: ${ord.length} (${fm(sum(ord,'amount_total'))}).\n` + aged.slice(0,5).map(o => `  - ${o.name} ${nm(o.partner_id)} ${fm(o.amount_total||0)}`).join('\n'),
+      flags: aged.length ? [{ tone:'warning', text: plural(aged.length,'quote') + ' aging 7d+' }] : [],
+    };
+  };
+
+  RUN.co_reps = async x => {
+    const rows = await sr('mail.activity', [['date_deadline','<',x.d.today]], ['user_id','date_deadline']);
+    const by = {}; rows.forEach(a => { const k = nm(a.user_id) || 'Unassigned'; (by[k] = by[k] || { n:0, oldest:'9999' }); by[k].n++; if (a.date_deadline < by[k].oldest) by[k].oldest = a.date_deadline; });
+    const top = Object.entries(by).sort((a,b)=>b[1].n-a[1].n);
+    return {
+      html: R.tiles([R.tile('Overdue (team)', rows.length + (rows.trunc?'+':''), plural(top.length,'person','people'), rows.length?'warning':'success')])
+        + R.rows(top.slice(0,8).map(([k,v]) => ({ a: escHtml(k), b: 'oldest ' + dayDiff(x.d.today, v.oldest) + 'd overdue', c: v.n+' overdue', tone: v.n>10?'danger':'warning' })), 'Nobody has overdue activities.'),
+      text: `Overdue activities by rep (${rows.length} total): ${top.slice(0,8).map(([k,v])=>`${k} ${v.n}`).join('; ') || 'none'}`,
+      flags: rows.length > 10 ? [{ tone:'warning', text: plural(rows.length,'overdue team activity','overdue team activities') }] : [],
+    };
+  };
+
+  // ── Accounting ──
+  RUN.ac_ar = async x => {
+    const rows = await sr('account.move', [['move_type','=','out_invoice'],['state','=','posted'],['payment_state','in',['not_paid','partial']]], ['name','partner_id','amount_residual','invoice_date_due']);
+    const b = { cur:0, d30:0, d60:0, d90:0, d90p:0 }, bn = { cur:0, d30:0, d60:0, d90:0, d90p:0 };
+    const cust = {};
+    rows.forEach(i => {
+      const v = i.amount_residual || 0;
+      const late = i.invoice_date_due ? dayDiff(x.d.today, i.invoice_date_due) : 0;
+      const k = late <= 0 ? 'cur' : late <= 30 ? 'd30' : late <= 60 ? 'd60' : late <= 90 ? 'd90' : 'd90p';
+      b[k] += v; bn[k]++;
+      if (late > 0) { const p = nm(i.partner_id) || 'Unknown'; (cust[p] = cust[p] || { v:0, n:0, pid: idOf(i.partner_id), max:0 }); cust[p].v += v; cust[p].n++; cust[p].max = Math.max(cust[p].max, late); }
+    });
+    const total = sum(rows,'amount_residual');
+    const overdue = b.d30 + b.d60 + b.d90 + b.d90p;
+    const top = Object.entries(cust).sort((a,c)=>c[1].v-a[1].v).slice(0,5);
+    return {
+      html: R.tiles([R.tile('Open AR', fm(total), plural(rows.length,'invoice') + (rows.trunc?'+':''), 'accent'), R.tile('Overdue', fm(overdue), (total ? Math.round(overdue/total*100) : 0) + '% of AR', overdue?'danger':'success'), R.tile('90+ days', fm(b.d90p), plural(bn.d90p,'invoice'), b.d90p?'danger':'')])
+        + R.sub('Aging') + R.bars([{label:'Not yet due',value:b.cur,txt:fm(b.cur),tone:'success'},{label:'1–30 days',value:b.d30,txt:fm(b.d30),tone:'accent'},{label:'31–60 days',value:b.d60,txt:fm(b.d60),tone:'warning'},{label:'61–90 days',value:b.d90,txt:fm(b.d90),tone:'warning'},{label:'90+ days',value:b.d90p,txt:fm(b.d90p),tone:'danger'}])
+        + R.sub('Biggest overdue customers') + R.rows(top.map(([k,v]) => ({ a: link('res.partner', v.pid, k), b: plural(v.n,'invoice')+', oldest '+v.max+'d late', c: fm(v.v), tone:'danger' })), 'No overdue customers.'),
+      text: `Accounts receivable: ${fm(total)} open across ${rows.length} invoices; ${fm(overdue)} overdue (${total?Math.round(overdue/total*100):0}%); 90+ days: ${fm(b.d90p)}.\n  Aging: current ${fm(b.cur)}, 1-30 ${fm(b.d30)}, 31-60 ${fm(b.d60)}, 61-90 ${fm(b.d90)}, 90+ ${fm(b.d90p)}\n  Top overdue: ${top.map(([k,v])=>`${k} ${fm(v.v)}`).join('; ')||'none'}`,
+      flags: overdue ? [{ tone: b.d90p ? 'danger' : 'warning', text: `${fm(overdue)} overdue receivables` }] : [],
+    };
+  };
+
+  RUN.ac_rev = async x => {
+    const inv = (from, to) => sr('account.move', [['move_type','=','out_invoice'],['state','=','posted'],['invoice_date','>=',from],...(to?[['invoice_date','<=',to]]:[])], ['amount_untaxed']);
+    const [mtd, lastFull, lastSame] = await Promise.all([inv(x.d.monthStart), inv(x.d.lastMonthStart, x.d.lastMonthEnd), inv(x.d.lastMonthStart, x.d.sameDayLast)]);
+    let collected = null, collectedN = 0;
+    try {
+      const pays = await sr('account.payment', [['payment_type','=','inbound'],['partner_type','=','customer'],['date','>=',x.d.monthStart],['state','in',['in_process','paid','posted']]], ['amount']);
+      collected = sum(pays,'amount'); collectedN = pays.length;
+    } catch(e) {
+      const paid = await sr('account.move', [['move_type','=','out_invoice'],['state','=','posted'],['payment_state','in',['paid','in_payment']],['invoice_date','>=',x.d.monthStart]], ['amount_total']);
+      collected = sum(paid,'amount_total'); collectedN = paid.length;
+    }
+    const a = sum(mtd,'amount_untaxed'), l = sum(lastSame,'amount_untaxed'), lf = sum(lastFull,'amount_untaxed');
+    const delta = l ? Math.round((a-l)/l*100) : null;
+    return {
+      html: R.tiles([R.tile('Invoiced MTD', fm(a), plural(mtd.length,'invoice') + (delta!==null ? ` · ${delta>=0?'▲':'▼'} ${Math.abs(delta)}% vs same days last month` : ''), delta!==null && delta<0 ? 'warning' : 'accent'), R.tile('Collected MTD', fm(collected), plural(collectedN,'payment'), 'success'), R.tile('Last month (full)', fm(lf), plural(lastFull.length,'invoice'), '')]),
+      text: `Revenue (invoiced, ex-tax) month-to-date: ${fm(a)} from ${mtd.length} invoices${delta!==null?` (${delta>=0?'+':''}${delta}% vs same days last month: ${fm(l)})`:''}. Collected MTD: ${fm(collected)}. Last month full: ${fm(lf)}.`,
+      flags: delta !== null && delta <= -15 ? [{ tone:'warning', text: `Revenue ${delta}% vs same days last month` }] : [],
+    };
+  };
+
+  RUN.ac_ap = async x => {
+    const rows = await sr('account.move', [['move_type','=','in_invoice'],['state','=','posted'],['payment_state','in',['not_paid','partial']]], ['name','partner_id','amount_residual','invoice_date_due']);
+    const overdue = rows.filter(r => r.invoice_date_due && r.invoice_date_due < x.d.today);
+    const soon = rows.filter(r => r.invoice_date_due && r.invoice_date_due >= x.d.today && r.invoice_date_due <= x.d.d7ahead);
+    const next = [...overdue, ...soon].sort((a,b) => (a.invoice_date_due||'').localeCompare(b.invoice_date_due||'')).slice(0,6);
+    const list = next.map(r => { const d = dayDiff(x.d.today, r.invoice_date_due); return { a: link('account.move', r.id, nm(r.partner_id) || r.name), b: r.name, c: fm(r.amount_residual||0) + ' · ' + (d>0 ? d+'d late' : d===0 ? 'today' : 'in '+(-d)+'d'), tone: d>0 ? 'danger' : 'warning' }; });
+    return {
+      html: R.tiles([R.tile('Open payables', fm(sum(rows,'amount_residual')), plural(rows.length,'bill') + (rows.trunc?'+':''), 'accent'), R.tile('Overdue', fm(sum(overdue,'amount_residual')), plural(overdue.length,'bill'), overdue.length?'danger':''), R.tile('Due in 7 days', fm(sum(soon,'amount_residual')), plural(soon.length,'bill'), soon.length?'warning':'')])
+        + R.sub('Pay next') + R.rows(list, 'No bills due.'),
+      text: `Accounts payable: ${fm(sum(rows,'amount_residual'))} open (${rows.length} bills); overdue ${fm(sum(overdue,'amount_residual'))} (${overdue.length}); due in 7 days ${fm(sum(soon,'amount_residual'))} (${soon.length}).`,
+      flags: overdue.length ? [{ tone:'warning', text: `${fm(sum(overdue,'amount_residual'))} in overdue vendor bills` }] : [],
+    };
+  };
+
+  RUN.ac_todo = async x => {
+    const out = { tiles: [], text: [], flags: [] };
+    const add = (label, n, sub, tone, textLine) => { out.tiles.push(R.tile(label, n, sub, n ? tone : '')); out.text.push(textLine); };
+    const tryCnt = async (fn) => { try { return await fn(); } catch(e) { return null; } };
+
+    const draftInv = await tryCnt(() => cnt('account.move', [['move_type','=','out_invoice'],['state','=','draft']]));
+    if (draftInv !== null) add('Draft invoices', draftInv, 'to review & post', 'warning', `Draft customer invoices to post: ${draftInv}`);
+    const draftBills = await tryCnt(() => cnt('account.move', [['move_type','=','in_invoice'],['state','=','draft']]));
+    if (draftBills !== null) add('Draft bills', draftBills, 'to review & post', 'warning', `Draft vendor bills to review: ${draftBills}`);
+    let unrec = await tryCnt(() => cnt('account.bank.statement.line', [['is_reconciled','=',false]]));
+    if (unrec === null) unrec = await tryCnt(() => cnt('account.bank.statement.line', [['partner_id','=',false]]));
+    if (unrec !== null) add('Unreconciled bank lines', unrec, 'to match', 'warning', `Unreconciled bank lines: ${unrec}`);
+    const exp = await tryCnt(async () => {
+      const f = await fieldsOf('hr.expense');
+      const sel = (f.state && f.state.selection) || [];
+      const sub = sel.find(([c, l]) => /^submitted$/i.test(l) || c === 'submitted');
+      const code = sub ? sub[0] : 'submitted';
+      const rows = await sr('hr.expense', [['state','=',code]], ['total_amount']);
+      return { n: rows.length, v: sum(rows,'total_amount') };
+    });
+    if (exp) add('Expenses to approve', exp.n, fm(exp.v), 'warning', `Expenses awaiting approval: ${exp.n} (${fm(exp.v)})`);
+
+    if (!out.tiles.length) throw new Error('no accounting models readable by this API user');
+    const total = (draftInv||0) + (draftBills||0) + (unrec||0) + (exp ? exp.n : 0);
+    return {
+      html: R.tiles(out.tiles),
+      text: 'Accounting to-do:\n' + out.text.map(t => '  - ' + t).join('\n'),
+      flags: total ? [{ tone:'warning', text: plural(total,'accounting item') + ' waiting' }] : [],
+    };
+  };
+
+  // ── Emails ──
+  RUN.em_odoo = async x => {
+    const dom = [['needaction','=',true]];
+    const [rows, total] = await Promise.all([
+      sr('mail.message', dom, ['subject','record_name','author_id','date','model','res_id'], { limit: 8, order: 'date desc' }),
+      cnt('mail.message', dom),
+    ]);
+    const list = rows.slice(0,6).map(m => ({ a: m.model && m.res_id ? link(m.model, m.res_id, m.subject || m.record_name || 'Message') : escHtml(m.subject || m.record_name || 'Message'), b: nm(m.author_id), c: (m.date||'').slice(0,10) }));
+    return {
+      html: R.tiles([R.tile('Unread in Odoo', total, '', total?'warning':'success')]) + R.rows(list, 'Inbox zero.'),
+      text: `Odoo inbox: ${total} unread\n` + rows.slice(0,5).map(m => `  - "${m.subject||m.record_name||'Message'}" from ${nm(m.author_id)||'unknown'}`).join('\n'),
+      flags: total > 10 ? [{ tone:'warning', text: plural(total,'unread Odoo message') }] : [],
+    };
+  };
+
+  RUN.em_flagged = async x => {
+    const cfg = getImapConfig();
+    if (!cfg.email || !cfg.password) return { html: R.note('No IMAP mailbox configured — set it up in Settings to include flagged emails.'), text: '', skipped: true };
+    let online = false;
+    try { online = await pingImapServer(); } catch(e) {}
+    if (!online) return { html: R.note('⚠ The local IMAP server is offline — start it (start.bat) and regenerate to include flagged emails.'), text: 'Flagged emails: IMAP server offline, not checked.', skipped: true };
+    const r = await fetch(`${IMAP_SERVER}/browse`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ config: cfg, limit: 10, flagged_only: true }), signal: AbortSignal.timeout(15000) });
+    const d = await r.json();
+    if (d.error) throw new Error(d.error);
+    const emails = d.emails || [];
+    window._briefFlagged = emails;
+    const list = emails.map((e,i) =>
+      `<div style="display:flex;align-items:center;gap:10px;padding:6px 2px;border-top:1px solid var(--border);font-size:0.8rem">` +
+      `<div style="flex:1;min-width:0"><div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">🚩 ${escHtml(e.subject||'(no subject)')}</div><div style="font-size:0.7rem;color:var(--muted)">${escHtml(e.sender_email||'')} · ${escHtml(e.date||'')}</div></div>` +
+      `<button class="btn btn-ghost" onclick="briefReply(${i})" style="padding:3px 10px;font-size:0.72rem">Reply</button></div>`).join('');
+    return {
+      html: R.tiles([R.tile('Flagged', emails.length, '', emails.length?'warning':'success')]) + (list || R.note('No flagged emails — inbox is clear.')),
+      text: `Flagged emails: ${emails.length}\n` + emails.map((e,i) => `  ${i+1}. From ${e.sender_email} — "${e.subject}" (${e.date})`).join('\n'),
+      flags: emails.length ? [{ tone:'warning', text: plural(emails.length,'flagged email') }] : [],
+      flagged: emails.length,
+    };
+  };
+
+  RUN.em_bounce = async x => {
+    const dom = [['category_id.name','=','Bounced Email']];
+    const [n, rows] = await Promise.all([cnt('res.partner', dom), sr('res.partner', dom, ['name','email'], { limit: 6, order: 'write_date desc' })]);
+    return {
+      html: R.tiles([R.tile('Bounced contacts', n, 'need a new address', n?'warning':'success')]) + R.rows(rows.map(p => ({ a: link('res.partner', p.id, p.name), b: p.email || '' })), 'None tagged.'),
+      text: `Contacts tagged "Bounced Email": ${n}`,
+      flags: [],
+    };
+  };
+
+  // ── Operations ──
+  let _taskOpen = null;
+  async function openTaskDomain() {
+    if (_taskOpen) return _taskOpen;
+    const f = await fieldsOf('project.task');
+    _taskOpen = f.is_closed ? [['is_closed','=',false]] : f.state ? [['state','not in',['1_done','1_canceled']]] : [];
+    return [..._taskOpen, ['project_id','!=',false]];
+  }
+
+  RUN.op_tasks = async x => {
+    const open = await openTaskDomain();
+    const rows = await sr('project.task', [...open, ['date_deadline','!=',false], ['date_deadline','<',x.d.today+' 00:00:00']], ['name','project_id','date_deadline','user_ids'], { order:'date_deadline asc' });
+    const by = {}; rows.forEach(t => { const k = nm(t.project_id) || 'No project'; by[k] = (by[k]||0)+1; });
+    const projs = Object.entries(by).sort((a,b)=>b[1]-a[1]).slice(0,6);
+    const list = rows.slice(0,6).map(t => ({ a: link('project.task', t.id, t.name), b: nm(t.project_id), c: dayDiff(x.d.today, t.date_deadline.slice(0,10))+'d late', tone:'danger' }));
+    return {
+      html: R.tiles([R.tile('Overdue tasks', rows.length + (rows.trunc?'+':''), plural(Object.keys(by).length,'project'), rows.length?'danger':'success')])
+        + (projs.length ? R.sub('By project') + R.bars(projs.map(([k,v]) => ({ label:k, value:v, txt:String(v), tone:'warning' }))) : '')
+        + R.sub('Most overdue') + R.rows(list, 'Nothing overdue.'),
+      text: `Overdue project tasks (company): ${rows.length}. By project: ${projs.map(([k,v])=>`${k} ${v}`).join('; ')||'none'}`,
+      flags: rows.length ? [{ tone:'warning', text: plural(rows.length,'overdue project task') }] : [],
+    };
+  };
+
+  RUN.op_upcoming = async x => {
+    const f = await fieldsOf('sale.order');
+    const saved = (() => { try { return localStorage.getItem('oel_sr_delivery_field') || ''; } catch(e) { return ''; } })();
+    const cand = [saved, 'rental_start_date', 'commitment_date', 'x_studio_delivery_date'].filter(n => n && n !== 'date_order' && f[n]);
+    const field = cand[0];
+    const parts = []; const textParts = []; const flags = [];
+    if (field) {
+      const rows = await sr('sale.order', [['state','in',['sale','done']],[field,'>=',x.d.today],[field,'<=',x.d.d7ahead+' 23:59:59']], ['name','partner_id','amount_total',field], { order: field+' asc' });
+      parts.push(R.tiles([R.tile('Next 7 days', rows.length, fm(sum(rows,'amount_total')), 'accent')]) + R.rows(rows.slice(0,8).map(o => ({ a: link('sale.order', o.id, o.name), b: nm(o.partner_id), c: String(o[field]||'').slice(0,10) + ' · ' + fm(o.amount_total||0) })), 'Nothing scheduled in the next 7 days.'));
+      textParts.push(`Confirmed orders scheduled in the next 7 days (${field}): ${rows.length} (${fm(sum(rows,'amount_total'))})\n` + rows.slice(0,8).map(o => `  - ${o.name} ${nm(o.partner_id)} ${String(o[field]||'').slice(0,10)}`).join('\n'));
+    }
+    if (f.rental_status && f.rental_return_date) {
+      const late = await sr('sale.order', [['rental_status','=','return'],['rental_return_date','<',x.d.today+' 00:00:00']], ['name','partner_id','rental_return_date'], { order:'rental_return_date asc' });
+      parts.push(R.sub('Overdue rental returns') + R.tiles([R.tile('Overdue returns', late.length, '', late.length?'danger':'success')]) + R.rows(late.slice(0,6).map(o => ({ a: link('sale.order', o.id, o.name), b: nm(o.partner_id), c: dayDiff(x.d.today, String(o.rental_return_date).slice(0,10))+'d late', tone:'danger' })), 'No overdue returns.'));
+      textParts.push(`Overdue rental returns: ${late.length}` + (late.length ? '\n' + late.slice(0,6).map(o => `  - ${o.name} ${nm(o.partner_id)}`).join('\n') : ''));
+      if (late.length) flags.push({ tone:'danger', text: plural(late.length,'overdue rental return') });
+    }
+    if (!parts.length) throw new Error('no delivery/rental date field found on sale orders (pick one in Smart Builder settings)');
+    return { html: parts.join(''), text: textParts.join('\n'), flags };
+  };
+
+  RUN.op_purch = async x => {
+    const [rfq, po] = await Promise.all([
+      sr('purchase.order', [['state','in',['draft','sent']]], ['name','partner_id','amount_total']),
+      sr('purchase.order', [['state','in',['purchase','done']],['date_order','>=',x.d.monthStart]], ['amount_total']),
+    ]);
+    return {
+      html: R.tiles([R.tile('Open RFQs', rfq.length, fm(sum(rfq,'amount_total')), rfq.length?'accent':''), R.tile('POs this month', po.length, fm(sum(po,'amount_total')), '')])
+        + R.rows(rfq.slice(0,5).map(o => ({ a: link('purchase.order', o.id, o.name), b: nm(o.partner_id), c: fm(o.amount_total||0) })), ''),
+      text: `Purchasing: ${rfq.length} open RFQs (${fm(sum(rfq,'amount_total'))}); ${po.length} purchase orders this month (${fm(sum(po,'amount_total'))}).`,
+      flags: [],
+    };
+  };
+
+  RUN.op_contacts = async x => {
+    const rows = await sr('res.partner', [['create_date','>=',x.d.d7ago],['is_company','=',true]], ['name','email','create_date'], { order:'create_date desc', limit: 100 });
+    return {
+      html: R.tiles([R.tile('New companies', rows.length, 'last 7 days', 'accent')]) + R.rows(rows.slice(0,6).map(p => ({ a: link('res.partner', p.id, p.name), b: p.email || '', c: (p.create_date||'').slice(0,10) })), 'None added this week.'),
+      text: `New companies added in Odoo (7 days): ${rows.length}` + (rows.length ? '\n' + rows.slice(0,5).map(p => `  - ${p.name}`).join('\n') : ''),
+      flags: [],
+    };
+  };
+
+  ITEMS.forEach(i => { i.run = RUN[i.id]; });
+
+  // ── prefs ───────────────────────────────────────────────────────────────
+  function readPrefs() {
+    try { const p = JSON.parse(localStorage.getItem(LS) || 'null'); if (p && Array.isArray(p.items)) return p; } catch(e) {}
+    return { items: PRESETS.myday.items.slice(), ai: true };
+  }
+  function savePrefs(p) { try { localStorage.setItem(LS, JSON.stringify(p)); } catch(e) {} }
+
+  // ── picker modal ────────────────────────────────────────────────────────
+  function paintItem(el, on) { el.classList.toggle('on', on); el.querySelector('input').checked = on; }
+
+  function renderPicker() {
+    const prefs = readPrefs();
+    const sel = new Set(prefs.items);
+    $('bp-presets').innerHTML = Object.entries(PRESETS).map(([k,p]) => `<button type="button" class="lm-chip" onclick="briefPreset('${k}')">${escHtml(p.label)}</button>`).join('');
+    $('bp-cats').innerHTML = CATS.map(c => {
+      const its = ITEMS.filter(i => i.cat === c.id);
+      return `<div class="bp-cat" data-cat="${c.id}">
+        <label class="bp-cat-head"><input type="checkbox" onchange="briefToggleCat('${c.id}', this.checked)"><span>${c.icon} ${escHtml(c.title)}</span></label>
+        <div class="bp-cat-sub">${escHtml(c.sub)}</div>
+        ${its.map(i => `<label class="bp-item${sel.has(i.id)?' on':''}" data-id="${i.id}"><input type="checkbox" ${sel.has(i.id)?'checked':''} onchange="briefItemChange()"><div><div class="bp-item-label">${escHtml(i.label)}</div><div class="bp-item-desc">${escHtml(i.desc)}</div></div></label>`).join('')}
+      </div>`;
+    }).join('');
+    $('bp-ai').checked = !!prefs.ai;
+    syncCatBoxes();
+  }
+
+  function syncCatBoxes() {
+    document.querySelectorAll('#bp-cats .bp-cat').forEach(cat => {
+      const items = cat.querySelectorAll('.bp-item input');
+      const n = Array.from(items).filter(i => i.checked).length;
+      const head = cat.querySelector('.bp-cat-head input');
+      head.checked = n === items.length; head.indeterminate = n > 0 && n < items.length;
+    });
+    const total = document.querySelectorAll('#bp-cats .bp-item input:checked').length;
+    $('bp-count').textContent = total ? `${total} section${total!==1?'s':''} selected` : 'Pick at least one section';
+    $('bp-go').disabled = total === 0;
+  }
+
+  window.briefItemChange = function() {
+    document.querySelectorAll('#bp-cats .bp-item').forEach(el => el.classList.toggle('on', el.querySelector('input').checked));
+    syncCatBoxes();
+  };
+  window.briefToggleCat = function(cat, on) {
+    document.querySelectorAll(`#bp-cats .bp-cat[data-cat="${cat}"] .bp-item`).forEach(el => paintItem(el, on));
+    syncCatBoxes();
+  };
+  window.briefPreset = function(key) {
+    const p = PRESETS[key]; if (!p) return;
+    const s = new Set(p.items);
+    document.querySelectorAll('#bp-cats .bp-item').forEach(el => paintItem(el, s.has(el.dataset.id)));
+    $('bp-ai').checked = p.ai;
+    syncCatBoxes();
+  };
+
+  window.lazBriefingOpenPicker = function() {
+    if (!odooUid) { alert('Connect to Odoo first (Steps 1-2).'); return; }
+    renderPicker();
+    $('laz-briefing-modal').classList.add('hidden');
+    $('briefing-picker-modal').classList.remove('hidden');
+  };
+  window.briefClosePicker = function() { $('briefing-picker-modal').classList.add('hidden'); };
+
+  window.briefGenerate = function() {
+    const items = Array.from(document.querySelectorAll('#bp-cats .bp-item input:checked')).map(i => i.closest('.bp-item').dataset.id);
+    if (!items.length) return;
+    savePrefs({ items, ai: $('bp-ai').checked });
+    $('briefing-picker-modal').classList.add('hidden');
+    lazRunBriefing();
+  };
+
+  window.briefReply = function(i) {
+    const e = (window._briefFlagged || [])[i]; if (!e) return;
+    openQuickCompose({ to: e.sender_email, subject: 'Re: ' + (e.subject || ''), context: e.subject || '' });
+  };
+
+  // ── run ─────────────────────────────────────────────────────────────────
+  let _runToken = 0;
+
+  window.lazRunBriefing = async function() {
+    if (!odooUid) { alert('Connect to Odoo first (Steps 1-2).'); return; }
+    const prefs = readPrefs();
+    const chosen = ITEMS.filter(i => prefs.items.includes(i.id));
+    if (!chosen.length) { lazBriefingOpenPicker(); return; }
+    const token = ++_runToken;
+    const modal = $('laz-briefing-modal'), body = $('briefing-body'), sub = $('briefing-subtitle');
+    modal.classList.remove('hidden');
+    body.style.padding = '18px 22px'; body.style.whiteSpace = 'normal';
+    const dateLabel = new Date().toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
+    sub.textContent = `${dateLabel} · ${chosen.length} section${chosen.length!==1?'s':''}`;
+    window._briefingPlainText = ''; window._briefingFlaggedEmails = []; window._briefingSubtitle = dateLabel;
+
+    const aiOn = prefs.ai;
+    body.innerHTML =
+      `<div id="bb-glance" style="display:none;margin-bottom:14px"></div>` +
+      (aiOn ? `<div id="bb-ai" style="margin-bottom:6px"><div style="display:flex;align-items:center;gap:10px;color:var(--muted);font-size:0.85rem"><div class="dot spin" style="display:inline-block"></div>Gathering your numbers…</div></div>` : '') +
+      CATS.map(c => {
+        const its = chosen.filter(i => i.cat === c.id); if (!its.length) return '';
+        return `<div class="bb-cat"><div class="bb-cat-head"><span>${c.icon} ${escHtml(c.title)}</span><i></i></div>` +
+          its.map(i => `<div class="bb-card" id="bb-${i.id}"><div class="bb-card-title">${escHtml(i.label)}</div><div class="bb-card-body" style="display:flex;align-items:center;gap:8px;color:var(--muted);font-size:0.8rem"><div class="dot spin" style="display:inline-block"></div>Loading…</div></div>`).join('') + `</div>`;
+      }).join('');
+
+    const userSel = parseInt($('laz-pipeline-user')?.value);
+    const x = { d: dates(), userId: userSel || odooUid };
+    const results = {}; const flags = [];
+    const glance = $('bb-glance');
+
+    const tasks = chosen.map(item => async () => {
+      let res;
+      try { res = await item.run(x); }
+      catch(e) { res = { html: `<div style="font-size:0.8rem;color:var(--muted)">Unavailable — ${escHtml(String(e.message || e).slice(0,160))}</div>`, text: `${item.label}: unavailable (${String(e.message||e).slice(0,80)})`, flags: [], failed: true }; }
+      if (token !== _runToken) return;
+      results[item.id] = res;
+      const card = $('bb-' + item.id);
+      if (card) card.querySelector('.bb-card-body').outerHTML = `<div class="bb-card-body">${res.html}</div>`;
+      (res.flags || []).forEach(f => flags.push(f));
+      if (glance && flags.length) {
+        glance.style.display = 'block';
+        glance.innerHTML = `<div class="bb-cat-head" style="margin-top:0"><span>⚠ Needs attention</span><i></i></div><div style="display:flex;gap:6px;flex-wrap:wrap">` +
+          flags.map(f => `<span class="bb-chip bb-${f.tone||'warning'}">${escHtml(f.text)}</span>`).join('') + `</div>`;
+      }
+    });
+
+    // small pool so a slow proxy isn't hit with 20 calls at once
+    let idx = 0;
+    await Promise.all(Array.from({ length: 4 }, async () => { while (idx < tasks.length) { await tasks[idx++](); } }));
+    if (token !== _runToken) return;
+
+    // plain-text digest (also what "Send to myself"/Copy/Download use)
+    const digestParts = [];
+    CATS.forEach(c => chosen.filter(i => i.cat === c.id).forEach(i => { const r = results[i.id]; if (r && r.text && !r.failed) digestParts.push(`## ${c.title} — ${i.label}\n${r.text}`); }));
+    const digest = digestParts.join('\n\n');
+    let aiText = '';
+
+    if (aiOn) {
+      const aiBox = $('bb-ai');
+      const groqKey = $('gemini-key')?.value?.trim() || '';
+      if (!groqKey) {
+        aiBox.innerHTML = R.note('No Groq key saved — the AI summary was skipped. The numbers below are still live from Odoo.');
       } else {
-        try { imapOnline = await pingImapServer(); } catch(e) { imapOnline = false; }
-        if (imapOnline) {
-          try {
-            const r = await fetch(`${IMAP_SERVER}/browse`, {
-              method: 'POST', headers: {'Content-Type':'application/json'},
-              body: JSON.stringify({ config: imapCfg, limit: 10, flagged_only: true }),
-              signal: AbortSignal.timeout(15000)
-            });
-            const d = await r.json();
-            flaggedEmails = d.emails || [];
-          } catch(e) { flaggedEmails = []; }
+        aiBox.innerHTML = `<div style="display:flex;align-items:center;gap:10px;color:var(--muted);font-size:0.85rem"><div class="dot spin" style="display:inline-block"></div>AI reading your numbers…</div>`;
+        try {
+          aiText = await aiSummary(digest, chosen, results, dateLabel, groqKey);
+          if (token !== _runToken) return;
+          aiBox.innerHTML = `<div class="bb-cat-head" style="margin-top:0"><span>⚡ Advisor</span><i></i></div><div id="bb-ai-text">${briefingRender(aiText, [], false, true)}</div>`;
+          briefingRenderCalendarSuggestions($('bb-ai-text'), aiText, false);
+        } catch(e) {
+          aiBox.innerHTML = R.note('AI summary unavailable: ' + escHtml(String(e.message || e).slice(0,160)) + ' — the numbers below are still live from Odoo.');
         }
       }
     }
 
-    if (overAchiever && flaggedEmails.length > 0) {
-      context += '\n\nFLAGGED EMAILS IN INBOX ('+flaggedEmails.length+' flagged):\n'+
-        flaggedEmails.map((e,i) => `${i+1}. From: ${e.sender_email} | Subject: "${e.subject}" | Date: ${e.date}`).join('\n');
-    } else if (overAchiever && imapOnline && flaggedEmails.length === 0) {
-      context += '\n\nFLAGGED EMAILS: None currently flagged — inbox is clear.';
-    } else if (overAchiever && !imapOnline) {
-      context += '\n\nFLAGGED EMAILS: IMAP server offline — could not scan inbox.';
-    }
+    window._briefingPlainText = (aiText ? aiText + '\n\n' + '─'.repeat(40) + '\n\n' : '') + digest;
+  };
 
-    // ── Build prompt ─────────────────────────────────────────
-    const basePrompt = LAZ_PERSONA+'\n\nGive me my daily sales briefing. Be direct, specific, use the actual deal names and numbers. No corporate filler.\n\n'+context;
-
-    const hasNotes = workNotesText.length > 0;
-    const notesSection = hasNotes
-      ? '\n3. **My Notes** — Review my sticky notes above and call out anything that needs action today'
-      : '';
-    const oaSection = overAchiever
-      ? `\n${hasNotes?'5':'4'}. **Flagged email action plan** — For each flagged email, one sharp decisive action (reply/schedule/delegate/archive). No "consider". Tell me exactly what to do.`
-      : '';
-
-    const calInstr = '\n\nCALENDAR: If any note or activity needs scheduling, flag it as [SCHEDULE: description | suggested time]';
-
-    const standardInstruction = overAchiever
-      ? `\n\nStructure your response with these numbered sections:\n1. **Top 3 priorities for TODAY** (specific, actionable)\n2. **Stale deals to rescue** — which ones and why${notesSection}\n${hasNotes?'4':'3'}. **Pipeline observation** — one sharp insight${oaSection}${calInstr}\n\nUnder 350 words. Use the actual names and numbers from the data.`
-      : `\n\nStructure your response with these numbered sections:\n1. **Top 3 priorities for TODAY** (specific, actionable)\n2. **Stale deals to rescue** — which ones and why${notesSection}\n${hasNotes?'4':'3'}. **Pipeline observation** — one sharp insight${calInstr}\n\nUnder 250 words. Talk to me like a trusted advisor, not a report.`;
-
-    const overAchieverAddition = '';
-
-    body.innerHTML = '<div style="display:flex;align-items:center;gap:10px;color:var(--muted)"><div class="dot spin" style="display:inline-block"></div><span>AI analyzing your day'+( overAchiever?' + flagged emails…':'…')+'</span></div>';
-
+  async function aiSummary(digest, chosen, results, dateLabel, groqKey) {
+    const ids = new Set(chosen.map(i => i.id));
+    const hasCompany = chosen.some(i => ['sales','acct','ops'].includes(i.cat));
+    const hasNotes = results.my_notes && results.my_notes.notes > 0;
+    const hasFlagged = results.em_flagged && results.em_flagged.flagged > 0;
+    const hasStale = ids.has('my_pipeline') || ids.has('co_stalled');
+    const secs = ['**Top 3 priorities for TODAY** (specific, actionable, use the real names and numbers)'];
+    if (hasCompany) secs.push('**Company watch-list** — the 2-4 things across sales, accounting and operations that most need the owner\'s attention right now, each with its number');
+    if (hasStale) secs.push('**Stale deals to rescue** — which ones and why');
+    if (hasNotes) secs.push('**My Notes** — call out anything in my sticky notes that needs action today');
+    if (hasFlagged) secs.push('**Flagged email action plan** — one decisive action per flagged email (reply / schedule / delegate / archive)');
+    secs.push('**One sharp insight** — the single most useful observation in this data');
+    const prompt = LAZ_PERSONA + '\n\nI am the owner/operator. Give me my daily briefing for ' + dateLabel + '. Be direct and specific; use the actual names and numbers below and never invent any. No corporate filler.\n\nDATA FROM ODOO:\n' + digest.slice(0, 9000) +
+      '\n\nStructure your response with these numbered sections:\n' + secs.map((s,i) => (i+1)+'. '+s).join('\n') +
+      '\n\nCALENDAR: If any note or activity needs scheduling, flag it as [SCHEDULE: description | suggested time]\n\nUnder ' + (hasCompany ? 350 : 250) + ' words. Talk to me like a trusted advisor, not a report.';
+    const model = $('gemini-model')?.value || 'qwen/qwen3.8-27b';
     const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
-      headers: {'Content-Type':'application/json','Authorization':'Bearer '+groqKey},
-      body: JSON.stringify({
-        model,
-        reasoning_effort:'none', reasoning_format:'hidden', max_tokens: overAchiever ? 900 : 600,
-        temperature: 0.5,
-        messages: [{ role:'user', content: basePrompt + standardInstruction + overAchieverAddition }]
-      }),
-      signal: AbortSignal.timeout(35000)
+      headers: { 'Content-Type':'application/json', 'Authorization':'Bearer ' + groqKey },
+      body: JSON.stringify({ model, reasoning_effort:'none', reasoning_format:'hidden', max_tokens: 900, temperature: 0.5, messages: [{ role:'user', content: prompt }] }),
+      signal: AbortSignal.timeout(35000),
     });
     const data = await r.json();
-    const text = data.choices?.[0]?.message?.content?.trim() || 'Could not generate briefing.';
-
-    // ── Render with checkboxes + calendar suggestions ────────
-    window._briefingPlainText  = text;
-    window._briefingFlaggedEmails = flaggedEmails;
-    window._briefingSubtitle   = sub.textContent;
-
-    body.innerHTML = briefingRender(text, flaggedEmails, overAchiever, imapOnline);
-    briefingRenderCalendarSuggestions(body, text, false);
-
-  } catch(e) {
-    body.innerHTML = '<div style="color:var(--danger)">Error: '+escHtml(e.message)+'</div>';
+    const text = data.choices?.[0]?.message?.content?.trim();
+    if (!text) throw new Error(data.error?.message || 'empty response');
+    return text;
   }
-}
+
+  window.briefingCopy = async function() {
+    const t = window._briefingPlainText || '';
+    if (!t) { alert('Generate a briefing first.'); return; }
+    const btn = $('briefing-copy-btn');
+    try { await navigator.clipboard.writeText(`Daily Briefing — ${window._briefingSubtitle||''}\n${'─'.repeat(50)}\n\n${t}`); if (btn) { const o = btn.innerHTML; btn.textContent = 'Copied ✓'; setTimeout(() => btn.innerHTML = o, 1500); } }
+    catch(e) { alert('Clipboard blocked — use Download instead.'); }
+  };
+  window.briefingDownload = function() {
+    const t = window._briefingPlainText || '';
+    if (!t) { alert('Generate a briefing first.'); return; }
+    const blob = new Blob([`Daily Briefing — ${window._briefingSubtitle||''}\n${'─'.repeat(50)}\n\n${t}\n`], { type:'text/plain' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+    a.download = `Briefing-${new Date().toISOString().slice(0,10)}.txt`; a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  };
+})();
 
 function briefingRender(text, flaggedEmails, overAchiever, imapOnline) {
   // Parse numbered items (1. 2. 3. etc) into checkbox rows
