@@ -3,7 +3,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <meta name="oel-version" content="v15.40">
+  <meta name="oel-version" content="v15.41">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="mobile-web-app-capable" content="yes">
@@ -24608,31 +24608,31 @@ async function lazGenerateBriefing() { lazBriefingOpenPicker(); }
 
   // run() is attached below; desc is what the checkbox promises.
   const ITEMS = [
-    { id:'my_acts',     cat:'my',    label:'My due & overdue activities', desc:'Everything on your plate today, oldest first' },
-    { id:'my_pipeline', cat:'my',    label:'My pipeline',                 desc:'Open deals, stale deals to rescue, wins in the last 30 days' },
-    { id:'my_tasks',    cat:'my',    label:'My project tasks',            desc:'Open tasks assigned to you, due within 7 days' },
-    { id:'my_notes',    cat:'my',    label:'My sticky notes',             desc:'Your saved work notes' },
+    { id:'my_acts', icon:'📋',     cat:'my',    label:'My due & overdue activities', desc:'Everything on your plate today, oldest first' },
+    { id:'my_pipeline', icon:'🎯', cat:'my',    label:'My pipeline',                 desc:'Open deals, stale deals to rescue, wins in the last 30 days' },
+    { id:'my_tasks', icon:'✅',    cat:'my',    label:'My project tasks',            desc:'Open tasks assigned to you, due within 7 days' },
+    { id:'my_notes', icon:'📝',    cat:'my',    label:'My sticky notes',             desc:'Your saved work notes' },
 
-    { id:'co_pipeline', cat:'sales', label:'Pipeline by stage & rep',     desc:'Open value, weighted value, where it sits and who owns it' },
-    { id:'co_won',      cat:'sales', label:'Wins & losses',               desc:'Won / lost this month vs last month, top closers' },
-    { id:'co_new',      cat:'sales', label:'New leads (7 days)',          desc:'What came in, and what nobody owns yet' },
-    { id:'co_stalled',  cat:'sales', label:'Stalled deals (30+ days)',    desc:'Value at risk across every rep' },
-    { id:'co_quotes',   cat:'sales', label:'Quotes & orders',             desc:'Open quotations, aging ones, confirmed orders this month' },
-    { id:'co_reps',     cat:'sales', label:'Overdue activities by rep',   desc:'Who is behind on follow-ups' },
+    { id:'co_pipeline', icon:'📊', cat:'sales', label:'Pipeline by stage & rep',     desc:'Open value, weighted value, where it sits and who owns it' },
+    { id:'co_won', icon:'🏆',      cat:'sales', label:'Wins & losses',               desc:'Won / lost this month vs last month, top closers' },
+    { id:'co_new', icon:'🌱',      cat:'sales', label:'New leads (7 days)',          desc:'What came in, and what nobody owns yet' },
+    { id:'co_stalled', icon:'🧊',  cat:'sales', label:'Stalled deals (30+ days)',    desc:'Value at risk across every rep' },
+    { id:'co_quotes', icon:'🧾',   cat:'sales', label:'Quotes & orders',             desc:'Open quotations, aging ones, confirmed orders this month' },
+    { id:'co_reps', icon:'⏰',     cat:'sales', label:'Overdue activities by rep',   desc:'Who is behind on follow-ups' },
 
-    { id:'ac_ar',       cat:'acct',  label:'Receivables & aging',         desc:'Open AR, overdue, aging buckets, biggest overdue customers' },
-    { id:'ac_rev',      cat:'acct',  label:'Revenue & collections',       desc:'Invoiced and collected this month vs last month' },
-    { id:'ac_ap',       cat:'acct',  label:'Payables',                    desc:'Vendor bills open, overdue and due in the next 7 days' },
-    { id:'ac_todo',     cat:'acct',  label:'Accounting to-do',            desc:'Drafts to post, unreconciled bank lines, expenses to approve' },
+    { id:'ac_ar', icon:'💵',       cat:'acct',  label:'Receivables & aging',         desc:'Open AR, overdue, aging buckets, biggest overdue customers' },
+    { id:'ac_rev', icon:'📈',      cat:'acct',  label:'Revenue & collections',       desc:'Invoiced and collected this month vs last month' },
+    { id:'ac_ap', icon:'🧮',       cat:'acct',  label:'Payables',                    desc:'Vendor bills open, overdue and due in the next 7 days' },
+    { id:'ac_todo', icon:'🗂️',     cat:'acct',  label:'Accounting to-do',            desc:'Drafts to post, unreconciled bank lines, expenses to approve' },
 
-    { id:'em_odoo',     cat:'mail',  label:'Odoo inbox',                  desc:'Unread messages and mentions waiting for you' },
-    { id:'em_flagged',  cat:'mail',  label:'Flagged emails (mailbox)',    desc:'Your flagged IMAP emails — needs the local server running' },
-    { id:'em_bounce',   cat:'mail',  label:'Bounced contacts',            desc:'Contacts tagged “Bounced Email” that need a fixed address' },
+    { id:'em_odoo', icon:'📥',     cat:'mail',  label:'Odoo inbox',                  desc:'Unread messages and mentions waiting for you' },
+    { id:'em_flagged', icon:'🚩',  cat:'mail',  label:'Flagged emails (mailbox)',    desc:'Your flagged IMAP emails — needs the local server running' },
+    { id:'em_bounce', icon:'↩️',   cat:'mail',  label:'Bounced contacts',            desc:'Contacts tagged “Bounced Email” that need a fixed address' },
 
-    { id:'op_tasks',    cat:'ops',   label:'Overdue project tasks',       desc:'Company-wide, grouped by project' },
-    { id:'op_upcoming', cat:'ops',   label:'Upcoming orders & returns',   desc:'Orders/rentals in the next 7 days and overdue returns' },
-    { id:'op_purch',    cat:'ops',   label:'Purchasing',                  desc:'Open RFQs and purchase orders this month' },
-    { id:'op_contacts', cat:'ops',   label:'New contacts (7 days)',       desc:'Who was added to Odoo lately' },
+    { id:'op_tasks', icon:'🔧',    cat:'ops',   label:'Overdue project tasks',       desc:'Company-wide, grouped by project' },
+    { id:'op_upcoming', icon:'🚚', cat:'ops',   label:'Upcoming orders & returns',   desc:'Orders/rentals in the next 7 days and overdue returns' },
+    { id:'op_purch', icon:'🛒',    cat:'ops',   label:'Purchasing',                  desc:'Open RFQs and purchase orders this month' },
+    { id:'op_contacts', icon:'🆕', cat:'ops',   label:'New contacts (7 days)',       desc:'Who was added to Odoo lately' },
   ];
 
   const PRESETS = {
@@ -24643,6 +24643,21 @@ async function lazGenerateBriefing() { lazBriefingOpenPicker(); }
   };
 
   // ── tiny helpers ────────────────────────────────────────────────────────
+  // Odoo calls go through the local proxy; a momentary 5xx / network blip shouldn't
+  // blank a whole card, so transient failures are retried (twice) before giving up.
+  const TRANSIENT = /HTTP 5\d\d|Failed to fetch|NetworkError|Load failed|timed out|timeout|ECONN|socket/i;
+  async function oe(model, method, args, kwargs) {
+    let lastErr;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try { return await odooExecute(odooUid, model, method, args, kwargs); }
+      catch(e) {
+        lastErr = e;
+        if (!TRANSIENT.test(String(e && e.message))) throw e;
+        await new Promise(r => setTimeout(r, 600 * (attempt + 1)));
+      }
+    }
+    throw lastErr;
+  }
   const $ = id => document.getElementById(id);
   const pad = n => String(n).padStart(2,'0');
   const ymd = d => d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
@@ -24670,16 +24685,16 @@ async function lazGenerateBriefing() { lazBriefingOpenPicker(); }
 
   async function sr(model, domain, fields, opts) {
     const o = Object.assign({ fields, limit: 1000 }, opts || {});
-    const r = (await odooExecute(odooUid, model, 'search_read', [domain], o)) || [];
+    const r = (await oe( model, 'search_read', [domain], o)) || [];
     r.trunc = r.length >= o.limit;
     return r;
   }
-  const cnt = (model, domain) => odooExecute(odooUid, model, 'search_count', [domain]);
+  const cnt = (model, domain) => oe( model, 'search_count', [domain]);
 
   const _fields = {};
   async function fieldsOf(model) {
     if (_fields[model]) return _fields[model];
-    try { _fields[model] = (await odooExecute(odooUid, model, 'fields_get', [], { attributes: ['type','selection'] })) || {}; }
+    try { _fields[model] = (await oe( model, 'fields_get', [], { attributes: ['type','selection'] })) || {}; }
     catch(e) { _fields[model] = {}; }
     return _fields[model];
   }
@@ -24715,6 +24730,7 @@ async function lazGenerateBriefing() { lazBriefingOpenPicker(); }
     sub: t => `<div style="font-size:0.66rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin:10px 0 4px">${escHtml(t)}</div>`,
     note: t => `<div style="font-size:0.8rem;color:var(--muted)">${t}</div>`,
   };
+  const shortDate = d => { const t = new Date(d); return isNaN(t) ? String(d||'').slice(0,16) : t.toLocaleDateString('en-US', { month:'short', day:'numeric' }); };
   const more = (arr, shown) => arr.length > shown ? `\n  …and ${arr.length - shown} more` : '';
 
   // ── ITEM RUNNERS ────────────────────────────────────────────────────────
@@ -24998,7 +25014,7 @@ async function lazGenerateBriefing() { lazBriefingOpenPicker(); }
       `<button class="btn btn-ghost" onclick="briefReply(${i})" style="padding:3px 10px;font-size:0.72rem">Reply</button></div>`).join('');
     return {
       html: R.tiles([R.tile('Flagged', emails.length, '', emails.length?'warning':'success')]) + (list || R.note('No flagged emails — inbox is clear.')),
-      text: `Flagged emails: ${emails.length}\n` + emails.map((e,i) => `  ${i+1}. From ${e.sender_email} — "${e.subject}" (${e.date})`).join('\n'),
+      text: `Flagged emails: ${emails.length}\n` + emails.map((e,i) => `  ${i+1}. "${e.subject}" — ${e.sender_email} (${shortDate(e.date)})`).join('\n'),
       flags: emails.length ? [{ tone:'warning', text: plural(emails.length,'flagged email') }] : [],
       flagged: emails.length,
     };
@@ -25160,6 +25176,7 @@ async function lazGenerateBriefing() { lazBriefingOpenPicker(); }
 
   // ── run ─────────────────────────────────────────────────────────────────
   let _runToken = 0;
+  let CUR = null;
 
   window.lazRunBriefing = async function() {
     if (!odooUid) { alert('Connect to Odoo first (Steps 1-2).'); return; }
@@ -25172,7 +25189,7 @@ async function lazGenerateBriefing() { lazBriefingOpenPicker(); }
     body.style.padding = '18px 22px'; body.style.whiteSpace = 'normal';
     const dateLabel = new Date().toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
     sub.textContent = `${dateLabel} · ${chosen.length} section${chosen.length!==1?'s':''}`;
-    window._briefingPlainText = ''; window._briefingFlaggedEmails = []; window._briefingSubtitle = dateLabel;
+    window._briefingPlainText = ''; window._briefingFormatted = ''; window._briefingFlaggedEmails = []; window._briefingSubtitle = dateLabel;
 
     const aiOn = prefs.ai;
     body.innerHTML =
@@ -25186,35 +25203,30 @@ async function lazGenerateBriefing() { lazBriefingOpenPicker(); }
 
     const userSel = parseInt($('laz-pipeline-user')?.value);
     const x = { d: dates(), userId: userSel || odooUid };
-    const results = {}; const flags = [];
-    const glance = $('bb-glance');
+    const results = {}, flagsBy = {};
+    CUR = { x, chosen, results, flagsBy, ai: '', dateLabel, token };
 
-    const tasks = chosen.map(item => async () => {
-      let res;
-      try { res = await item.run(x); }
-      catch(e) { res = { html: `<div style="font-size:0.8rem;color:var(--muted)">Unavailable — ${escHtml(String(e.message || e).slice(0,160))}</div>`, text: `${item.label}: unavailable (${String(e.message||e).slice(0,80)})`, flags: [], failed: true }; }
-      if (token !== _runToken) return;
-      results[item.id] = res;
+    function settle(item, res) {
+      results[item.id] = res; flagsBy[item.id] = res.flags || [];
       const card = $('bb-' + item.id);
       if (card) card.querySelector('.bb-card-body').outerHTML = `<div class="bb-card-body">${res.html}</div>`;
-      (res.flags || []).forEach(f => flags.push(f));
-      if (glance && flags.length) {
-        glance.style.display = 'block';
-        glance.innerHTML = `<div class="bb-cat-head" style="margin-top:0"><span>⚠ Needs attention</span><i></i></div><div style="display:flex;gap:6px;flex-wrap:wrap">` +
-          flags.map(f => `<span class="bb-chip bb-${f.tone||'warning'}">${escHtml(f.text)}</span>`).join('') + `</div>`;
-      }
+      renderGlance();
+    }
+    CUR.settle = settle;
+
+    const tasks = chosen.map(item => async () => {
+      const res = await runItem(item, x);
+      if (token !== _runToken) return;
+      settle(item, res);
     });
 
     // small pool so a slow proxy isn't hit with 20 calls at once
     let idx = 0;
-    await Promise.all(Array.from({ length: 4 }, async () => { while (idx < tasks.length) { await tasks[idx++](); } }));
+    await Promise.all(Array.from({ length: 3 }, async () => { while (idx < tasks.length) { await tasks[idx++](); } }));
     if (token !== _runToken) return;
 
-    // plain-text digest (also what "Send to myself"/Copy/Download use)
-    const digestParts = [];
-    CATS.forEach(c => chosen.filter(i => i.cat === c.id).forEach(i => { const r = results[i.id]; if (r && r.text && !r.failed) digestParts.push(`## ${c.title} — ${i.label}\n${r.text}`); }));
-    const digest = digestParts.join('\n\n');
-    let aiText = '';
+    // plain-text digest handed to the AI
+    const digest = digestFor(chosen, results);
 
     if (aiOn) {
       const aiBox = $('bb-ai');
@@ -25224,8 +25236,9 @@ async function lazGenerateBriefing() { lazBriefingOpenPicker(); }
       } else {
         aiBox.innerHTML = `<div style="display:flex;align-items:center;gap:10px;color:var(--muted);font-size:0.85rem"><div class="dot spin" style="display:inline-block"></div>AI reading your numbers…</div>`;
         try {
-          aiText = await aiSummary(digest, chosen, results, dateLabel, groqKey);
+          const aiText = await aiSummary(digest, chosen, results, dateLabel, groqKey);
           if (token !== _runToken) return;
+          CUR.ai = aiText;
           aiBox.innerHTML = `<div class="bb-cat-head" style="margin-top:0"><span>⚡ Advisor</span><i></i></div><div id="bb-ai-text">${briefingRender(aiText, [], false, true)}</div>`;
           briefingRenderCalendarSuggestions($('bb-ai-text'), aiText, false);
         } catch(e) {
@@ -25233,9 +25246,100 @@ async function lazGenerateBriefing() { lazBriefingOpenPicker(); }
         }
       }
     }
-
-    window._briefingPlainText = (aiText ? aiText + '\n\n' + '─'.repeat(40) + '\n\n' : '') + digest;
+    rebuildFormatted();
   };
+
+  async function runItem(item, x) {
+    try { return await item.run(x); }
+    catch(e) {
+      const msg = String(e.message || e).slice(0, 160);
+      return { html: `<div style="font-size:0.8rem;color:var(--muted)">Unavailable — ${escHtml(msg)} <button class="btn btn-ghost" onclick="briefRetry('${item.id}')" style="padding:2px 10px;font-size:0.72rem;margin-left:8px">↻ Retry</button></div>`, text: '', flags: [], failed: true, error: msg };
+    }
+  }
+
+  function renderGlance() {
+    const glance = $('bb-glance'); if (!glance || !CUR) return;
+    const flags = CUR.chosen.flatMap(i => CUR.flagsBy[i.id] || []);
+    if (!flags.length) { glance.style.display = 'none'; return; }
+    glance.style.display = 'block';
+    glance.innerHTML = `<div class="bb-cat-head" style="margin-top:0"><span>⚠ Needs attention</span><i></i></div><div style="display:flex;gap:6px;flex-wrap:wrap">` +
+      flags.map(f => `<span class="bb-chip bb-${f.tone||'warning'}">${escHtml(f.text)}</span>`).join('') + `</div>`;
+  }
+
+  function digestFor(chosen, results) {
+    const parts = [];
+    CATS.forEach(c => chosen.filter(i => i.cat === c.id).forEach(i => { const r = results[i.id]; if (r && r.text && !r.failed) parts.push(`## ${c.title} — ${i.label}\n${r.text}`); }));
+    return parts.join('\n\n');
+  }
+
+  window.briefRetry = async function(id) {
+    if (!CUR) return;
+    const item = ITEMS.find(i => i.id === id); if (!item) return;
+    const card = $('bb-' + id);
+    if (card) card.querySelector('.bb-card-body').innerHTML = '<div style="display:flex;align-items:center;gap:8px;color:var(--muted);font-size:0.8rem"><div class="dot spin" style="display:inline-block"></div>Retrying…</div>';
+    const res = await runItem(item, CUR.x);
+    if (!CUR || CUR.token !== _runToken) return;
+    CUR.settle(item, res);
+    rebuildFormatted();
+  };
+
+  // ── Nicely formatted plain text (Send to myself / Copy / Download) ───────
+  // Email via mailto is plain text, so "bold" is done with Unicode bold letters
+  // and sections are marked with emoji + rules.
+  function ub(str) {
+    return Array.from(String(str)).map(ch => {
+      const c = ch.codePointAt(0);
+      if (c >= 65 && c <= 90)  return String.fromCodePoint(0x1D5D4 + c - 65);
+      if (c >= 97 && c <= 122) return String.fromCodePoint(0x1D5EE + c - 97);
+      if (c >= 48 && c <= 57)  return String.fromCodePoint(0x1D7EC + c - 48);
+      return ch;
+    }).join('');
+  }
+  const RULE = '━'.repeat(32);
+  const AI_ICONS = [[/priorit/i,'🎯'], [/watch/i,'🔭'], [/stale|rescue/i,'🧊'], [/note/i,'📝'], [/flag/i,'🚩'], [/insight/i,'💡']];
+
+  function fmtAi(text) {
+    return String(text).split('\n').map(raw => {
+      let t = raw.trimEnd();
+      const h = t.match(/^\s*\*\*\s*\d+\.\s*(.+?)\s*\*\*\s*:?\s*$/);
+      if (h) { const ic = (AI_ICONS.find(([re]) => re.test(h[1])) || [0,'▸'])[1]; return `\n${ic} ${ub(h[1].toUpperCase())}`; }
+      t = t.replace(/^\s*[*•-]\s+/, '  • ').replace(/^(\d+)\.\s+/, '  $1. ');
+      t = t.replace(/\*\*(.+?)\*\*/g, (m, g) => ub(g)).replace(/\*\*/g, '');
+      t = t.replace(/\[SCHEDULE:\s*([^|\]]+)\|\s*([^\]]+)\]/gi, (m, a, b) => `📅 Schedule: ${a.trim()} — ${b.trim()}`);
+      return t;
+    }).join('\n').replace(/\n{3,}/g, '\n\n').trim();
+  }
+
+  function indentBlock(text) {
+    return String(text).split('\n').map(l => {
+      if (!l.trim()) return '';
+      if (/^\s*-\s+/.test(l)) return '   • ' + l.replace(/^\s*-\s+/, '');
+      if (/^\s{2,}\S/.test(l)) return '     ' + l.trim();     // continuation / detail line
+      return '   ' + l.trim();
+    }).join('\n').replace(/\s+$/, '');
+  }
+
+  function rebuildFormatted() {
+    if (!CUR) return;
+    const { chosen, results, ai, dateLabel } = CUR;
+    const flags = chosen.flatMap(i => CUR.flagsBy[i.id] || []);
+    const out = [`⚡ ${ub('DAILY BRIEFING')}`, `📅 ${dateLabel}`, RULE];
+    if (flags.length) out.push('', `⚠️ ${ub('NEEDS ATTENTION')}`, ...flags.map(f => `   • ${f.text}`));
+    if (ai) out.push('', RULE, `🤖 ${ub('ADVISOR')}`, '', fmtAi(ai));
+    CATS.forEach(c => {
+      const its = chosen.filter(i => i.cat === c.id && results[i.id] && results[i.id].text && !results[i.id].failed);
+      if (!its.length) return;
+      out.push('', RULE, `${c.icon} ${ub(c.title.toUpperCase())}`, RULE);
+      its.forEach(i => { out.push('', `${i.icon} ${ub(i.label)}`, indentBlock(results[i.id].text)); });
+    });
+    const failed = chosen.filter(i => results[i.id] && results[i.id].failed).map(i => i.label);
+    out.push('', RULE);
+    if (failed.length) out.push(`ℹ️ Couldn't load: ${failed.join(', ')}`);
+    out.push('Sent from OdooLink');
+    window._briefingFormatted = out.join('\n');
+    window._briefingPlainText = window._briefingFormatted;
+  }
+
 
   async function aiSummary(digest, chosen, results, dateLabel, groqKey) {
     const ids = new Set(chosen.map(i => i.id));
@@ -25266,16 +25370,16 @@ async function lazGenerateBriefing() { lazBriefingOpenPicker(); }
   }
 
   window.briefingCopy = async function() {
-    const t = window._briefingPlainText || '';
+    const t = window._briefingFormatted || '';
     if (!t) { alert('Generate a briefing first.'); return; }
     const btn = $('briefing-copy-btn');
-    try { await navigator.clipboard.writeText(`Daily Briefing — ${window._briefingSubtitle||''}\n${'─'.repeat(50)}\n\n${t}`); if (btn) { const o = btn.innerHTML; btn.textContent = 'Copied ✓'; setTimeout(() => btn.innerHTML = o, 1500); } }
+    try { await navigator.clipboard.writeText(t); if (btn) { const o = btn.innerHTML; btn.textContent = 'Copied ✓'; setTimeout(() => btn.innerHTML = o, 1500); } }
     catch(e) { alert('Clipboard blocked — use Download instead.'); }
   };
   window.briefingDownload = function() {
-    const t = window._briefingPlainText || '';
+    const t = window._briefingFormatted || '';
     if (!t) { alert('Generate a briefing first.'); return; }
-    const blob = new Blob([`Daily Briefing — ${window._briefingSubtitle||''}\n${'─'.repeat(50)}\n\n${t}\n`], { type:'text/plain' });
+    const blob = new Blob(['﻿' + t + '\n'], { type:'text/plain;charset=utf-8' });
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
     a.download = `Briefing-${new Date().toISOString().slice(0,10)}.txt`; a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 2000);
@@ -25399,13 +25503,15 @@ function briefingSendToSelf() {
                            document.getElementById('odoo-user')?.value?.trim() || '';
 
   let body = `Daily Briefing — ${subtitle}\n${'─'.repeat(50)}\n\n${plainText}`;
+  const formatted = window._briefingFormatted || '';
+  if (formatted) body = formatted;
 
-  if (flagged.length > 0) {
+  if (!formatted && flagged.length > 0) {
     body += `\n\n${'─'.repeat(50)}\n⚡ FLAGGED EMAILS\n\n`;
     body += flagged.map((e,i) => `${i+1}. ${e.subject||'(no subject)'}\n   From: ${e.sender_email}\n   Date: ${e.date||''}`).join('\n\n');
   }
 
-  body += `\n\n${'─'.repeat(50)}\nSent from OdooEmailLink Laz Mode`;
+  if (!formatted) body += `\n\n${'─'.repeat(50)}\nSent from OdooEmailLink Laz Mode`;
 
   // Close briefing modal
   document.getElementById('laz-briefing-modal')?.classList.add('hidden');
