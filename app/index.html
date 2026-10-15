@@ -3,7 +3,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <meta name="oel-version" content="v15.41">
+  <meta name="oel-version" content="v15.42">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="mobile-web-app-capable" content="yes">
@@ -24626,7 +24626,7 @@ async function lazGenerateBriefing() { lazBriefingOpenPicker(); }
     { id:'ac_todo', icon:'🗂️',     cat:'acct',  label:'Accounting to-do',            desc:'Drafts to post, unreconciled bank lines, expenses to approve' },
 
     { id:'em_odoo', icon:'📥',     cat:'mail',  label:'Odoo inbox',                  desc:'Unread messages and mentions waiting for you' },
-    { id:'em_flagged', icon:'🚩',  cat:'mail',  label:'Flagged emails (mailbox)',    desc:'Your flagged IMAP emails — needs the local server running' },
+    { id:'em_flagged', icon:'🚩',  cat:'mail',  label:'Flagged emails + action plan',  desc:'Your flagged mailbox emails, each with a Reply / Schedule / Delegate / Archive decision (needs the local server)' },
     { id:'em_bounce', icon:'↩️',   cat:'mail',  label:'Bounced contacts',            desc:'Contacts tagged “Bounced Email” that need a fixed address' },
 
     { id:'op_tasks', icon:'🔧',    cat:'ops',   label:'Overdue project tasks',       desc:'Company-wide, grouped by project' },
@@ -24636,8 +24636,8 @@ async function lazGenerateBriefing() { lazBriefingOpenPicker(); }
   ];
 
   const PRESETS = {
-    myday: { label:'My day', ai:true,  items:['my_acts','my_pipeline','my_tasks','my_notes','em_odoo'] },
-    owner: { label:'Owner overview', ai:true, items:['my_acts','co_pipeline','co_won','co_quotes','co_reps','ac_ar','ac_rev','ac_ap','ac_todo','em_odoo','op_tasks','op_upcoming'] },
+    myday: { label:'My day', ai:true,  items:['my_acts','my_pipeline','my_tasks','my_notes','em_odoo','em_flagged'] },
+    owner: { label:'Owner overview', ai:true, items:['my_acts','co_pipeline','co_won','co_quotes','co_reps','ac_ar','ac_rev','ac_ap','ac_todo','em_odoo','em_flagged','op_tasks','op_upcoming'] },
     all:   { label:'Everything', ai:true, items:ITEMS.map(i=>i.id) },
     none:  { label:'Clear', ai:false, items:[] },
   };
@@ -24997,26 +24997,78 @@ async function lazGenerateBriefing() { lazBriefingOpenPicker(); }
     };
   };
 
+  // Flagged emails + a decisive per-email action plan. Pulls a short body preview
+  // for each message (local IMAP server) so the plan is based on what the email
+  // actually says, then asks Groq for ONE action per email.
+  const ACTION_TONE = { reply:'accent', schedule:'success', delegate:'warning', archive:'muted', follow:'warning' };
+  async function flaggedPlan(emails, groqKey) {
+    const list = emails.map((e, i) => `${i+1}. From: ${e.sender_email} | Subject: "${e.subject}" | Date: ${shortDate(e.date)}` + (e.snippet ? `\n   Preview: ${e.snippet.slice(0, 350)}` : '')).join('\n');
+    const prompt = LAZ_PERSONA + '\n\nYou are my chief of staff. These are the emails I flagged in my inbox. For EACH one decide exactly ONE action: Reply, Schedule, Delegate, Archive, or Follow up. Then give one short, specific instruction (who, what, when) — no "consider", no hedging. Use only what the email shows; never invent facts.\n\nFLAGGED EMAILS:\n' + list +
+      '\n\nRespond with ONLY a JSON array, one object per email, in order: [{"n":1,"action":"Reply","plan":"..."}]';
+    const model = $('gemini-model')?.value || 'qwen/qwen3.8-27b';
+    const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'Authorization':'Bearer ' + groqKey },
+      body: JSON.stringify({ model, reasoning_effort:'none', reasoning_format:'hidden', max_tokens: 1400, temperature: 0.3, messages: [{ role:'user', content: prompt }] }),
+      signal: AbortSignal.timeout(35000),
+    });
+    const data = await r.json();
+    const txt = data.choices?.[0]?.message?.content || '';
+    const m = txt.match(/\[[\s\S]*\]/);
+    if (!m) throw new Error(data.error?.message || 'no plan returned');
+    const arr = JSON.parse(m[0]);
+    arr.forEach(o => { const e = emails[(parseInt(o.n) || 0) - 1]; if (e && o.plan) { e.action = String(o.action || 'Review').trim(); e.plan = String(o.plan).trim(); } });
+    return arr.length;
+  }
+
   RUN.em_flagged = async x => {
     const cfg = getImapConfig();
     if (!cfg.email || !cfg.password) return { html: R.note('No IMAP mailbox configured — set it up in Settings to include flagged emails.'), text: '', skipped: true };
     let online = false;
     try { online = await pingImapServer(); } catch(e) {}
-    if (!online) return { html: R.note('⚠ The local IMAP server is offline — start it (start.bat) and regenerate to include flagged emails.'), text: 'Flagged emails: IMAP server offline, not checked.', skipped: true };
+    if (!online) return { html: R.note('⚠ The local IMAP server is offline — start it (start.bat) and refresh to include flagged emails.'), text: 'Flagged emails: IMAP server offline, not checked.', skipped: true };
     const r = await fetch(`${IMAP_SERVER}/browse`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ config: cfg, limit: 10, flagged_only: true }), signal: AbortSignal.timeout(15000) });
     const d = await r.json();
     if (d.error) throw new Error(d.error);
     const emails = d.emails || [];
     window._briefFlagged = emails;
-    const list = emails.map((e,i) =>
-      `<div style="display:flex;align-items:center;gap:10px;padding:6px 2px;border-top:1px solid var(--border);font-size:0.8rem">` +
-      `<div style="flex:1;min-width:0"><div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">🚩 ${escHtml(e.subject||'(no subject)')}</div><div style="font-size:0.7rem;color:var(--muted)">${escHtml(e.sender_email||'')} · ${escHtml(e.date||'')}</div></div>` +
-      `<button class="btn btn-ghost" onclick="briefReply(${i})" style="padding:3px 10px;font-size:0.72rem">Reply</button></div>`).join('');
+
+    // short body previews (best effort, 3 at a time) so the plan reflects the email's content
+    let ei = 0;
+    await Promise.all(Array.from({ length: 3 }, async () => {
+      while (ei < emails.length) {
+        const e = emails[ei++];
+        try {
+          const br = await fetch(`${IMAP_SERVER}/body`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ config: cfg, uid: e.uid }), signal: AbortSignal.timeout(8000) });
+          const bd = await br.json();
+          e.snippet = String(bd.body || '').replace(/https?:\/\/\S+/g, '').replace(/\s+/g, ' ').trim().slice(0, 500);
+        } catch(err) { /* preview is optional */ }
+      }
+    }));
+
+    let planNote = '';
+    const groqKey = $('gemini-key')?.value?.trim() || '';
+    if (emails.length && groqKey) {
+      try { await flaggedPlan(emails, groqKey); }
+      catch(err) { planNote = 'Action plan unavailable: ' + String(err.message || err).slice(0, 100); }
+    } else if (emails.length) planNote = 'Add a Groq key to get an action plan for each email.';
+    const planned = emails.filter(e => e.plan).length;
+
+    const rows = emails.map((e, i) => {
+      const tone = ACTION_TONE[(e.action || '').toLowerCase().split(' ')[0]] || 'accent';
+      return `<div style="padding:8px 2px;border-top:1px solid var(--border);font-size:0.8rem">` +
+        `<div style="display:flex;align-items:center;gap:10px"><div style="flex:1;min-width:0"><div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">🚩 ${escHtml(e.subject || '(no subject)')}</div>` +
+        `<div style="font-size:0.7rem;color:var(--muted)">${escHtml(e.sender_email || '')} · ${escHtml(shortDate(e.date))}</div></div>` +
+        `<button class="btn btn-ghost" onclick="briefReply(${i})" style="padding:3px 10px;font-size:0.72rem">Reply</button></div>` +
+        (e.plan ? `<div style="margin-top:5px;display:flex;gap:8px;align-items:baseline"><span class="bb-chip" style="color:var(--${tone});border-color:var(--${tone});font-size:0.68rem;padding:1px 8px;white-space:nowrap">${escHtml(e.action)}</span><span>${escHtml(e.plan)}</span></div>` : '') +
+        `</div>`;
+    }).join('');
+
     return {
-      html: R.tiles([R.tile('Flagged', emails.length, '', emails.length?'warning':'success')]) + (list || R.note('No flagged emails — inbox is clear.')),
-      text: `Flagged emails: ${emails.length}\n` + emails.map((e,i) => `  ${i+1}. "${e.subject}" — ${e.sender_email} (${shortDate(e.date)})`).join('\n'),
+      html: R.tiles([R.tile('Flagged', emails.length, planned ? 'with action plan' : '', emails.length ? 'warning' : 'success')]) + (rows || R.note('No flagged emails — inbox is clear.')) + (planNote ? R.note(escHtml(planNote)) : ''),
+      text: `Flagged emails: ${emails.length}\n` + emails.map((e, i) => `  ${i+1}. "${e.subject}" — ${e.sender_email} (${shortDate(e.date)})` + (e.plan ? `\n     ➜ ${e.action.toUpperCase()}: ${e.plan}` : '')).join('\n'),
       flags: emails.length ? [{ tone:'warning', text: plural(emails.length,'flagged email') }] : [],
-      flagged: emails.length,
+      flagged: emails.length, planned,
     };
   };
 
@@ -25268,7 +25320,7 @@ async function lazGenerateBriefing() { lazBriefingOpenPicker(); }
 
   function digestFor(chosen, results) {
     const parts = [];
-    CATS.forEach(c => chosen.filter(i => i.cat === c.id).forEach(i => { const r = results[i.id]; if (r && r.text && !r.failed) parts.push(`## ${c.title} — ${i.label}\n${r.text}`); }));
+    CATS.forEach(c => chosen.filter(i => i.cat === c.id).forEach(i => { const r = results[i.id]; if (r && r.text && !r.failed) parts.push(`## ${c.title} — ${i.label}\n${r.text.length > 1800 ? r.text.slice(0, 1800) + '\n  …(truncated)' : r.text}`); }));
     return parts.join('\n\n');
   }
 
@@ -25314,6 +25366,7 @@ async function lazGenerateBriefing() { lazBriefingOpenPicker(); }
     return String(text).split('\n').map(l => {
       if (!l.trim()) return '';
       if (/^\s*-\s+/.test(l)) return '   • ' + l.replace(/^\s*-\s+/, '');
+      if (/^\s*➜/.test(l)) return '        ' + l.trim();     // per-item action line
       if (/^\s{2,}\S/.test(l)) return '     ' + l.trim();     // continuation / detail line
       return '   ' + l.trim();
     }).join('\n').replace(/\s+$/, '');
@@ -25345,7 +25398,7 @@ async function lazGenerateBriefing() { lazBriefingOpenPicker(); }
     const ids = new Set(chosen.map(i => i.id));
     const hasCompany = chosen.some(i => ['sales','acct','ops'].includes(i.cat));
     const hasNotes = results.my_notes && results.my_notes.notes > 0;
-    const hasFlagged = results.em_flagged && results.em_flagged.flagged > 0;
+    const hasFlagged = results.em_flagged && results.em_flagged.flagged > 0 && !(results.em_flagged.planned > 0);
     const hasStale = ids.has('my_pipeline') || ids.has('co_stalled');
     const secs = ['**Top 3 priorities for TODAY** (specific, actionable, use the real names and numbers)'];
     if (hasCompany) secs.push('**Company watch-list** — the 2-4 things across sales, accounting and operations that most need the owner\'s attention right now, each with its number');
@@ -25353,14 +25406,14 @@ async function lazGenerateBriefing() { lazBriefingOpenPicker(); }
     if (hasNotes) secs.push('**My Notes** — call out anything in my sticky notes that needs action today');
     if (hasFlagged) secs.push('**Flagged email action plan** — one decisive action per flagged email (reply / schedule / delegate / archive)');
     secs.push('**One sharp insight** — the single most useful observation in this data');
-    const prompt = LAZ_PERSONA + '\n\nI am the owner/operator. Give me my daily briefing for ' + dateLabel + '. Be direct and specific; use the actual names and numbers below and never invent any. No corporate filler.\n\nDATA FROM ODOO:\n' + digest.slice(0, 9000) +
+    const prompt = LAZ_PERSONA + '\n\nI am the owner/operator. Give me my daily briefing for ' + dateLabel + '. Be direct and specific; use the actual names and numbers below and never invent any. No corporate filler.\n\nDATA FROM ODOO:\n' + digest.slice(0, 16000) +
       '\n\nStructure your response with these numbered sections:\n' + secs.map((s,i) => (i+1)+'. '+s).join('\n') +
       '\n\nCALENDAR: If any note or activity needs scheduling, flag it as [SCHEDULE: description | suggested time]\n\nUnder ' + (hasCompany ? 350 : 250) + ' words. Talk to me like a trusted advisor, not a report.';
     const model = $('gemini-model')?.value || 'qwen/qwen3.8-27b';
     const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type':'application/json', 'Authorization':'Bearer ' + groqKey },
-      body: JSON.stringify({ model, reasoning_effort:'none', reasoning_format:'hidden', max_tokens: 900, temperature: 0.5, messages: [{ role:'user', content: prompt }] }),
+      body: JSON.stringify({ model, reasoning_effort:'none', reasoning_format:'hidden', max_tokens: 1500, temperature: 0.5, messages: [{ role:'user', content: prompt }] }),
       signal: AbortSignal.timeout(35000),
     });
     const data = await r.json();
