@@ -3,7 +3,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <meta name="oel-version" content="v15.43">
+  <meta name="oel-version" content="v15.44">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="mobile-web-app-capable" content="yes">
@@ -25000,10 +25000,34 @@ async function lazGenerateBriefing() { lazBriefingOpenPicker(); }
   // Flagged emails + a decisive per-email action plan. Pulls a short body preview
   // for each message (local IMAP server) so the plan is based on what the email
   // actually says, then asks Groq for ONE action per email.
+  // One Groq call with a single retry on rate-limit / server / network errors.
+  async function groqChat(prompt, maxTokens, temp, timeoutMs) {
+    const groqKey = $('gemini-key')?.value?.trim() || '';
+    const model = $('gemini-model')?.value || 'qwen/qwen3.8-27b';
+    let lastErr;
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: { 'Content-Type':'application/json', 'Authorization':'Bearer ' + groqKey },
+          body: JSON.stringify({ model, reasoning_effort:'none', reasoning_format:'hidden', max_tokens: maxTokens, temperature: temp, messages: [{ role:'user', content: prompt }] }),
+          signal: AbortSignal.timeout(timeoutMs || 40000),
+        });
+        const data = await r.json().catch(() => ({}));
+        const text = data.choices?.[0]?.message?.content?.trim();
+        if (text) return text;
+        lastErr = new Error(data.error?.message || ('HTTP ' + r.status));
+        if (!(r.status === 429 || r.status >= 500 || !r.status)) break;
+      } catch(e) { lastErr = e; }
+      if (attempt === 0) await new Promise(res => setTimeout(res, 3000));
+    }
+    throw lastErr || new Error('empty response');
+  }
+
   const ACTION_TONE = { reply:'accent', schedule:'success', delegate:'warning', archive:'muted', follow:'warning' };
   async function flaggedPlan(emails, groqKey, digest) {
     const list = emails.map((e, i) => `${i+1}. From: ${e.sender || ''} <${e.sender_email}> | Subject: "${e.subject}" | Date: ${shortDate(e.date)}` + (e.snippet ? `\n   Body preview: ${e.snippet.slice(0, 500)}` : '\n   (no body preview available)')).join('\n');
-    const prompt = LAZ_PERSONA + '\n\nI am the owner/operator. You are my trusted advisor and chief of staff. Below is my live company data from Odoo, then the emails I flagged. For EACH flagged email decide exactly ONE action: Reply, Schedule, Delegate, Archive, or Follow up.\n\n' +
+    const prompt = LAZ_PERSONA + '\n\nDo not sign off or sign any name. I am the owner/operator. You are my trusted advisor and chief of staff. Below is my live company data from Odoo, then the emails I flagged. For EACH flagged email decide exactly ONE action: Reply, Schedule, Delegate, Archive, or Follow up.\n\n' +
       'RULES:\n- Tie each email to the company data when it is relevant (e.g. a revenue drop, overdue activities for a named rep, an unpaid invoice, a stalled deal). Use the real names and numbers.\n' +
       '- NEVER invent people, names, companies or facts. Only use names that appear in the email (sender / body) or in the company data. If you do not know who to delegate to, say "the person who owns it".\n' +
       '- "plan" = one short, decisive instruction (who, what, when) in my voice, e.g. "Delegate to Andrew to confirm whether this happened or needs rescheduling." No "consider", no hedging.\n' +
@@ -25011,17 +25035,9 @@ async function lazGenerateBriefing() { lazBriefingOpenPicker(); }
       '- Do NOT choose Archive unless the email is clearly informational or already handled. If the preview is thin or missing, choose Reply or Follow up with a short check-in, or say to open it and check.\n\n' +
       'COMPANY DATA:\n' + (digest ? digest.slice(0, 9000) : '(none selected)') + '\n\nFLAGGED EMAILS:\n' + list +
       '\n\nRespond with ONLY a JSON array, one object per email, in order: [{"n":1,"action":"Reply","plan":"...","say":"..."}]';
-    const model = $('gemini-model')?.value || 'qwen/qwen3.8-27b';
-    const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: { 'Content-Type':'application/json', 'Authorization':'Bearer ' + groqKey },
-      body: JSON.stringify({ model, reasoning_effort:'none', reasoning_format:'hidden', max_tokens: 2200, temperature: 0.4, messages: [{ role:'user', content: prompt }] }),
-      signal: AbortSignal.timeout(45000),
-    });
-    const data = await r.json();
-    const txt = data.choices?.[0]?.message?.content || '';
+    const txt = await groqChat(prompt, 2200, 0.4, 45000);
     const m = txt.match(/\[[\s\S]*\]/);
-    if (!m) throw new Error(data.error?.message || 'no plan returned');
+    if (!m) throw new Error('no plan returned');
     const arr = JSON.parse(m[0]);
     arr.forEach(o => { const e = emails[(parseInt(o.n) || 0) - 1]; if (e && o.plan) { e.action = String(o.action || 'Review').trim(); e.plan = String(o.plan).trim(); e.say = String(o.say || '').trim(); } });
     return arr.length;
@@ -25298,35 +25314,62 @@ async function lazGenerateBriefing() { lazBriefingOpenPicker(); }
     await Promise.all(Array.from({ length: 3 }, async () => { while (idx < tasks.length) { await tasks[idx++](); } }));
     if (token !== _runToken) return;
 
-    // flagged-email plan (needs the other sections' data for context)
-    const fItem = chosen.find(i => i.id === 'em_flagged');
     const gKey = $('gemini-key')?.value?.trim() || '';
+    const fItem = chosen.find(i => i.id === 'em_flagged');
+
+    // 1) advisor first (top of the report)
+    if (aiOn) await runAdvisor(token, gKey);
+    if (token !== _runToken) return;
+    // 2) flagged-email plan (uses the other sections' data for context)
     if (fItem && results.em_flagged) await planFlaggedStep(fItem, results.em_flagged, chosen, results, gKey, token);
     if (token !== _runToken) return;
-
-    // plain-text digest handed to the AI
-    const digest = digestFor(chosen, results);
-
-    if (aiOn) {
-      const aiBox = $('bb-ai');
-      const groqKey = $('gemini-key')?.value?.trim() || '';
-      if (!groqKey) {
-        aiBox.innerHTML = R.note('No Groq key saved — the AI summary was skipped. The numbers below are still live from Odoo.');
-      } else {
-        aiBox.innerHTML = `<div style="display:flex;align-items:center;gap:10px;color:var(--muted);font-size:0.85rem"><div class="dot spin" style="display:inline-block"></div>AI reading your numbers…</div>`;
-        try {
-          const aiText = await aiSummary(digest, chosen, results, dateLabel, groqKey);
-          if (token !== _runToken) return;
-          CUR.ai = aiText;
-          aiBox.innerHTML = `<div class="bb-cat-head" style="margin-top:0"><span>⚡ Advisor</span><i></i></div><div id="bb-ai-text">${briefingRender(aiText, [], false, true)}</div>`;
-          briefingRenderCalendarSuggestions($('bb-ai-text'), aiText, false);
-        } catch(e) {
-          aiBox.innerHTML = R.note('AI summary unavailable: ' + escHtml(String(e.message || e).slice(0,160)) + ' — the numbers below are still live from Odoo.');
-        }
-      }
-    }
+    // 3) small "next action" line under each section
+    if (aiOn && gKey) await nextActionsStep(token, gKey);
+    if (token !== _runToken) return;
     rebuildFormatted();
   };
+
+
+  async function runAdvisor(token, groqKey) {
+    const aiBox = $('bb-ai'); if (!aiBox || !CUR) return;
+    const { chosen, results, dateLabel } = CUR;
+    if (!groqKey) { aiBox.innerHTML = R.note('No Groq key saved — the AI summary was skipped. The numbers below are still live from Odoo.'); return; }
+    aiBox.innerHTML = `<div style="display:flex;align-items:center;gap:10px;color:var(--muted);font-size:0.85rem"><div class="dot spin" style="display:inline-block"></div>AI reading your numbers…</div>`;
+    try {
+      const aiText = await aiSummary(digestFor(chosen, results), chosen, results, dateLabel, groqKey);
+      if (token !== _runToken) return;
+      CUR.ai = aiText;
+      aiBox.innerHTML = `<div class="bb-cat-head" style="margin-top:0"><span>⚡ Advisor</span><i></i></div><div id="bb-ai-text">${briefingRender(aiText, [], false, true)}</div>`;
+      briefingRenderCalendarSuggestions($('bb-ai-text'), aiText, false);
+    } catch(e) {
+      aiBox.innerHTML = R.note('AI summary unavailable: ' + escHtml(String(e.message || e).slice(0,160)) + ' — the numbers below are still live from Odoo.') +
+        `<button class="btn btn-ghost" onclick="briefAdvisorRetry()" style="padding:3px 12px;font-size:0.75rem;margin-top:4px">↻ Retry advisor</button>`;
+    }
+    rebuildFormatted();
+  }
+  window.briefAdvisorRetry = async function() { if (CUR) { await runAdvisor(CUR.token, $('gemini-key')?.value?.trim() || ''); rebuildFormatted(); } };
+
+  // One small "do this next" line per section (advice like "email the 3 oldest overdue customers").
+  async function nextActionsStep(token, groqKey) {
+    const { chosen, results } = CUR;
+    const items = chosen.filter(i => i.id !== 'em_flagged' && results[i.id] && results[i.id].text && !results[i.id].failed && !results[i.id].skipped);
+    if (!items.length) return;
+    const prompt = LAZ_PERSONA + '\n\nDo not sign off or sign any name. I am the owner/operator. Below is my live company data, in sections. For each section that has something worth acting on, give ONE short next action (max 16 words) in my voice: who/what/when, concrete and specific — e.g. for overdue receivables: "Email Florida Youth Soccer today and ask for a payment date." Use only names and numbers in the data; never invent any. Skip sections where nothing needs action (leave them out).\n\nSECTION IDS: ' +
+      items.map(i => `${i.id} (${i.label})`).join('; ') + '\n\nDATA:\n' + digestFor(items, results).slice(0, 12000) +
+      '\n\nRespond with ONLY a JSON object mapping section id to the action text: {"ac_ap":"..."}';
+    let map = {};
+    try {
+      const txt = await groqChat(prompt, 1200, 0.4, 40000);
+      const m = txt.match(/\{[\s\S]*\}/); if (m) map = JSON.parse(m[0]);
+    } catch(e) { return; }  // optional extra — fail quietly
+    if (token !== _runToken) return;
+    items.forEach(i => {
+      const a = map[i.id]; if (!a || typeof a !== 'string') return;
+      results[i.id].next = a.trim();
+      const body = $('bb-' + i.id)?.querySelector('.bb-card-body');
+      if (body) body.insertAdjacentHTML('beforeend', `<div style="margin-top:8px;padding:6px 10px;border-left:3px solid var(--accent);background:var(--surface2);border-radius:0 6px 6px 0;font-size:0.78rem">➜ <strong>Next:</strong> ${escHtml(results[i.id].next)}</div>`);
+    });
+  }
 
   async function runItem(item, x) {
     try { return await item.run(x); }
@@ -25411,7 +25454,7 @@ async function lazGenerateBriefing() { lazBriefingOpenPicker(); }
       const its = chosen.filter(i => i.cat === c.id && results[i.id] && results[i.id].text && !results[i.id].failed);
       if (!its.length) return;
       out.push('', RULE, `${c.icon} ${ub(c.title.toUpperCase())}`, RULE);
-      its.forEach(i => { out.push('', `${i.icon} ${ub(i.label)}`, indentBlock(results[i.id].text)); });
+      its.forEach(i => { out.push('', `${i.icon} ${ub(i.label)}`, indentBlock(results[i.id].text)); if (results[i.id].next) out.push('        ➜ NEXT: ' + results[i.id].next); });
     });
     const failed = chosen.filter(i => results[i.id] && results[i.id].failed).map(i => i.label);
     out.push('', RULE);
@@ -25434,19 +25477,12 @@ async function lazGenerateBriefing() { lazBriefingOpenPicker(); }
     if (hasNotes) secs.push('**My Notes** — call out anything in my sticky notes that needs action today');
     if (hasFlagged) secs.push('**Flagged email action plan** — one decisive action per flagged email (reply / schedule / delegate / archive)');
     secs.push('**One sharp insight** — the single most useful observation in this data');
-    const prompt = LAZ_PERSONA + '\n\nI am the owner/operator. Give me my daily briefing for ' + dateLabel + '. Be direct and specific; use the actual names and numbers below and never invent any. No corporate filler.\n\nDATA FROM ODOO:\n' + digest.slice(0, 16000) +
+    const prompt = LAZ_PERSONA + '\n\nDo not sign off, sign any name, or add a closing signature. I am the owner/operator. Give me my daily briefing for ' + dateLabel + '. Be direct and specific; use the actual names and numbers below and never invent any. No corporate filler.\n\nDATA FROM ODOO:\n' + digest.slice(0, 16000) +
       '\n\nStructure your response with these numbered sections:\n' + secs.map((s,i) => (i+1)+'. '+s).join('\n') +
       '\n\nCALENDAR: If any note or activity needs scheduling, flag it as [SCHEDULE: description | suggested time]\n\nUnder ' + (hasCompany ? 350 : 250) + ' words. Talk to me like a trusted advisor, not a report.';
-    const model = $('gemini-model')?.value || 'qwen/qwen3.8-27b';
-    const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: { 'Content-Type':'application/json', 'Authorization':'Bearer ' + groqKey },
-      body: JSON.stringify({ model, reasoning_effort:'none', reasoning_format:'hidden', max_tokens: 1500, temperature: 0.5, messages: [{ role:'user', content: prompt }] }),
-      signal: AbortSignal.timeout(35000),
-    });
-    const data = await r.json();
-    const text = data.choices?.[0]?.message?.content?.trim();
-    if (!text) throw new Error(data.error?.message || 'empty response');
+    let text = await groqChat(prompt, 1500, 0.5, 40000);
+    // never let a made-up signature through (e.g. "Mike")
+    text = text.replace(/\n+[ \t]*[A-Z][a-z]{2,12}[ \t]*$/, '').trim();
     return text;
   }
 
