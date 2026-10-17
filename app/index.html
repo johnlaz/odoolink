@@ -3,7 +3,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <meta name="oel-version" content="v15.44">
+  <meta name="oel-version" content="v15.45">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="mobile-web-app-capable" content="yes">
@@ -27415,6 +27415,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Load credentials
   if (typeof loadCredentials === 'function') loadCredentials();
+
+  // Keep settings saved as they are typed (not only when Connect is pressed), and ask the
+  // browser not to evict this site's storage.
+  try {
+    const ids = ['odoo-url','odoo-db','odoo-user','odoo-key','gemini-key','gemini-model','followup-days'];
+    let t = null;
+    const persist = () => { try { if (ids.some(i => document.getElementById(i)?.value)) saveCredentials(); } catch(e) {} };
+    ids.forEach(i => { const el = document.getElementById(i); if (el) { el.addEventListener('input', () => { clearTimeout(t); t = setTimeout(persist, 400); }); el.addEventListener('change', persist); } });
+    window.addEventListener('pagehide', persist);
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') persist(); });
+    if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+  } catch(e) {}
 
   // Auto-connect to Odoo if credentials exist
   setTimeout(async () => {
