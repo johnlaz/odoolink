@@ -2,23 +2,9 @@
 :: OEL Command v11.1 — Start
 :: Double-click to launch both background servers and open the app.
 :: Registers itself to auto-start with Windows (runs silently in background).
+:: No administrator rights needed (v15.45: removed the UAC self-elevation).
 
-:: ── Self-elevate to Administrator ─────────────────────────────────────────
->nul 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%SYSTEMROOT%\system32\config\system"
-if '%errorlevel%' NEQ '0' (
-    echo Requesting administrator privileges...
-    goto UACPrompt
-) else ( goto GotAdmin )
-
-:UACPrompt
-    echo Set UAC = CreateObject^("Shell.Application"^) > "%temp%\getadmin.vbs"
-    echo UAC.ShellExecute "%~s0", "", "", "runas", 1 >> "%temp%\getadmin.vbs"
-    "%temp%\getadmin.vbs"
-    del "%temp%\getadmin.vbs"
-    exit /b
-
-:GotAdmin
-    pushd "%~dp0"
+pushd "%~dp0"
 
 :: ── Python check ──────────────────────────────────────────────────────────
 python --version >nul 2>&1
