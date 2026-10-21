@@ -107,6 +107,7 @@ If you change `server.py`, `imap_server.py` or `start.bat`, also refresh the emb
 
 | Version | Highlights |
 |---------|-----------|
+| **v15.53** | Email Studio: ✨ Write with AI (Groq) rewrites the ticked parts of the email from a short campaign brief and suggests 3 subject lines, with one-click undo. Fix: sidebar items not listed in a section (Email Studio) no longer jump to the top of the sidebar once a saved section order exists — unlisted items now travel with their section. |
 | **v15.52** | **Email Studio** (Pipeline, under Mass Mail): the TRS trade-show email as an editable master — change any text, link or button, upload/replace pictures (auto-cropped and shrunk), show/hide sections, add/reorder feature cards, Dark/Light theme and colour overrides; live desktop/mobile preview; save as reusable templates (IndexedDB) with export/import and draft autosave; Copy for Outlook, Copy HTML, download .html. |
 | **v15.51** | Styled HTML export fits wide screens without sideways scrolling and gains a ⚙ Columns menu / × on headers to hide columns. |
 | **v15.50** | Styled HTML export now colour-coded like the app: severity-tinted overdue rows and day badges, status pills (Exact / Net of fees / Never sent / Sent…), cyan money and invoice refs, coloured section headers and summary tiles. |
