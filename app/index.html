@@ -3,7 +3,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <meta name="oel-version" content="v15.45">
+  <meta name="oel-version" content="v15.46">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="mobile-web-app-capable" content="yes">
@@ -3299,7 +3299,19 @@ Support Team"></textarea>
           <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
             <p style="margin:0 0 4px">Lists every open (unpaid/partial) customer invoice with a clear status badge — <strong style="color:var(--text)">Never sent</strong>, or <strong style="color:var(--text)">Sent N× · last X days ago</strong>. That status comes from a note this tool posts to the invoice's Odoo chatter every time you send or mark one — nothing is tracked only on this device, so it holds up across browsers and logins.</p>
             <p style="margin:0 0 4px">Hit <strong style="color:var(--text)">✉ Send</strong> to open a composer pre-filled from one of three templates — First Notice, Follow-up, Final Notice — auto-suggested based on send history and days overdue, fully editable before sending. The customer's Odoo portal payment link is fetched and inserted into the body automatically when available.</p>
-            <p style="margin:0"><strong style="color:var(--text)">Send &amp; mark as sent</strong> opens your mail client with the subject/body ready and logs the send in one step. <strong style="color:var(--text)">Mark as sent only</strong> is there for when you sent it some other way and just need the tracking updated.</p>
+            <p style="margin:0 0 4px"><strong style="color:var(--text)">Send &amp; mark as sent</strong> opens your mail client with the subject/body ready and logs the send in one step. <strong style="color:var(--text)">Mark as sent only</strong> is there for when you sent it some other way and just need the tracking updated.</p>
+            <p style="margin:0 0 4px"><strong style="color:var(--text)">Payment matching.</strong> Each load also pulls your <em>unreconciled</em> bank deposits and compares them to the open invoices. A <strong style="color:var(--text)">💳 line</strong> appears under an invoice when a deposit is the exact amount, or the amount <em>after Stripe fees</em> (default 2.9% + $0.30 for cards, 0.8% capped at $5 for ACH — editable under “Payment matching”), or one deposit covers several invoices for the same customer. The <strong style="color:var(--text)">Probably Paid</strong> card and the “Probably paid” filter list them in one click, and sending a reminder for one asks you to confirm first. Nothing is written to Odoo — it only points you at the deposit so you can reconcile it there.</p>
+            <p style="margin:0 0 4px"><strong style="color:var(--text)">Unreconciled bank deposits</strong> (bottom of the tab) lists every deposit with its best-guess invoice. For one with no suggestion — say Stripe batched several customers into one payout — hit <strong style="color:var(--text)">Match…</strong>, tick the invoices, and the calculator shows the expected net after fees against the deposit. <strong style="color:var(--text)">Find a batch</strong> searches combinations of 2–3 open invoices for you.</p>
+            <p style="margin:0">Use the <strong style="color:var(--text)">Sort</strong> menu to order by due date, most overdue, payment found first, amount, customer, or never-sent first.</p>
+          </div>
+        </div>
+
+        <!-- Export & Print -->
+        <div class="card" style="margin-bottom:14px">
+          <div class="card-title">⤓ Export &amp; Print</div>
+          <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
+            <p style="margin:0 0 4px">The <strong style="color:var(--text)">Export</strong> button in the top bar works on every tab: <strong style="color:var(--text)">Print / Save as PDF</strong> produces a clean, light, one-column version of whatever is on screen (no sidebar or buttons) — use it instead of screenshots — and <strong style="color:var(--text)">Excel / CSV</strong> download the tables you're looking at (one sheet per table).</p>
+            <p style="margin:0">Sales Reporting, the Accounting summary on the Reports tab, Invoice Follow-up and Reconciliation also have their own <strong style="color:var(--text)">⤓ Export / Print</strong> button that exports just that block with the filters currently applied.</p>
           </div>
         </div>
 
@@ -3549,12 +3561,13 @@ Support Team"></textarea>
           <div id="laz-dd-container" style="margin-top:8px"></div>
 
           <!-- ── ACCOUNTING CARDS ─────────────────────────────────── -->
-          <div style="margin-top:18px">
+          <div id="acct-section" style="margin-top:18px">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
               <div>
                 <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);font-weight:500">Accounting</div>
               </div>
               <div style="display:flex;gap:8px">
+                <button class="btn btn-ghost" data-oelx-btn="1" onclick="oelxMenu(this,'#acct-section','Accounting Summary')" title="Print the accounting summary or export the open drill-down to Excel / CSV" style="padding:5px 12px;font-size:0.78rem">⤓ Export / Print</button>
                 <button class="btn btn-ghost" onclick="lazAcctLoad()" title="Reload accounting data from Odoo" style="padding:5px 12px;font-size:0.78rem">Refresh</button>
                 <button class="btn btn-ghost" onclick="lazAcctReport('aged-ar')" title="Accounts receivable aging report — who owes what and how long" style="padding:5px 12px;font-size:0.78rem">Aged AR</button>
                 <button class="btn btn-ghost" onclick="lazAcctReport('top-customers')" title="Top customers ranked by revenue year-to-date" style="padding:5px 12px;font-size:0.78rem">Top Customers</button>
@@ -3587,10 +3600,11 @@ Support Team"></textarea>
           </div>
 
           <!-- ── SALES REPORTING ─────────────────────────────────── -->
-          <div style="margin-top:18px">
+          <div id="sr-section" style="margin-top:18px">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px">
               <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);font-weight:500">Sales Reporting</div>
               <div style="display:flex;gap:8px">
+                <button class="btn btn-ghost" data-oelx-btn="1" onclick="oelxMenu(this,'#sr-section','Sales Reporting')" title="Print this report or export it to Excel / CSV" style="padding:5px 12px;font-size:0.78rem">⤓ Export / Print</button>
                 <button class="btn btn-ghost" onclick="srOpenTaxNamesModal()" title="Manage which tax line names are approved — anything else gets flagged in the Tax column" style="padding:5px 12px;font-size:0.78rem">⚙ Tax names</button>
                 <button class="btn btn-ghost" onclick="srLoad()" title="Reload sales orders from Odoo" style="padding:5px 12px;font-size:0.78rem">Refresh</button>
               </div>
@@ -3654,6 +3668,8 @@ Support Team"></textarea>
           <div style="display:flex;gap:8px;margin-top:14px">
             <div class="lm-chip active" id="rc-tab-code" onclick="rcSwitchTab('code')" style="padding:6px 16px;border-radius:20px;font-size:0.8rem">Needs Coding</div>
             <div class="lm-chip" id="rc-tab-deviate" onclick="rcSwitchTab('deviate')" style="padding:6px 16px;border-radius:20px;font-size:0.8rem">Check for Deviations</div>
+            <div style="flex:1"></div>
+            <button class="btn btn-ghost" data-oelx-btn="1" onclick="oelxMenu(this)" title="Print this screen or export to Excel / CSV" style="padding:5px 12px;font-size:0.78rem">⤓ Export / Print</button>
           </div>
         </div>
 
@@ -3739,28 +3755,69 @@ Support Team"></textarea>
 
         <div class="card" style="margin-bottom:14px">
           <div class="card-title">📨 Invoice Follow-up</div>
-          <div class="card-subtitle">Track which customers still need an invoice sent or a payment reminder — with a payment link ready to drop into the email.</div>
+          <div class="card-subtitle">Track which customers still need an invoice sent or a payment reminder — with a payment link ready to drop into the email. Deposits sitting unreconciled in your bank are matched against open invoices (including Stripe payouts that arrive net of fees), so you can spot payments before you chase them.</div>
           <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:14px">
             <select id="ar-customer" onchange="arLoad()" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.82rem;outline:none;cursor:pointer">
               <option value="">All customers</option>
             </select>
-            <select id="ar-status" onchange="arLoad()" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.82rem;outline:none;cursor:pointer">
+            <select id="ar-status" onchange="arApply()" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.82rem;outline:none;cursor:pointer">
               <option value="">All open invoices</option>
+              <option value="likely">💳 Probably paid (deposit found)</option>
+              <option value="matched">💳 Any possible payment</option>
+              <option value="unmatched">No deposit found</option>
               <option value="never">Never sent</option>
               <option value="overdue">Overdue</option>
               <option value="sent">Sent, not overdue</option>
             </select>
+            <select id="ar-sort" onchange="arApply()" title="Sort the list" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.82rem;outline:none;cursor:pointer">
+              <option value="due">Sort: Due date (oldest first)</option>
+              <option value="overdue">Sort: Most overdue</option>
+              <option value="match">Sort: Payment found first</option>
+              <option value="amount_desc">Sort: Amount (high → low)</option>
+              <option value="amount_asc">Sort: Amount (low → high)</option>
+              <option value="customer">Sort: Customer A → Z</option>
+              <option value="never">Sort: Never sent first</option>
+            </select>
             <div style="flex:1"></div>
             <div id="ar-status-line" style="font-size:0.78rem;color:var(--muted)"></div>
+            <button class="btn btn-ghost" data-oelx-btn="1" onclick="oelxMenu(this)" title="Print this screen or export to Excel / CSV" style="padding:6px 12px;font-size:0.78rem">⤓ Export / Print</button>
           </div>
+          <details id="ar-pay-settings" style="margin-top:12px">
+            <summary style="cursor:pointer;font-size:0.8rem;color:var(--muted);user-select:none">💳 Payment matching — <span id="ar-pay-status">checks unreconciled bank deposits against open invoices</span></summary>
+            <div style="display:flex;gap:14px 18px;flex-wrap:wrap;align-items:center;margin-top:10px;font-size:0.78rem;color:var(--muted)">
+              <label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" id="ar-set-enabled" checked onchange="arPaySettingsChanged()" style="accent-color:var(--accent)"> Match deposits to invoices</label>
+              <label style="display:flex;align-items:center;gap:6px">Look back <input type="number" id="ar-set-lookback" min="7" max="365" value="60" onchange="arPaySettingsChanged()" style="width:70px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:5px 8px;color:var(--text);font-family:'DM Mono',monospace;font-size:0.8rem;text-align:center;outline:none"> days</label>
+              <label style="display:flex;align-items:center;gap:6px" title="Stripe standard US card rate is 2.9% + $0.30">Card fee <input type="number" id="ar-set-cardpct" step="0.1" min="0" value="2.9" onchange="arPaySettingsChanged()" style="width:70px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:5px 8px;color:var(--text);font-family:'DM Mono',monospace;font-size:0.8rem;text-align:center;outline:none"> % + $<input type="number" id="ar-set-cardfix" step="0.05" min="0" value="0.30" onchange="arPaySettingsChanged()" style="width:70px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:5px 8px;color:var(--text);font-family:'DM Mono',monospace;font-size:0.8rem;text-align:center;outline:none"></label>
+              <label style="display:flex;align-items:center;gap:6px" title="Stripe ACH debit is 0.8%, capped at $5">ACH fee <input type="number" id="ar-set-achpct" step="0.1" min="0" value="0.8" onchange="arPaySettingsChanged()" style="width:70px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:5px 8px;color:var(--text);font-family:'DM Mono',monospace;font-size:0.8rem;text-align:center;outline:none"> % (max $5)</label>
+              <label style="display:flex;align-items:center;gap:6px;cursor:pointer" title="Only treat a deposit as 'net of fees' when its bank description contains 'Stripe'. Exact-amount matches always count."><input type="checkbox" id="ar-set-stripeonly" onchange="arPaySettingsChanged()" style="accent-color:var(--accent)"> Fee matching only for deposits labeled “Stripe”</label>
+              <button class="btn btn-ghost" onclick="arPaySettingsReset()" style="padding:4px 10px;font-size:0.74rem">Reset</button>
+            </div>
+          </details>
         </div>
 
-        <div id="ar-summary" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px"></div>
+        <div id="ar-summary" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-bottom:14px"></div>
 
         <div class="card">
           <div id="ar-list" style="display:flex;flex-direction:column;gap:6px">
             <div style="padding:16px;text-align:center;color:var(--muted);font-size:0.82rem">Connect to Odoo, then open this tab to load open invoices.</div>
           </div>
+        </div>
+
+        <div class="card" id="ar-credits-card" style="margin-top:14px">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px">
+            <div>
+              <div style="font-size:0.85rem;font-weight:500">💳 Unreconciled bank deposits</div>
+              <div id="ar-credits-sub" style="font-size:0.74rem;color:var(--muted);margin-top:2px"></div>
+            </div>
+            <div style="flex:1"></div>
+            <select id="ar-credit-view" onchange="arRenderCredits()" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:5px 10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.78rem;outline:none;cursor:pointer">
+              <option value="all">All deposits</option>
+              <option value="suggested">Has a suggested invoice</option>
+              <option value="none">No suggestion</option>
+            </select>
+            <button class="btn btn-ghost" onclick="arFindPayments()" title="Re-check the bank" style="padding:5px 12px;font-size:0.78rem">↻ Refresh</button>
+          </div>
+          <div id="ar-credits"></div>
         </div>
 
       </div>
@@ -10240,7 +10297,7 @@ const OEL_SEARCH_INDEX = [
   { id:'bounces',      label:'Bounce Manager',    keywords:'undeliverable bounced email list clear reschedule activities bad email address' },
   { id:'expenses',     label:'Expenses',          keywords:'expense report receipts approve refuse reimburse employee spend payment approval queue reporting by category vendor bills accounts payable ap invoice validate post new bills' },
   { id:'reconcile',    label:'Reconciliation',    keywords:'bank credit card reconcile reconciliation coding code transaction partner account assign missing uncoded deviation scan check accounting cleanup bookkeeping' },
-  { id:'arfollowup',   label:'Invoice Follow-up', keywords:'accounts receivable ar invoice payment link send reminder overdue customer collections dunning first notice follow up unpaid outstanding balance due' },
+  { id:'arfollowup',   label:'Invoice Follow-up', keywords:'accounts receivable ar invoice payment link send reminder overdue customer collections dunning first notice follow up unpaid outstanding balance due deposit stripe fees payout match reconcile payment received bank credit sort' },
   { id:'finreports',   label:'Financial Reports', keywords:'trial balance balance sheet profit loss pl income statement aged payable receivable ap ar xlsx export download report collection financial statements general ledger' },
   { id:'salestargeting', label:'Sales Targeting', keywords:'historical sales lookup quickbooks quarterly target list rep focus lapsed dormant customers reactivate prospecting quarter' },
   { id:'dataexplorer', label:'Data Explorer',     keywords:'upload quickbooks export customer list sync review data import spreadsheet' },
@@ -26180,9 +26237,43 @@ window.inboxTab = function(tab) {
     });
   })();
 
-  function load() { try { return JSON.parse(localStorage.getItem(KEY)) || null; } catch(e) { return null; } }
-  function save(keys) { localStorage.setItem(KEY, JSON.stringify(keys)); }
   function defaultKeys() { return SECTIONS.map(function(s){ return s.key; }); }
+
+  // Merge a saved order with the current section list. Sections added after the
+  // order was saved (e.g. ACCOUNTING) used to be tacked on at the very end, which
+  // left them below REPORTS. They now slide in just before their default
+  // successor instead, so new sections land where they were designed to be.
+  function normalize(saved) {
+    var def = defaultKeys();
+    var order = (saved || []).filter(function(k){ return def.indexOf(k) >= 0; });
+    def.forEach(function(k, i) {
+      if (order.indexOf(k) >= 0) return;
+      var at = -1;
+      for (var j = i + 1; j < def.length && at < 0; j++) at = order.indexOf(def[j]);
+      if (at < 0) order.push(k); else order.splice(at, 0, k);
+    });
+    return order;
+  }
+
+  function load() {
+    var raw = null;
+    try { raw = JSON.parse(localStorage.getItem(KEY)) || null; } catch(e) { raw = null; }
+    if (!raw) return null;
+    var order = normalize(raw);
+    // One-time migration: ACCOUNTING belongs ahead of REPORTS by default. Earlier
+    // builds could leave it after REPORTS in a saved order — fix that once, and
+    // leave any later manual reordering alone.
+    try {
+      if (!localStorage.getItem(KEY + '_acct_v1')) {
+        var a = order.indexOf('accounting'), r = order.indexOf('reports');
+        if (a >= 0 && r >= 0 && a > r) { order.splice(a, 1); order.splice(r, 0, 'accounting'); }
+        localStorage.setItem(KEY + '_acct_v1', '1');
+      }
+    } catch(e) {}
+    if (JSON.stringify(order) !== JSON.stringify(raw)) { try { localStorage.setItem(KEY, JSON.stringify(order)); } catch(e) {} }
+    return order;
+  }
+  function save(keys) { localStorage.setItem(KEY, JSON.stringify(keys)); }
   function labelFor(key) { for (var i = 0; i < SECTIONS.length; i++) { if (SECTIONS[i].key === key) return SECTIONS[i].label; } return key; }
 
   function applyOrder() {
@@ -26195,8 +26286,7 @@ window.inboxTab = function(tab) {
     var settingsEl = document.getElementById('nav-settings');
     if (!nav || !settingsEl) return;
 
-    var order = saved.filter(function(k){ return refs[k]; });
-    defaultKeys().forEach(function(k){ if (order.indexOf(k) < 0) order.push(k); });
+    var order = normalize(saved).filter(function(k){ return refs[k]; });
 
     order.forEach(function(key) {
       var r = refs[key];
@@ -32236,6 +32326,18 @@ document.addEventListener('DOMContentLoaded', hslInit);
   }
   window.rcRetryModuleCheck = function() { _rcModuleAvailable = null; rcInit(); };
 
+  // Rows for Excel / CSV export (these lists are cards, not tables)
+  if (window.oelxRegister) window.oelxRegister('panel-reconcile', function() {
+    const out = [];
+    if (RC.coding.length) out.push({ name: 'Needs coding',
+      headers: ['Date', 'Description', 'Journal', 'Amount', 'Currently coded to', 'Partner to set', 'Account to set'],
+      rows: RC.coding.map(r => [r.date || '', r.description, r.journalName, rcFmt(r.amount), r.currentAccountName, r._partnerName || '', r._accountName || '']) });
+    if (RC.deviations.length) out.push({ name: 'Deviations',
+      headers: ['Partner', 'Date', 'Description', 'Amount', 'Currently coded to', 'Suggested account'],
+      rows: RC.deviations.map(d => [d.partnerName, d.date || '', d.description || '', rcFmt(d.amount), d.currentAccountName, d.suggestedAccountName]) });
+    return out;
+  });
+
   window.rcInit = async function() {
     if (!odooUid) {
       const listEl = document.getElementById('rc-code-list');
@@ -32654,6 +32756,259 @@ document.addEventListener('DOMContentLoaded', hslInit);
 })();
 </script>
 
+<!-- ── Export / Print (works on every tab) ──────────────────────────────── -->
+<script>
+(function(){
+  // One Export menu for the whole app: Print / Save as PDF, Excel, CSV.
+  //  • Print clones what's on screen into a clean light-themed page (no sidebar,
+  //    buttons or dark background), so it replaces the screenshot-and-email habit.
+  //  • Excel / CSV pull the tables on screen. Card-style tabs register a provider
+  //    with oelxRegister(panelId, fn) that returns exact rows instead.
+  //  • The menu can be scoped to one block of a tab (e.g. just Sales Reporting).
+  const PROVIDERS = {};
+  const HIDE_ON = new Set(['panel-inbox','panel-discuss','panel-support']);
+  window.oelxRegister = function(panelId, fn) { PROVIDERS[panelId] = fn; };
+
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const activePanel = () => document.querySelector('#content-area > .section-panel.active') || document.querySelector('.section-panel.active');
+  const todayStr = () => new Date().toISOString().slice(0,10);
+  const slug = s => String(s || 'report').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'') || 'report';
+
+  // "$1,234.50" / "-$12" / "($12.00)" → number; everything else stays text
+  function parseCell(t) {
+    if (typeof t === 'number') return t;
+    const s = String(t == null ? '' : t).trim();
+    if (/^\(?-?\$\s?[\d,]+(\.\d+)?\)?$/.test(s)) {
+      const neg = /^\(|-/.test(s);
+      const n = parseFloat(s.replace(/[^0-9.]/g, ''));
+      if (!isNaN(n)) return { t:'n', v: neg ? -n : n, z:'"$"#,##0.00;[Red]-"$"#,##0.00' };
+    }
+    return s;
+  }
+  const plain = c => (c && typeof c === 'object') ? c.v : c;
+
+  function cellText(el) {
+    return (el.innerText || el.textContent || '').replace(/\s*\n+\s*/g, '; ').replace(/\s+/g, ' ').replace(/[▲▼]/g, '').trim();
+  }
+
+  function sectionName(table, fallback, scope) {
+    let el = table;
+    for (let i = 0; i < 5 && el && el.parentElement; i++, el = el.parentElement) {
+      if (scope && el === scope) break;   // never look outside the block being exported
+      let p = el.previousElementSibling;
+      while (p) {
+        const t = cellText(p).replace(/\s*✕\s*$/, '');
+        if (t && t.length <= 40 && !/[;%:]/.test(t) && !p.querySelector('table, select, input, .lm-chip')) return t;
+        p = p.previousElementSibling;
+      }
+      const ti = el.parentElement && el.parentElement.querySelector(':scope > .card-title');
+      if (ti) return cellText(ti);
+    }
+    return fallback;
+  }
+
+  function scrapeTables(scope, fallback) {
+    const out = [];
+    [...scope.querySelectorAll('table')].forEach((t, i) => {
+      if (t.offsetParent === null || t.closest('.modal-overlay') || t.rows.length < 2) return;
+      let headers = [...t.querySelectorAll('thead th')].map(cellText);
+      let bodyRows = [...t.querySelectorAll('tbody tr')];
+      if (!headers.length) { const r0 = t.rows[0]; headers = [...r0.cells].map(cellText); bodyRows = [...t.rows].slice(1); }
+      const rows = bodyRows.map(tr => [...tr.cells].map(cellText)).filter(r => r.some(Boolean));
+      if (rows.length) out.push({ name: sectionName(t, null, scope), headers, rows });
+    });
+    out.forEach((sec, i) => { if (!sec.name) sec.name = (fallback || 'Table') + (out.length > 1 ? ' ' + (i + 1) : ''); });
+    return out;
+  }
+
+  function getReport(scopeEl, scopeTitle) {
+    const panel = activePanel();
+    const scope = scopeEl || panel;
+    if (!scope) return null;
+    const title = scopeTitle || (document.getElementById('topbar-title') || {}).textContent || 'Report';
+    let sections = null;
+    if (!scopeEl && panel && PROVIDERS[panel.id]) { try { sections = PROVIDERS[panel.id](panel); } catch(e) { console.warn('oelx provider failed', e); } }
+    if (!sections || !sections.length) sections = scrapeTables(scope, title);
+    return { title, sections: sections.filter(s => s.rows && s.rows.length) };
+  }
+
+  function fileName(rep, ext) { return 'odoolink-' + slug(rep.title) + '-' + todayStr() + '.' + ext; }
+
+  function download(blob, name) {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+  }
+
+  function toCsv(rep) {
+    const q = v => { v = String(plain(v) == null ? '' : plain(v)); return /[",\n\r]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
+    const lines = [];
+    rep.sections.forEach((s, i) => {
+      if (rep.sections.length > 1) { if (i) lines.push(''); lines.push(q(s.name)); }
+      lines.push(s.headers.map(q).join(','));
+      s.rows.forEach(r => lines.push(r.map(c => q(parseCell(c))).join(',')));
+    });
+    download(new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' }), fileName(rep, 'csv'));
+  }
+
+  function toXlsx(rep) {
+    if (typeof XLSX === 'undefined') { toCsv(rep); return; }
+    const wb = XLSX.utils.book_new(), used = new Set();
+    rep.sections.forEach((s, i) => {
+      const ws = XLSX.utils.aoa_to_sheet([s.headers, ...s.rows.map(r => r.map(parseCell))]);
+      ws['!cols'] = s.headers.map((h, c) => ({ wch: Math.min(60, Math.max(String(h).length, 8, ...s.rows.map(r => String(plain(parseCell(r[c])) == null ? '' : plain(parseCell(r[c]))).length))) }));
+      let nm = String(s.name || 'Sheet ' + (i + 1)).replace(/[\\\/\?\*\[\]:]/g, ' ').trim().slice(0, 31) || 'Sheet ' + (i + 1);
+      let base = nm, n = 2; while (used.has(nm.toLowerCase())) nm = base.slice(0, 28) + ' ' + (n++);
+      used.add(nm.toLowerCase());
+      XLSX.utils.book_append_sheet(wb, ws, nm);
+    });
+    XLSX.writeFile(wb, fileName(rep, 'xlsx'));
+  }
+
+  // ── Print: clone what's on screen into a clean, light page ───────────────
+  const PRINT_CSS = `
+    html, body { display:block !important; height:auto !important; overflow:visible !important; background:#fff !important; color:#1a1a1a !important; margin:0; }
+    :root, html, body { --bg:#fff; --surface:#fff; --surface2:#f6f4ee; --border:#d9d5ca; --accent:#8a6410; --accent-dim:#f4ecd6; --text:#1a1a1a; --muted:#5c5c5c; --danger:#b3261e; --success:#17703a; --warning:#9a6200; --cyan:#0a6a92; }
+    body { padding:18px 22px; font-family:'DM Sans',-apple-system,'Segoe UI',Arial,sans-serif; font-size:12px; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    * { max-height:none !important; overflow:visible !important; min-width:0 !important; box-shadow:none !important; animation:none !important; }
+    .oelx-head { border-bottom:2px solid #1a1a1a; margin-bottom:14px; padding-bottom:6px; }
+    .oelx-h1 { font-size:20px; font-weight:700; }
+    .oelx-sub { font-size:11px; color:#5c5c5c; margin-top:2px; }
+    table { width:100% !important; border-collapse:collapse; }
+    th, td { border-bottom:1px solid #e3e0d6; }
+    thead { display:table-header-group; } tr, .card, .laz-stat-card { break-inside:avoid; page-break-inside:avoid; }
+    .card { border:1px solid #d9d5ca !important; margin-bottom:6px !important; }
+    .oelx-val { font-weight:500; }
+    @page { margin:12mm; }`;
+
+  function buildPrintBody(scope) {
+    const clone = scope.cloneNode(true);
+    const origAll = scope.querySelectorAll('*'), cloneAll = clone.querySelectorAll('*');
+    const kill = [], swap = [];
+    origAll.forEach((o, i) => {
+      const c = cloneAll[i]; if (!c) return;
+      const tag = o.tagName;
+      if (tag === 'SCRIPT' || tag === 'STYLE' || tag === 'BUTTON' || tag === 'NOSCRIPT' || o.classList.contains('modal-overlay') || o.hasAttribute('data-noprint')) { kill.push(c); return; }
+      if (tag === 'INPUT' && (o.type === 'file' || o.type === 'button' || o.type === 'range')) { kill.push(c); return; }
+      const cs = getComputedStyle(o);
+      if (cs.display === 'none' || cs.visibility === 'hidden') { kill.push(c); return; }
+      let txt = null;
+      if (tag === 'SELECT') txt = (o.selectedOptions[0] || {}).textContent || '';
+      else if (tag === 'TEXTAREA') txt = o.value;
+      else if (tag === 'INPUT' && o.type === 'checkbox') txt = o.checked ? '☑' : '☐';
+      else if (tag === 'INPUT') txt = o.value;
+      if (txt !== null) swap.push([c, txt, tag === 'TEXTAREA']);
+    });
+    swap.forEach(([c, txt, block]) => {
+      if (!String(txt).trim()) { kill.push(c); return; }
+      const sp = document.createElement(block ? 'div' : 'span');
+      sp.className = 'oelx-val'; sp.style.whiteSpace = 'pre-wrap'; sp.textContent = txt;
+      c.replaceWith(sp);
+    });
+    kill.forEach(c => c.remove());
+    return clone.innerHTML;
+  }
+
+  function printReport(scopeEl, scopeTitle) {
+    const panel = activePanel();
+    const scope = scopeEl || (panel && (panel.querySelector('.section-scroll') || panel));
+    if (!scope) return;
+    const title = scopeTitle || (document.getElementById('topbar-title') || {}).textContent || 'Report';
+    const styles = [...document.querySelectorAll('style')].map(s => '<style>' + s.textContent + '</style>').join('') +
+                   [...document.querySelectorAll('link[rel="stylesheet"]')].map(l => l.outerHTML).join('');
+    const stamp = new Date().toLocaleString('en-US', { dateStyle:'medium', timeStyle:'short' });
+    const html = '<!doctype html><html><head><meta charset="utf-8"><title>' + esc(title) + ' — ' + todayStr() + '</title>' + styles +
+      '<style>' + PRINT_CSS + '</style></head><body><div class="oelx-head"><div class="oelx-h1">' + esc(title) + '</div>' +
+      '<div class="oelx-sub">OdooLink · generated ' + esc(stamp) + '</div></div>' + buildPrintBody(scope) + '</body></html>';
+
+    const fr = document.createElement('iframe');
+    fr.setAttribute('aria-hidden', 'true');
+    fr.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden';
+    document.body.appendChild(fr);
+    const d = fr.contentDocument; d.open(); d.write(html); d.close();
+    const go = () => {
+      try { fr.contentWindow.focus(); fr.contentWindow.print(); }
+      catch(e) { const w = window.open('', '_blank'); if (w) { w.document.write(html); w.document.close(); setTimeout(() => w.print(), 500); } }
+      setTimeout(() => fr.remove(), 120000);
+    };
+    setTimeout(go, 450);
+  }
+
+  // ── Menu ────────────────────────────────────────────────────────────────
+  let menu = null, menuCtx = null;
+  function closeMenu() { if (menu) menu.style.display = 'none'; }
+  function ensureMenu() {
+    if (menu) return menu;
+    menu = document.createElement('div');
+    menu.id = 'oelx-menu';
+    menu.style.cssText = 'position:fixed;z-index:10050;display:none;min-width:210px;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,0.35);padding:5px;font-family:\'DM Sans\',sans-serif';
+    const item = (id, icon, label) => '<div class="oelx-item" data-act="' + id + '" style="display:flex;align-items:center;gap:9px;padding:8px 11px;border-radius:7px;cursor:pointer;font-size:0.82rem;color:var(--text)"><span style="width:16px;text-align:center">' + icon + '</span><span style="flex:1">' + label + '</span><span class="oelx-hint" style="font-size:0.7rem;color:var(--muted)"></span></div>';
+    menu.innerHTML = item('print', '🖨', 'Print / Save as PDF') + item('xlsx', '📊', 'Excel (.xlsx)') + item('csv', '📄', 'CSV');
+    menu.addEventListener('mouseover', e => { const it = e.target.closest('.oelx-item'); menu.querySelectorAll('.oelx-item').forEach(x => x.style.background = x === it ? 'var(--accent-dim)' : ''); });
+    menu.addEventListener('click', e => {
+      const it = e.target.closest('.oelx-item'); if (!it) return;
+      const ctx = menuCtx || {}; closeMenu();
+      if (it.dataset.act === 'print') { printReport(ctx.scope, ctx.title); return; }
+      const rep = getReport(ctx.scope, ctx.title);
+      if (!rep || !rep.sections.length) { alert('Nothing tabular to export on this screen yet — load some data first, or use Print.'); return; }
+      if (it.dataset.act === 'xlsx') toXlsx(rep); else toCsv(rep);
+    });
+    document.body.appendChild(menu);
+    document.addEventListener('mousedown', e => { if (menu && menu.style.display !== 'none' && !menu.contains(e.target) && !e.target.closest('[data-oelx-btn]')) closeMenu(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMenu(); });
+    window.addEventListener('resize', closeMenu);
+    return menu;
+  }
+
+  // oelxMenu(buttonEl [, scopeSelector, scopeTitle]) — scopeSelector limits the export to one block
+  window.oelxMenu = function(btn, scopeSel, scopeTitle) {
+    const m = ensureMenu();
+    if (m.style.display === 'block' && menuCtx && menuCtx.btn === btn) { closeMenu(); return; }
+    const scope = scopeSel ? document.querySelector(scopeSel) : null;
+    menuCtx = { btn, scope, title: scopeTitle };
+    const rep = getReport(scope, scopeTitle);
+    const n = rep ? rep.sections.length : 0;
+    m.querySelectorAll('.oelx-hint').forEach((h, i) => { h.textContent = i === 0 ? '' : (n ? n + (n === 1 ? ' table' : ' tables') : 'no table'); });
+    m.querySelectorAll('.oelx-item').forEach((it, i) => { it.style.opacity = (i > 0 && !n) ? '0.45' : '1'; it.style.background = ''; });
+    m.style.display = 'block';
+    const r = btn.getBoundingClientRect(), w = m.offsetWidth;
+    m.style.left = Math.max(8, Math.min(innerWidth - w - 8, r.right - w)) + 'px';
+    m.style.top = Math.min(r.bottom + 6, innerHeight - m.offsetHeight - 8) + 'px';
+  };
+  window.oelxPrint = printReport;
+
+  // ── Topbar button (all tabs except live-chat style ones) ─────────────────
+  function mountTopbar() {
+    if (document.getElementById('oelx-top-btn')) return;
+    const right = document.querySelector('#topbar .topbar-right'), actions = document.getElementById('topbar-actions');
+    if (!right) return;
+    const b = document.createElement('button');
+    b.id = 'oelx-top-btn'; b.setAttribute('data-oelx-btn', '1');
+    b.title = 'Print this screen, or export its tables to Excel / CSV';
+    b.style.cssText = 'background:none;border:1px solid var(--border);border-radius:7px;padding:5px 10px;cursor:pointer;color:var(--muted);display:flex;align-items:center;gap:5px;font-family:\'DM Sans\',sans-serif;font-size:0.78rem';
+    b.innerHTML = '<svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M7 1.5v7M4 6l3 3 3-3M2 10.5v1.5h10v-1.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="oelx-top-label">Export</span>';
+    b.addEventListener('click', () => window.oelxMenu(b));
+    right.insertBefore(b, actions ? actions.nextSibling : right.firstChild);
+    sync();
+  }
+  let lastPanel = null;
+  function sync() {
+    const b = document.getElementById('oelx-top-btn'); if (!b) return;
+    const p = activePanel();
+    b.style.display = (!p || HIDE_ON.has(p.id)) ? 'none' : 'flex';
+    const id = p ? p.id : null;
+    if (id !== lastPanel) { lastPanel = id; closeMenu(); }
+  }
+  function init() {
+    mountTopbar();
+    const ca = document.getElementById('content-area');
+    if (ca) new MutationObserver(sync).observe(ca, { attributes: true, attributeFilter: ['class'], subtree: true });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+</script>
+
 <!-- ── Invoice Follow-up (AR) ───────────────────────────────────────────── -->
 <script>
 (function(){
@@ -32704,11 +33059,11 @@ Thanks,`
   };
   const AR_SENT_MARKER = 'Invoice reminder emailed via OEL Command';
 
-  let AR = { invoices: [] };
+  let AR = { invoices: [], credits: [], creditsError: '' };
   let _arModuleAvailable = null;
   let _arCustomers = [];
 
-  function arFmt(n) { return '$' + (n||0).toLocaleString('en-US', {maximumFractionDigits:2}); }
+  function arFmt(n) { return '$' + (n||0).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}); }
   function arIsMissingModelError(msg) {
     return /doesn.?t exist|does not exist|invalid model|access.*(right|denied)|not allowed/i.test(msg || '');
   }
@@ -32759,6 +33114,7 @@ Thanks,`
           _arCustomers.map(c => `<option value="${c.id}">${escHtml(c.name)}</option>`).join('');
       } catch(e) {}
     }
+    arSyncSettingsInputs();
     arUpdateBadge();
     arLoad();
   };
@@ -32773,15 +33129,243 @@ Thanks,`
     } catch(e) {}
   };
 
+  // ── Payment matching settings ─────────────────────────────────────────
+  // Stripe (and most processors) pay out the invoice amount minus fees, so the
+  // deposit that lands in the bank is a little SHORT of the invoice. These
+  // defaults are Stripe's standard US card rate and ACH rate; both are editable
+  // in the "Payment matching" panel and remembered on this device.
+  const AR_PAY_KEY = 'oel_ar_pay_settings';
+  const AR_PAY_DEFAULTS = { enabled: true, cardPct: 2.9, cardFixed: 0.30, achPct: 0.8, achCap: 5, maxFeePct: 5, lookbackDays: 60, stripeOnly: false };
+  function arPayLoad() {
+    try { return Object.assign({}, AR_PAY_DEFAULTS, JSON.parse(localStorage.getItem(AR_PAY_KEY) || '{}')); }
+    catch(e) { return Object.assign({}, AR_PAY_DEFAULTS); }
+  }
+  let arPay = arPayLoad();
+
+  // <matcher> — pure functions (no DOM / no Odoo calls), unit-tested outside the app
+  function r2(n) { return Math.round((n + Number.EPSILON) * 100) / 100; }
+  function arFmt2(n) { return '$' + (n||0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+  function arAddDays(ds, n) {
+    const d = new Date(ds + 'T00:00:00'); d.setDate(d.getDate() + n);
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+  // What lands in the bank after the processor takes its cut
+  function arNet(gross, kind) {
+    const fee = kind === 'ach'
+      ? Math.min(r2(gross * arPay.achPct / 100), arPay.achCap)
+      : r2(gross * arPay.cardPct / 100 + arPay.cardFixed);
+    return r2(gross - fee);
+  }
+  const AR_STOP_WORDS = new Set(['inc','llc','ltd','corp','corporation','company','the','and','group','services','solutions','incorporated','limited']);
+  function arNameTokens(name) {
+    return String(name || '').toLowerCase().replace(/[^a-z0-9 ]+/g, ' ').split(/\s+/).filter(t => t.length >= 4 && !AR_STOP_WORDS.has(t));
+  }
+  function arCustomerHint(inv, cr) {
+    if (cr.partnerId && inv.customerId && cr.partnerId === inv.customerId) return 'deposit is tagged to this customer';
+    const ref = cr._refl || (cr._refl = String(cr.ref || '').toLowerCase());
+    const hit = (inv._tok || (inv._tok = arNameTokens(inv.customerName))).find(t => ref.includes(t));
+    return hit ? 'description mentions "' + hit + '"' : '';
+  }
+
+  // Score one deposit against one invoice. Returns null when it isn't plausible.
+  function arScoreSingle(inv, cr) {
+    const T = inv.amountDue;
+    if (!(T > 0) || !(cr.amount > 0)) return null;
+    if (cr.date && inv.invoiceDate && cr.date < arAddDays(inv.invoiceDate, -3)) return null; // deposit can't predate the invoice
+    const isStripe = /stripe/i.test(cr.ref || '');
+    const hint = arCustomerHint(inv, cr);
+    const diff = r2(T - cr.amount);
+    let m = null;
+    if (Math.abs(diff) <= 0.01) {
+      m = { type: 'exact', score: 100, note: 'Exact amount' };
+    } else if (cr.amount > T) {
+      if (cr.amount - T <= 1) m = { type: 'over', score: 50, note: arFmt2(cr.amount - T) + ' over the invoice' };
+    } else if (!(arPay.stripeOnly && !isStripe)) {
+      ['card', 'ach'].forEach(kind => {
+        const err = Math.abs(cr.amount - arNet(T, kind));
+        const tight = err <= 0.02, near = err <= Math.max(1, T * 0.002);
+        if (!tight && !near) return;
+        const score = tight ? 90 : Math.max(60, 74 - err);
+        if (m && m.score >= score) return;
+        const pct = (diff / T * 100).toFixed(2);
+        m = { type: tight ? 'fee' : 'fee-near', score,
+              note: arFmt2(diff) + ' (' + pct + '%) short — ' + (tight ? 'matches' : 'close to') + ' ' + (kind === 'ach' ? 'ACH' : 'card') + ' processing fees' };
+      });
+      if (!m && hint && diff / T * 100 <= arPay.maxFeePct) {
+        m = { type: 'range', score: 45, note: arFmt2(diff) + ' (' + (diff / T * 100).toFixed(2) + '%) short — could be net of fees' };
+      }
+    }
+    if (!m) return null;
+    if (isStripe) m.score = m.type === 'exact' ? 100 : Math.min(m.score + 3, 99);
+    if (hint) m.score = m.type === 'exact' ? 100 : Math.min(m.score + 5, 99);
+    return Object.assign({ creditId: cr.id, credit: cr, diff, hint, isStripe, invoiceIds: [inv.id], bundle: false }, m);
+  }
+
+  // One deposit covering several invoices for the SAME customer (2–5 invoices).
+  function arBundleMatches(invoices, credits) {
+    const out = [], byCust = {};
+    invoices.forEach(i => { if (i.customerId && i.amountDue > 0) (byCust[i.customerId] = byCust[i.customerId] || []).push(i); });
+    Object.keys(byCust).forEach(k => {
+      const L = byCust[k].slice(0, 10);
+      if (L.length < 2) return;
+      for (let mask = 3; mask < (1 << L.length); mask++) {
+        const sub = L.filter((_, b) => mask & (1 << b));
+        if (sub.length < 2 || sub.length > 5) continue;
+        const gross = r2(sub.reduce((s, i) => s + i.amountDue, 0));
+        const netCard = r2(sub.reduce((s, i) => s + arNet(i.amountDue, 'card'), 0));
+        const netAch = r2(sub.reduce((s, i) => s + arNet(i.amountDue, 'ach'), 0));
+        const latest = sub.reduce((d, i) => (i.invoiceDate && i.invoiceDate > d) ? i.invoiceDate : d, '');
+        const tol = 0.01 * sub.length + 0.01;
+        const floorAmt = gross * 0.85, cutoff = latest ? arAddDays(latest, -3) : '';
+        credits.forEach(cr => {
+          if (cr.amount > gross + 0.01 || cr.amount < floorAmt) return;   // can't be this bundle
+          if (cutoff && cr.date && cr.date < cutoff) return;
+          let m = null;
+          if (Math.abs(cr.amount - gross) <= 0.01) m = { type: 'bundle-exact', score: 88, note: 'Exact total of ' + sub.length + ' invoices' };
+          else if (cr.amount < gross && !(arPay.stripeOnly && !/stripe/i.test(cr.ref || ''))) {
+            const hitCard = Math.abs(cr.amount - netCard) <= tol, hitAch = Math.abs(cr.amount - netAch) <= tol;
+            if (hitCard || hitAch) m = { type: 'bundle-fee', score: 84, note: arFmt2(gross - cr.amount) + ' short of the ' + sub.length + '-invoice total — matches ' + (hitCard ? 'card' : 'ACH') + ' fees' };
+          }
+          if (m) out.push(Object.assign({ creditId: cr.id, credit: cr, diff: r2(gross - cr.amount), hint: arCustomerHint(sub[0], cr), isStripe: /stripe/i.test(cr.ref || ''), invoiceIds: sub.map(i => i.id), bundle: true }, m));
+        });
+      }
+    });
+    return out;
+  }
+
+  // Compute matches for every open invoice, plus the deposit-side view.
+  function arComputeMatches(invoices, credits) {
+    const byId = {};
+    invoices.forEach(i => { i._matches = []; byId[i.id] = i; });
+    credits.forEach(c => { c._suggest = []; });
+    invoices.forEach(inv => credits.forEach(cr => {
+      const m = arScoreSingle(inv, cr);
+      if (m) { inv._matches.push(m); cr._suggest.push(m); }
+    }));
+    arBundleMatches(invoices, credits).forEach(m => {
+      m.invoiceIds.forEach(id => { if (byId[id]) byId[id]._matches.push(m); });
+      m.credit._suggest.push(m);
+    });
+    invoices.forEach(i => i._matches.sort((a, b) => b.score - a.score));
+    credits.forEach(c => c._suggest.sort((a, b) => b.score - a.score));
+  }
+  // "Probably paid" = a strong match (exact / fee-adjusted), not just a loose maybe
+  function arIsLikely(inv) { return !!(inv._matches && inv._matches[0] && inv._matches[0].score >= 70); }
+
+  // Manual helper: which small sets of open invoices add up to this deposit?
+  function arSearchBatch(credit, invoices, limit) {
+    const pool = invoices.filter(i => i.amountDue > 0 && (!i.invoiceDate || !credit.date || credit.date >= arAddDays(i.invoiceDate, -3))).slice(0, 160);
+    const gross = pool.map(i => i.amountDue), card = pool.map(i => arNet(i.amountDue, 'card')), ach = pool.map(i => arNet(i.amountDue, 'ach'));
+    const res = [], c = credit.amount, n = pool.length;
+    const test = (idx) => {
+      const g = r2(idx.reduce((s, k) => s + gross[k], 0));
+      const nc = r2(idx.reduce((s, k) => s + card[k], 0)), na = r2(idx.reduce((s, k) => s + ach[k], 0));
+      const tol = 0.01 * idx.length + 0.01;
+      let kind = null;
+      if (Math.abs(g - c) <= 0.01) kind = 'exact';
+      else if (Math.abs(nc - c) <= tol) kind = 'card';
+      else if (Math.abs(na - c) <= tol) kind = 'ach';
+      if (kind) res.push({ ids: idx.map(k => pool[k].id), kind, gross: g });
+    };
+    for (let a = 0; a < n && res.length < limit; a++)
+      for (let b = a + 1; b < n && res.length < limit; b++) {
+        test([a, b]);
+        for (let d = b + 1; d < n && res.length < limit; d++) test([a, b, d]);
+      }
+    return res;
+  }
+  // </matcher>
+
+  const AR_TYPE_STYLE = {
+    'exact': ['Exact match', 'var(--success)'], 'bundle-exact': ['Exact · several invoices', 'var(--success)'],
+    'fee': ['Net of fees', 'var(--accent)'], 'bundle-fee': ['Net of fees · several invoices', 'var(--accent)'], 'fee-near': ['Close — likely fees', 'var(--accent)'],
+    'over': ['Slightly over', 'var(--muted)'], 'range': ['Possible', 'var(--muted)'],
+  };
+
+  async function arLoadCredits() {
+    AR.credits = []; AR.creditsError = '';
+    if (!arPay.enabled) return;
+    const d = new Date(); d.setDate(d.getDate() - (arPay.lookbackDays || 60));
+    const since = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    try {
+      const rows = await odooExecute(odooUid, 'account.bank.statement.line', 'search_read',
+        [[['amount', '>', 0], ['is_reconciled', '=', false], ['date', '>=', since], ['journal_id.type', 'in', ['bank', 'cash']]]],
+        { fields: ['date', 'payment_ref', 'amount', 'partner_id', 'journal_id', 'move_id'], order: 'date desc', limit: 600 });
+      AR.credits = (rows || []).map(r => ({
+        id: r.id, date: r.date, ref: r.payment_ref || '', amount: r.amount,
+        partnerId: Array.isArray(r.partner_id) ? r.partner_id[0] : null,
+        partnerName: Array.isArray(r.partner_id) ? r.partner_id[1] : '',
+        journal: Array.isArray(r.journal_id) ? r.journal_id[1] : '',
+        moveId: Array.isArray(r.move_id) ? r.move_id[0] : null,
+      }));
+    } catch(e) {
+      AR.creditsError = e.message || String(e);
+    }
+  }
+
+  let _arPayToken = 0;
+  async function arFindPayments() {
+    const tok = ++_arPayToken;
+    const note = document.getElementById('ar-pay-status');
+    if (!arPay.enabled) {
+      AR.credits = []; AR.creditsError = '';
+      arComputeMatches(AR.invoices, AR.credits);
+      arApply(); arRenderCredits();
+      if (note) note.textContent = 'Payment matching is off.';
+      return;
+    }
+    if (note) note.textContent = 'Checking unreconciled bank deposits…';
+    await arLoadCredits();
+    if (tok !== _arPayToken) return;
+    arComputeMatches(AR.invoices, AR.credits);
+    arApply(); arRenderCredits();
+    if (note) {
+      note.textContent = AR.creditsError ? 'Couldn’t read bank deposits: ' + AR.creditsError
+        : AR.credits.length + ' unreconciled deposit' + (AR.credits.length === 1 ? '' : 's') + ' from the last ' + arPay.lookbackDays + ' days checked';
+      note.style.color = AR.creditsError ? 'var(--danger)' : 'var(--muted)';
+    }
+  }
+  window.arFindPayments = arFindPayments;
+
+  window.arPaySettingsChanged = function() {
+    const num = (id, d, min, max) => { const v = parseFloat(document.getElementById(id)?.value); return isNaN(v) ? d : Math.min(max, Math.max(min, v)); };
+    arPay = Object.assign({}, arPay, {
+      enabled: !!document.getElementById('ar-set-enabled')?.checked,
+      lookbackDays: Math.round(num('ar-set-lookback', 60, 7, 365)),
+      cardPct: num('ar-set-cardpct', 2.9, 0, 15),
+      cardFixed: num('ar-set-cardfix', 0.30, 0, 5),
+      achPct: num('ar-set-achpct', 0.8, 0, 15),
+      stripeOnly: !!document.getElementById('ar-set-stripeonly')?.checked,
+    });
+    try { localStorage.setItem(AR_PAY_KEY, JSON.stringify(arPay)); } catch(e) {}
+    arFindPayments();
+  };
+  window.arPaySettingsReset = function() {
+    arPay = Object.assign({}, AR_PAY_DEFAULTS);
+    try { localStorage.removeItem(AR_PAY_KEY); } catch(e) {}
+    arSyncSettingsInputs();
+    arFindPayments();
+  };
+  function arSyncSettingsInputs() {
+    const set = (id, v) => { const el = document.getElementById(id); if (el) { if (el.type === 'checkbox') el.checked = !!v; else el.value = v; } };
+    set('ar-set-enabled', arPay.enabled); set('ar-set-lookback', arPay.lookbackDays);
+    set('ar-set-cardpct', arPay.cardPct); set('ar-set-cardfix', arPay.cardFixed);
+    set('ar-set-achpct', arPay.achPct); set('ar-set-stripeonly', arPay.stripeOnly);
+  }
+
+  function arOdooUrl(model, id) {
+    const base = (typeof odooConfig !== 'undefined' && odooConfig && odooConfig.url ? odooConfig.url : '').replace(/\/+$/, '');
+    return base && id ? base + '/odoo/' + model + '/' + id : '';
+  }
+
+  // ── Load, filter, sort, render ───────────────────────────────────────
   window.arLoad = async function() {
     const listEl = document.getElementById('ar-list');
-    const statusLine = document.getElementById('ar-status-line');
     if (!odooUid) return;
     if (_arModuleAvailable === false) { arShowModuleMissingBanner(); return; }
     if (listEl) listEl.innerHTML = '<div style="padding:16px;text-align:center;color:var(--muted);font-size:0.82rem"><div class="dot spin" style="display:inline-block;margin-right:6px"></div>Loading…</div>';
 
     const customerId = document.getElementById('ar-customer')?.value || '';
-    const statusFilter = document.getElementById('ar-status')?.value || '';
     const domain = [['move_type','=','out_invoice'], ['state','=','posted'], ['payment_state','in',['not_paid','partial']]];
     if (customerId) domain.push(['partner_id','=', parseInt(customerId)]);
 
@@ -32821,23 +33405,53 @@ Thanks,`
           daysOverdue: daysOverdue,
           sentCount: sent.count,
           lastSentDate: sent.lastDate,
+          _matches: [],
         };
       });
 
-      // Apply status filter client-side
-      let filtered = AR.invoices;
-      if (statusFilter === 'never') filtered = filtered.filter(i => i.sentCount === 0);
-      else if (statusFilter === 'overdue') filtered = filtered.filter(i => i.daysOverdue > 0);
-      else if (statusFilter === 'sent') filtered = filtered.filter(i => i.sentCount > 0 && i.daysOverdue <= 0);
-      AR._filtered = filtered;
-
-      if (statusLine) statusLine.textContent = `${filtered.length} of ${AR.invoices.length} invoices`;
-      arRenderSummary();
-      arRenderList();
+      arApply();           // show the list right away…
+      arFindPayments();    // …then check the bank for deposits that look like payments
     } catch(e) {
       if (arIsMissingModelError(e.message)) { _arModuleAvailable = false; arShowModuleMissingBanner(); }
       else if (listEl) listEl.innerHTML = '<div style="padding:16px;text-align:center;color:var(--danger);font-size:0.82rem">Error: ' + escHtml(e.message) + '</div>';
     }
+  };
+
+  // Filter + sort what's already loaded (no refetch)
+  window.arApply = function() {
+    const statusLine = document.getElementById('ar-status-line');
+    const statusFilter = document.getElementById('ar-status')?.value || '';
+    const sortKey = document.getElementById('ar-sort')?.value || 'due';
+    let rows = AR.invoices.slice();
+    if (statusFilter === 'never') rows = rows.filter(i => i.sentCount === 0);
+    else if (statusFilter === 'overdue') rows = rows.filter(i => i.daysOverdue > 0);
+    else if (statusFilter === 'sent') rows = rows.filter(i => i.sentCount > 0 && i.daysOverdue <= 0);
+    else if (statusFilter === 'matched') rows = rows.filter(i => (i._matches || []).length);
+    else if (statusFilter === 'likely') rows = rows.filter(arIsLikely);
+    else if (statusFilter === 'unmatched') rows = rows.filter(i => !(i._matches || []).length);
+
+    const best = i => (i._matches && i._matches[0]) ? i._matches[0].score : -1;
+    const dueKey = i => i.dueDate || '9999-12-31';
+    const byDue = (a, b) => dueKey(a) < dueKey(b) ? -1 : dueKey(a) > dueKey(b) ? 1 : (b.amountDue - a.amountDue);
+    const sorters = {
+      due:         byDue,
+      overdue:     (a, b) => (b.daysOverdue || -9999) - (a.daysOverdue || -9999) || byDue(a, b),
+      amount_desc: (a, b) => b.amountDue - a.amountDue,
+      amount_asc:  (a, b) => a.amountDue - b.amountDue,
+      customer:    (a, b) => a.customerName.localeCompare(b.customerName) || byDue(a, b),
+      match:       (a, b) => best(b) - best(a) || byDue(a, b),
+      never:       (a, b) => a.sentCount - b.sentCount || (b.daysOverdue || -9999) - (a.daysOverdue || -9999),
+    };
+    rows.sort(sorters[sortKey] || byDue);
+    AR._filtered = rows;
+    if (statusLine) statusLine.textContent = `${rows.length} of ${AR.invoices.length} invoices`;
+    arRenderSummary();
+    arRenderList();
+  };
+
+  window.arSetStatusFilter = function(v) {
+    const sel = document.getElementById('ar-status');
+    if (sel) { sel.value = v; arApply(); }
   };
 
   function arRenderSummary() {
@@ -32847,9 +33461,12 @@ Thanks,`
     const total = all.reduce((s,i) => s + (i.amountDue||0), 0);
     const neverSent = all.filter(i => i.sentCount === 0).length;
     const overdue = all.filter(i => i.daysOverdue > 0).length;
+    const likely = all.filter(arIsLikely);
+    const likelyAmt = likely.reduce((s,i) => s + (i.amountDue||0), 0);
     el.innerHTML =
       '<div class="laz-stat-card"><div class="laz-stat-label">Open Invoices</div><div class="laz-stat-value">' + all.length + '</div><div class="laz-stat-sub">unpaid or partial</div></div>' +
       '<div class="laz-stat-card"><div class="laz-stat-label">Outstanding</div><div class="laz-stat-value accent">' + arFmt(total) + '</div><div class="laz-stat-sub">total due</div></div>' +
+      '<div class="laz-stat-card" onclick="arSetStatusFilter(\'likely\')" style="cursor:pointer" title="Show invoices that have a matching deposit waiting in the bank"><div class="laz-stat-label">Probably Paid</div><div class="laz-stat-value' + (likely.length ? ' accent' : '') + '">' + likely.length + '</div><div class="laz-stat-sub">' + (likely.length ? arFmt(likelyAmt) + ' · deposit found' : 'no matching deposits') + '</div></div>' +
       '<div class="laz-stat-card"><div class="laz-stat-label">Never Sent</div><div class="laz-stat-value' + (neverSent ? ' warning' : '') + '">' + neverSent + '</div><div class="laz-stat-sub">no reminder logged yet</div></div>' +
       '<div class="laz-stat-card"><div class="laz-stat-label">Overdue</div><div class="laz-stat-value' + (overdue ? ' warning' : '') + '">' + overdue + '</div><div class="laz-stat-sub">past due date</div></div>';
   }
@@ -32865,6 +33482,21 @@ Thanks,`
     if (inv.sentCount === 0) return 'first';
     if (inv.daysOverdue > 30) return 'final';
     return 'followup';
+  }
+
+  function arMatchLine(inv) {
+    const ms = inv._matches || [];
+    if (!ms.length) return '';
+    const m = ms[0], st = AR_TYPE_STYLE[m.type] || ['Possible', 'var(--muted)'], cr = m.credit;
+    const others = ms.slice(1);
+    const extra = others.length
+      ? ` <span style="color:var(--muted)" title="${escHtml(others.map(x => arFmt2(x.credit.amount) + ' on ' + x.credit.date + ' — ' + (x.credit.ref || '').slice(0, 40)).join('\n'))}">+${others.length} other possible</span>` : '';
+    return `<div style="flex-basis:100%;display:flex;align-items:center;gap:4px 10px;flex-wrap:wrap;font-size:0.76rem;padding:7px 10px;border-radius:8px;background:var(--accent-dim);border:1px solid ${st[1]}">
+      <span style="font-weight:600;color:${st[1]}">💳 ${st[0]}</span>
+      <span style="color:var(--text)">${arFmt2(cr.amount)} deposit · ${escHtml(cr.date || '')} · ${escHtml((cr.ref || '(no description)').slice(0, 52))}</span>
+      <span style="color:var(--muted)">${escHtml(m.note)}${m.hint ? ' · ' + escHtml(m.hint) : ''}</span>${extra}
+      <button class="btn btn-ghost" onclick="arOpenMatch(${cr.id}, [${m.invoiceIds.join(',')}])" style="margin-left:auto;padding:3px 11px;font-size:0.74rem">Review match</button>
+    </div>`;
   }
 
   function arRenderList() {
@@ -32885,9 +33517,193 @@ Thanks,`
         <div style="font-family:monospace;font-size:0.9rem;color:var(--text);min-width:80px;text-align:right">${arFmt(inv.amountDue)}</div>
         ${arSentBadge(inv)}
         <button class="btn btn-primary" onclick="arOpenComposer(${inv.id})" style="padding:6px 14px;font-size:0.8rem">✉ Send</button>
+        ${arMatchLine(inv)}
       </div>`;
     }).join('');
   }
+
+  // ── Bank deposits panel ───────────────────────────────────────────────
+  function arSuggestText(cr) {
+    const s = cr._suggest && cr._suggest[0];
+    if (!s) return '';
+    const invs = s.invoiceIds.map(id => AR.invoices.find(i => i.id === id)).filter(Boolean);
+    const label = invs.map(i => i.number).join(' + ');
+    const who = invs[0] ? invs[0].customerName : '';
+    const kind = (AR_TYPE_STYLE[s.type] || ['Possible'])[0];
+    return label + (who ? ' · ' + who : '') + ' (' + kind + ')';
+  }
+
+  window.arRenderCredits = arRenderCredits;
+  function arRenderCredits() {
+    const el = document.getElementById('ar-credits');
+    const sub = document.getElementById('ar-credits-sub');
+    if (!el) return;
+    if (!arPay.enabled) { el.innerHTML = ''; if (sub) sub.textContent = 'Payment matching is turned off in the settings above.'; return; }
+    if (AR.creditsError) {
+      el.innerHTML = '<div style="padding:12px;font-size:0.8rem;color:var(--danger)">Couldn’t read unreconciled bank deposits: ' + escHtml(AR.creditsError) + '<br><span style="color:var(--muted)">This needs read access to bank statement lines for the API user (Accounting app).</span></div>';
+      if (sub) sub.textContent = '';
+      return;
+    }
+    const view = document.getElementById('ar-credit-view')?.value || 'all';
+    let list = (AR.credits || []).slice();
+    if (view === 'suggested') list = list.filter(c => c._suggest && c._suggest.length);
+    else if (view === 'none') list = list.filter(c => !c._suggest || !c._suggest.length);
+    const total = (AR.credits || []).reduce((s, c) => s + c.amount, 0);
+    if (sub) sub.textContent = `${(AR.credits || []).length} unreconciled deposit${(AR.credits || []).length === 1 ? '' : 's'} · ${arFmt2(total)} · last ${arPay.lookbackDays} days`;
+    if (!list.length) { el.innerHTML = '<div style="padding:12px;font-size:0.8rem;color:var(--muted)">' + ((AR.credits || []).length ? 'Nothing in this view.' : 'No unreconciled deposits in this window — everything in the bank is already reconciled.') + '</div>'; return; }
+    const th = (t, a) => `<th style="padding:6px 8px;font-size:0.7rem;color:var(--muted);font-weight:500;text-align:${a || 'left'};white-space:nowrap">${t}</th>`;
+    el.innerHTML = '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse"><thead><tr style="border-bottom:1px solid var(--border)">'
+      + th('Date') + th('Deposit description') + th('Bank') + th('Amount', 'right') + th('Best guess') + th('') + '</tr></thead><tbody>'
+      + list.map(c => {
+        const guess = arSuggestText(c);
+        const color = c._suggest && c._suggest[0] ? (AR_TYPE_STYLE[c._suggest[0].type] || [0, 'var(--muted)'])[1] : 'var(--muted)';
+        const pre = c._suggest && c._suggest[0] ? c._suggest[0].invoiceIds.join(',') : '';
+        return '<tr style="border-bottom:1px solid var(--border)">'
+          + `<td style="padding:6px 8px;font-size:0.78rem;color:var(--muted);white-space:nowrap">${escHtml(c.date || '')}</td>`
+          + `<td style="padding:6px 8px;font-size:0.78rem;color:var(--text)">${escHtml(c.ref || '(no description)')}</td>`
+          + `<td style="padding:6px 8px;font-size:0.76rem;color:var(--muted)">${escHtml(c.journal)}</td>`
+          + `<td style="padding:6px 8px;font-size:0.8rem;color:var(--text);font-family:monospace;text-align:right;white-space:nowrap">${arFmt2(c.amount)}</td>`
+          + `<td style="padding:6px 8px;font-size:0.76rem;color:${color}">${guess ? escHtml(guess) : '<span style="color:var(--muted)">no single invoice fits</span>'}</td>`
+          + `<td style="padding:6px 8px;text-align:right;white-space:nowrap"><button class="btn btn-ghost" onclick="arOpenMatch(${c.id}, [${pre}])" style="padding:3px 11px;font-size:0.74rem">${guess ? 'Review' : 'Match…'}</button></td></tr>`;
+      }).join('') + '</tbody></table></div>';
+  }
+
+  // ── Match a deposit to invoices (review + calculator) ────────────────
+  let _arMM = null;
+  window.arOpenMatch = function(creditId, preIds) {
+    const cr = (AR.credits || []).find(c => c.id === creditId);
+    if (!cr) return;
+    _arMM = { credit: cr, sel: new Set(preIds || []) };
+    document.getElementById('ar-match-modal')?.remove();
+    const modal = document.createElement('div');
+    modal.id = 'ar-match-modal';
+    modal.className = 'modal-overlay';
+    modal.style.cssText = 'display:flex';
+    const link = arOdooUrl('account.move', cr.moveId);
+    modal.innerHTML = `<div class="modal" style="max-width:680px">
+      <div class="modal-header">
+        <div class="modal-header-text">
+          <div class="record">${arFmt2(cr.amount)} deposit · ${escHtml(cr.date || '')}</div>
+          <div class="contact">${escHtml(cr.ref || '(no description)')} · ${escHtml(cr.journal)}</div>
+        </div>
+        <button class="modal-close" onclick="document.getElementById('ar-match-modal').remove()">✕</button>
+      </div>
+      <div class="modal-body" style="display:flex;flex-direction:column;gap:10px">
+        <div style="font-size:0.78rem;color:var(--muted);line-height:1.5">Tick the invoice(s) this deposit paid. Processor fees are removed before payout, so the calculator compares the deposit to what those invoices should net after fees. Stripe sometimes batches several customers into one payout — use <strong style="color:var(--text)">Find a batch</strong> to look for combinations.</div>
+        <div id="ar-mm-calc" style="font-size:0.8rem;padding:10px 12px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);line-height:1.7"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <input type="text" id="ar-mm-filter" placeholder="Filter by customer or invoice #…" oninput="arMMRenderList()" style="flex:1;min-width:160px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-size:0.8rem;outline:none">
+          <button class="btn btn-ghost" onclick="arMMFindBatch()" style="padding:5px 12px;font-size:0.78rem">🔎 Find a batch</button>
+        </div>
+        <div id="ar-mm-batches" style="display:none;font-size:0.78rem"></div>
+        <div id="ar-mm-list" style="display:flex;flex-direction:column;gap:4px;max-height:300px;overflow-y:auto"></div>
+      </div>
+      <div class="modal-footer" style="flex-wrap:wrap;gap:8px">
+        <button class="btn btn-ghost" onclick="document.getElementById('ar-match-modal').remove()">Close</button>
+        <button class="btn btn-ghost" onclick="arMMCopy()">Copy summary</button>
+        ${link ? `<a class="btn btn-ghost" href="${escHtml(link)}" target="_blank" rel="noopener" style="text-decoration:none">Open deposit in Odoo ↗</a>` : ''}
+      </div>
+    </div>`;
+    document.body.appendChild(modal);
+    arMMRenderList();
+    arMMRecalc();
+  };
+
+  function arMMSelected() { return AR.invoices.filter(i => _arMM && _arMM.sel.has(i.id)); }
+
+  window.arMMRecalc = function() {
+    const el = document.getElementById('ar-mm-calc');
+    if (!el || !_arMM) return;
+    const cr = _arMM.credit, sel = arMMSelected();
+    if (!sel.length) { el.innerHTML = 'No invoices ticked yet — pick the ones this deposit should cover.'; return; }
+    const gross = r2(sel.reduce((s, i) => s + i.amountDue, 0));
+    const nc = r2(sel.reduce((s, i) => s + arNet(i.amountDue, 'card'), 0));
+    const na = r2(sel.reduce((s, i) => s + arNet(i.amountDue, 'ach'), 0));
+    const fee = r2(gross - cr.amount), pct = gross ? (fee / gross * 100).toFixed(2) : '0.00';
+    const tol = 0.01 * sel.length + 0.01;
+    let verdict, color;
+    if (Math.abs(fee) <= 0.01) { verdict = '✓ Exact match — no fees taken'; color = 'var(--success)'; }
+    else if (Math.abs(cr.amount - nc) <= tol) { verdict = '✓ Matches card processing fees'; color = 'var(--success)'; }
+    else if (Math.abs(cr.amount - na) <= tol) { verdict = '✓ Matches ACH processing fee'; color = 'var(--success)'; }
+    else if (fee > 0) { verdict = fee / gross * 100 <= arPay.maxFeePct ? 'Deposit is short by more than the fee estimate — could still be fees (different card type / international / partial refund)' : 'Deposit is much shorter than fees alone would explain'; color = 'var(--warning)'; }
+    else { verdict = 'Deposit is MORE than these invoices — check for another invoice or an overpayment'; color = 'var(--danger)'; }
+    el.innerHTML = `<div style="display:flex;flex-wrap:wrap;gap:4px 22px">
+        <span>Selected: <strong>${sel.length}</strong> invoice${sel.length === 1 ? '' : 's'}</span>
+        <span>Invoice total: <strong>${arFmt2(gross)}</strong></span>
+        <span>Deposit: <strong>${arFmt2(cr.amount)}</strong></span>
+        <span>Taken out: <strong>${arFmt2(fee)}</strong> (${pct}%)</span>
+      </div>
+      <div style="color:var(--muted)">Expected after card fees: ${arFmt2(nc)} · after ACH fee: ${arFmt2(na)}</div>
+      <div style="color:${color};font-weight:500">${verdict}</div>`;
+  };
+
+  window.arMMRenderList = function() {
+    const el = document.getElementById('ar-mm-list');
+    if (!el || !_arMM) return;
+    const q = (document.getElementById('ar-mm-filter')?.value || '').trim().toLowerCase();
+    const c = _arMM.credit.amount;
+    const closeness = i => Math.min(Math.abs(i.amountDue - c), Math.abs(arNet(i.amountDue, 'card') - c), Math.abs(arNet(i.amountDue, 'ach') - c));
+    let rows = AR.invoices.slice().sort((a, b) => (_arMM.sel.has(b.id) - _arMM.sel.has(a.id)) || (closeness(a) - closeness(b)));
+    if (q) rows = rows.filter(i => (i.customerName + ' ' + i.number).toLowerCase().includes(q));
+    el.innerHTML = rows.slice(0, 80).map(i => `<label style="display:flex;align-items:center;gap:10px;padding:7px 10px;border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:0.8rem;background:${_arMM.sel.has(i.id) ? 'var(--accent-dim)' : 'transparent'}">
+      <input type="checkbox" ${_arMM.sel.has(i.id) ? 'checked' : ''} onchange="arMMToggle(${i.id}, this.checked)" style="accent-color:var(--accent);width:15px;height:15px">
+      <span style="flex:1"><span style="color:var(--text)">${escHtml(i.customerName)}</span> <span style="color:var(--muted)">— ${escHtml(i.number)} · due ${escHtml(i.dueDate || '—')}</span></span>
+      <span style="font-family:monospace;color:var(--text)">${arFmt2(i.amountDue)}</span>
+      <span style="font-family:monospace;color:var(--muted);font-size:0.74rem" title="Expected deposit after card fees">→ ${arFmt2(arNet(i.amountDue, 'card'))}</span>
+    </label>`).join('') || '<div style="padding:10px;color:var(--muted);font-size:0.8rem">No invoices match.</div>';
+  };
+
+  window.arMMToggle = function(id, on) {
+    if (!_arMM) return;
+    if (on) _arMM.sel.add(id); else _arMM.sel.delete(id);
+    arMMRecalc(); arMMRenderList();
+  };
+
+  window.arMMFindBatch = function() {
+    const box = document.getElementById('ar-mm-batches');
+    if (!box || !_arMM) return;
+    const res = arSearchBatch(_arMM.credit, AR.invoices, 8);
+    box.style.display = 'block';
+    if (!res.length) { box.innerHTML = '<div style="padding:8px 10px;border:1px dashed var(--border);border-radius:8px;color:var(--muted)">No combination of 2–3 open invoices adds up to this deposit (exact or after card/ACH fees). It may include invoices not shown here, a refund, or a different fee rate.</div>'; return; }
+    box.innerHTML = '<div style="color:var(--muted);margin-bottom:4px">Possible combinations — treat these as leads and sanity-check the customers:</div>' + res.map((r, k) => {
+      const invs = r.ids.map(id => AR.invoices.find(i => i.id === id)).filter(Boolean);
+      const lbl = r.kind === 'exact' ? 'exact total' : r.kind === 'ach' ? 'after ACH fee' : 'after card fees';
+      return `<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;border:1px solid var(--border);border-radius:8px;margin-bottom:4px">
+        <span style="flex:1;color:var(--text)">${invs.map(i => escHtml(i.customerName) + ' ' + escHtml(i.number)).join(' + ')} <span style="color:var(--muted)">· ${arFmt2(r.gross)} ${lbl}</span></span>
+        <button class="btn btn-ghost" onclick="arMMUseBatch(${k})" style="padding:3px 10px;font-size:0.74rem">Use</button></div>`;
+    }).join('');
+    _arMM.batches = res;
+  };
+  window.arMMUseBatch = function(k) {
+    if (!_arMM || !_arMM.batches || !_arMM.batches[k]) return;
+    _arMM.sel = new Set(_arMM.batches[k].ids);
+    arMMRecalc(); arMMRenderList();
+  };
+
+  window.arMMCopy = async function() {
+    if (!_arMM) return;
+    const cr = _arMM.credit, sel = arMMSelected();
+    const gross = r2(sel.reduce((s, i) => s + i.amountDue, 0));
+    const text = `Deposit ${arFmt2(cr.amount)} on ${cr.date} (${cr.ref || 'no description'}, ${cr.journal})\n` +
+      (sel.length ? 'Applies to: ' + sel.map(i => `${i.customerName} ${i.number} ${arFmt2(i.amountDue)}`).join('; ') + `\nInvoice total ${arFmt2(gross)} — fees/difference ${arFmt2(gross - cr.amount)}` : 'No invoices selected');
+    try { await navigator.clipboard.writeText(text); alert('Copied.'); } catch(e) { window.prompt('Copy this:', text); }
+  };
+
+  // ── Export (Excel / CSV / print pull from this) ──────────────────────
+  if (window.oelxRegister) window.oelxRegister('panel-arfollowup', function() {
+    const inv = AR._filtered || AR.invoices || [];
+    const s1 = { name: 'Open invoices',
+      headers: ['Customer', 'Invoice', 'Invoice date', 'Due date', 'Days overdue', 'Amount due', 'Reminders sent', 'Last reminder', 'Possible payment', 'Deposit amount', 'Deposit date', 'Deposit description', 'Match note'],
+      rows: inv.map(i => {
+        const m = i._matches && i._matches[0];
+        return [i.customerName, i.number, i.invoiceDate || '', i.dueDate || '', i.daysOverdue > 0 ? i.daysOverdue : 0, arFmt2(i.amountDue), i.sentCount, i.lastSentDate ? i.lastSentDate.slice(0, 10) : '',
+          m ? (AR_TYPE_STYLE[m.type] || ['Possible'])[0] : '', m ? arFmt2(m.credit.amount) : '', m ? m.credit.date : '', m ? m.credit.ref : '', m ? m.note : ''];
+      }) };
+    const s2 = { name: 'Unreconciled deposits',
+      headers: ['Date', 'Description', 'Bank', 'Amount', 'Best guess'],
+      rows: (AR.credits || []).map(c => [c.date, c.ref, c.journal, arFmt2(c.amount), arSuggestText(c)]) };
+    return [s1, s2];
+  });
 
   // ── Payment link ─────────────────────────────────────────────────────
   // access_token/access_url are the standard Odoo portal-link fields, but
@@ -32947,6 +33763,7 @@ Thanks,`
         <div class="field"><label>Body</label>
           <textarea id="ar-comp-body" rows="10" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 13px;color:var(--text);font-family:'DM Mono',monospace;font-size:0.79rem;line-height:1.6;outline:none;resize:vertical"></textarea>
         </div>
+        ${arIsLikely(inv) ? `<div style="font-size:0.78rem;padding:8px 11px;border-radius:8px;border:1px solid var(--warning);background:var(--accent-dim);color:var(--text)">⚠ A deposit that looks like payment for this invoice (${arFmt2(inv._matches[0].credit.amount)} on ${escHtml(inv._matches[0].credit.date || '')}) is sitting unreconciled in the bank — you may not need to send this.</div>` : ''}
         <div id="ar-link-status" style="font-size:0.76rem;color:var(--muted)">Fetching payment link…</div>
       </div>
       <div class="modal-footer" style="flex-wrap:wrap;gap:8px">
@@ -33008,6 +33825,8 @@ Thanks,`
     const subject = document.getElementById('ar-comp-subject')?.value || '';
     const body = document.getElementById('ar-comp-body')?.value || '';
     const tplKey = modal?.dataset.currentTpl || 'first';
+
+    if (arIsLikely(inv) && !confirm('A bank deposit that looks like payment for this invoice has not been reconciled yet.\n\nSend the reminder anyway?')) return;
 
     const mailto = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     window.location.href = mailto;
