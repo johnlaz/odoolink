@@ -3,7 +3,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <meta name="oel-version" content="v15.53">
+  <meta name="oel-version" content="v15.56">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="mobile-web-app-capable" content="yes">
@@ -3388,7 +3388,7 @@ Support Team"></textarea>
           <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
             <p style="margin:0 0 4px"><strong style="color:var(--text)">Dashboard:</strong> 8 CRM cards + 4 accounting cards, click any for drill-down. ⚡ Daily Briefing opens a picker: tick the sections you want (My day, Sales, Accounting, Emails, Operations) and get a live company-wide report plus an optional AI summary. Quick reports: Aged AR · Top Customers (YTD) · Overdue Notices — print-ready.</p>
             <p style="margin:0"><strong style="color:var(--text)">Sales Reporting:</strong> filter rental/sales orders by rep, order type, stage, and delivery month, sortable on every column. <strong style="color:var(--text)">Commission estimate</strong> toggle restricts to confirmed orders, switches to delivery-date filtering, and totals goods-only revenue by <strong style="color:var(--text)">product category</strong> (not product type) — use ⚙ Categories to mark which categories count as services, and the rate chips (5% / 7% / 10% / custom) to set the payout percentage. The delivery-date field auto-detects from your Odoo schema and can be overridden in the dropdown if it guesses wrong.</p>
-            <p style="margin:0 0 4px"><strong style="color:var(--text)">Location</strong> shows the order's delivery/shipping address. <strong style="color:var(--text)">Tax</strong> isn't pulled from Odoo's tax engine — it's whichever order line has "tax" in its name, shown by name and amount so you can tell NW Tax from Local Tax at a glance. Use <strong style="color:var(--text)">⚙ Tax names</strong> to maintain the approved list — any tax line that doesn't match gets flagged in red with a ⚠, and the "Unapproved Tax" summary card counts how many orders need a look.</p>
+            <p style="margin:0 0 4px"><strong style="color:var(--text)">Location</strong> shows the order's delivery/shipping address. <strong style="color:var(--text)">Tax</strong> isn't pulled from Odoo's tax engine — it's whichever order line has "tax" in its name, shown by name and amount so you can tell the tax lines apart at a glance. Use the first drop-down to run the report on <strong style="color:var(--text)">Sales orders</strong> or <strong style="color:var(--text)">Customer invoices</strong> (invoices use invoice date, show credit notes as negatives, and add an “Odoo tax” line when Odoo's own tax engine charged tax; rental/sales split and the commission estimate are orders-only). Use <strong style="color:var(--text)">⚙ Tax names</strong> to maintain the approved list — any tax line that doesn't match gets flagged in red with a ⚠, and the "Unapproved Tax" summary card counts how many orders need a look.</p>
           </div>
         </div>
 
@@ -3621,11 +3621,16 @@ Support Team"></textarea>
               <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);font-weight:500">Sales Reporting</div>
               <div style="display:flex;gap:8px">
                 <button class="btn btn-ghost" data-oelx-btn="1" onclick="oelxMenu(this,'#sr-section','Sales Reporting')" title="Print this report or export it to HTML / Excel / CSV" style="padding:5px 12px;font-size:0.78rem">⤓ Export / Print</button>
+                <button class="btn btn-ghost" id="sr-taxtot-btn" onclick="srToggleTaxTotals()" title="Total the tax by name (FL vs NW …) for the rows listed below" style="padding:5px 12px;font-size:0.78rem">Σ Tax totals</button>
                 <button class="btn btn-ghost" onclick="srOpenTaxNamesModal()" title="Manage which tax line names are approved — anything else gets flagged in the Tax column" style="padding:5px 12px;font-size:0.78rem">⚙ Tax names</button>
-                <button class="btn btn-ghost" onclick="srLoad()" title="Reload sales orders from Odoo" style="padding:5px 12px;font-size:0.78rem">Refresh</button>
+                <button class="btn btn-ghost" onclick="srLoad()" title="Reload this report from Odoo" style="padding:5px 12px;font-size:0.78rem">Refresh</button>
               </div>
             </div>
             <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
+              <select id="sr-source" onchange="srSourceChanged()" title="Run this report on sales orders, or on customer invoices (to check the tax fields on what was actually billed)" style="background:var(--accent-dim);border:1px solid var(--accent);border-radius:8px;padding:7px 12px;color:var(--accent);font-family:'DM Sans',sans-serif;font-size:0.82rem;font-weight:600;outline:none;cursor:pointer">
+                <option value="order">Sales orders</option>
+                <option value="invoice">Customer invoices</option>
+              </select>
               <select id="sr-rep" onchange="srLoad()" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.82rem;outline:none;cursor:pointer">
                 <option value="">All reps</option>
               </select>
@@ -3665,8 +3670,9 @@ Support Team"></textarea>
             </div>
             <div id="sr-field-warning" style="display:none;font-size:0.74rem;color:var(--warning);margin:-4px 0 10px;padding:6px 10px;background:rgba(255,180,60,0.1);border:1px solid rgba(255,180,60,0.3);border-radius:6px"></div>
             <div id="sr-summary" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px"></div>
+            <div id="sr-tax-totals" style="display:none;margin-bottom:10px"></div>
             <div id="sr-results" style="overflow-x:auto;border:1px solid var(--border);border-radius:8px">
-              <div style="padding:16px;text-align:center;color:var(--muted);font-size:0.82rem">Connect to Odoo, then open this tab to load sales orders.</div>
+              <div style="padding:16px;text-align:center;color:var(--muted);font-size:0.82rem">Connect to Odoo, then open this tab to load the report.</div>
             </div>
           </div>
 
@@ -8720,6 +8726,14 @@ function exportCredentials() {
     compactMode:  localStorage.getItem('oelCompact') === '1',
     sidebarOrder: (() => { try { return JSON.parse(localStorage.getItem('oel_sidebar_section_order')||'[]'); } catch(e){ return []; } })(),
 
+    // ── Sales Reporting settings (tax names, commission, source) ──
+    srSettings: (() => {
+      const g = k => { try { return localStorage.getItem(k); } catch(e) { return null; } };
+      let tax = null; try { tax = JSON.parse(g('oel_sr_approved_tax_names') || 'null'); } catch(e) {}
+      let cat = null; try { cat = JSON.parse(g('oel_sr_category_commission') || 'null'); } catch(e) {}
+      return { approvedTaxNames: Array.isArray(tax) ? tax : (typeof _srApprovedTaxNames !== 'undefined' ? _srApprovedTaxNames : null), commissionRate: g('oel_sr_commission_rate'), categoryCommission: cat, deliveryField: g('oel_sr_delivery_field'), source: g('oel_sr_source') };
+    })(),
+
     // ── Quote Manager / Quote Builder templates ───
     qmTemplates: (typeof _qmTemplates !== 'undefined') ? _qmTemplates : [],
     qbTemplates: (() => { try { return JSON.parse(localStorage.getItem('oel_qb_local_templates')||'[]'); } catch(e){ return []; } })(),
@@ -8860,6 +8874,18 @@ function importCredentials(eventOrElement) {
       if (data.persLayout) {
         _persLayout = data.persLayout;
         try { localStorage.setItem(PERS_LAYOUT_KEY, data.persLayout); } catch(e) {}
+      }
+
+      // ── Sales Reporting settings ──────────────────
+      if (data.srSettings && typeof data.srSettings === 'object') {
+        const r = data.srSettings;
+        try {
+          if (Array.isArray(r.approvedTaxNames)) { localStorage.setItem('oel_sr_approved_tax_names', JSON.stringify(r.approvedTaxNames)); if (typeof _srApprovedTaxNames !== 'undefined') _srApprovedTaxNames = r.approvedTaxNames.slice(); imported.push('sales-report tax names'); }
+          if (r.commissionRate != null && r.commissionRate !== '') { localStorage.setItem('oel_sr_commission_rate', String(r.commissionRate)); if (typeof _srCommissionRate !== 'undefined') _srCommissionRate = parseFloat(r.commissionRate) || _srCommissionRate; }
+          if (r.categoryCommission && typeof r.categoryCommission === 'object') localStorage.setItem('oel_sr_category_commission', JSON.stringify(r.categoryCommission));
+          if (r.deliveryField) localStorage.setItem('oel_sr_delivery_field', r.deliveryField);
+          if (r.source === 'invoice' || r.source === 'order') { localStorage.setItem('oel_sr_source', r.source); if (typeof _srSource !== 'undefined') _srSource = r.source; }
+        } catch(e) {}
       }
 
       // ── Appearance ────────────────────────────────
@@ -9859,15 +9885,21 @@ let _srOrders   = [];
 let _srSortKey  = '_deliveryDate';
 let _srSortDir  = 'desc';
 
-function srFmt(n) { return '$' + (n||0).toLocaleString('en-US', {maximumFractionDigits:0}); }
+function srFmt(n) { n = n || 0; return (n < 0 ? '-$' : '$') + Math.abs(n).toLocaleString('en-US', {maximumFractionDigits:0}); }
 
 // ── Approved tax line names — anything else found on an order gets flagged ──
+const SR_DEFAULT_TAX_NAMES = ['FL Sales Tax', 'NW Sales Tax and Services'];
 function srLoadApprovedTaxNames() {
   try {
     const saved = JSON.parse(localStorage.getItem('oel_sr_approved_tax_names') || 'null');
-    if (Array.isArray(saved)) return saved;
+    if (Array.isArray(saved)) {
+      // The two original starter names are retired — if that's all that was ever saved, move to the new defaults.
+      const low = saved.map(function(x){ return String(x).trim().toLowerCase(); }).sort().join('|');
+      if (low === 'local tax|nw tax') return SR_DEFAULT_TAX_NAMES.slice();
+      return saved;
+    }
   } catch(e) {}
-  return ['NW Tax', 'Local Tax']; // sensible starting point — fully editable
+  return SR_DEFAULT_TAX_NAMES.slice(); // starting point — fully editable
 }
 function srSaveApprovedTaxNames(list) {
   try { localStorage.setItem('oel_sr_approved_tax_names', JSON.stringify(list)); } catch(e) {}
@@ -9888,10 +9920,10 @@ function srOpenTaxNamesModal() {
   modal.style.cssText = 'display:flex';
   modal.innerHTML = '<div class="modal" style="max-width:420px">'
     + '<div class="modal-header"><div class="modal-header-text"><div class="record">Approved Tax Line Names</div>'
-    + '<div class="contact">Any tax line found on an order that doesn\'t match one of these gets flagged in the table</div></div>'
+    + '<div class="contact">Any tax line found on an order or invoice that doesn\'t match one of these gets flagged in the table</div></div>'
     + '<button class="modal-close" onclick="document.getElementById(\'sr-taxnames-modal\').remove()">✕</button></div>'
     + '<div class="modal-body"><div id="sr-taxnames-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px"></div>'
-    + '<div style="display:flex;gap:8px"><input type="text" id="sr-taxname-input" placeholder="e.g. NW Tax" onkeydown="if(event.key===\'Enter\'){event.preventDefault();srAddApprovedTaxName();}" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-family:\'DM Sans\',sans-serif;font-size:0.82rem;outline:none">'
+    + '<div style="display:flex;gap:8px"><input type="text" id="sr-taxname-input" placeholder="e.g. FL Sales Tax" onkeydown="if(event.key===\'Enter\'){event.preventDefault();srAddApprovedTaxName();}" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-family:\'DM Sans\',sans-serif;font-size:0.82rem;outline:none">'
     + '<button class="btn btn-ghost" onclick="srAddApprovedTaxName()" style="padding:6px 14px;font-size:0.8rem">+ Add</button></div></div>'
     + '<div class="modal-footer"><button class="btn btn-primary" onclick="document.getElementById(\'sr-taxnames-modal\').remove(); srRenderList();" style="margin-left:auto">Done</button></div>'
     + '</div>';
@@ -10128,6 +10160,98 @@ function srSetSort(key) {
   srRenderList();
 }
 
+// ── Source: sales orders (default) or customer invoices ─────────────────────
+let _srSource = (function(){ try { return localStorage.getItem('oel_sr_source') === 'invoice' ? 'invoice' : 'order'; } catch(e) { return 'order'; } })();
+function srApplySourceUi() {
+  const inv = _srSource === 'invoice';
+  const set = function(id, fn) { const el = document.getElementById(id); if (el) fn(el); };
+  set('sr-source', function(el){ el.value = _srSource; });
+  set('sr-type', function(el){ el.disabled = inv; el.style.opacity = inv ? '0.45' : ''; el.title = inv ? 'Rental / Sales split applies to orders only' : ''; if (inv) el.value = ''; });
+  set('sr-delivery-field', function(el){ el.style.display = inv ? 'none' : ''; });
+  set('sr-commission-mode', function(el){ el.disabled = inv; if (inv && el.checked) { el.checked = false; const h = document.getElementById('sr-commission-hint'), c = document.getElementById('sr-commission-controls'); if (h) h.style.display = 'none'; if (c) c.style.display = 'none'; const st = document.getElementById('sr-stage'); if (st) st.disabled = false; } const lb = el.closest('label'); if (lb) { lb.style.opacity = inv ? '0.45' : ''; lb.title = inv ? 'Commission estimate runs on sales orders only' : 'Confirmed orders only, goods only (service categories excluded), grouped by the month they deliver — not the month they were created'; } });
+  set('sr-month', function(el){ el.title = inv ? 'Filter by invoice date (month)' : 'Filter by delivery month'; });
+  set('sr-stage', function(el){ const t = inv ? ['All statuses','Draft','Posted','Cancelled'] : ['All stages','Pending','Confirmed','Cancelled']; [].forEach.call(el.options, function(o, i){ o.textContent = t[i]; }); });
+}
+function srSourceChanged() {
+  const v = document.getElementById('sr-source')?.value === 'invoice' ? 'invoice' : 'order';
+  _srSource = v; try { localStorage.setItem('oel_sr_source', v); } catch(e) {}
+  _srOrders = []; srApplySourceUi(); srLoad();
+}
+function srInvStage(o) {
+  if (o.state === 'draft')  return ['Draft', 'var(--muted)'];
+  if (o.state === 'cancel') return ['Cancelled', 'var(--danger)'];
+  const ps = o.payment_state;
+  if (ps === 'paid' || ps === 'in_payment') return ['Paid', 'var(--success)'];
+  if (ps === 'partial') return ['Partial', 'var(--warning)'];
+  if (ps === 'reversed') return ['Reversed', 'var(--muted)'];
+  return ['Unpaid', 'var(--accent)'];
+}
+
+async function srLoadInvoices() {
+  const resultsEl = document.getElementById('sr-results');
+  const summaryEl = document.getElementById('sr-summary');
+  const warnEl    = document.getElementById('sr-field-warning');
+  if (resultsEl) resultsEl.innerHTML = '<div style="padding:16px;text-align:center;color:var(--muted);font-size:0.82rem"><div class="dot spin" style="display:inline-block;margin-right:6px"></div>Loading invoices…</div>';
+  const repId = document.getElementById('sr-rep')?.value || '';
+  const stage = document.getElementById('sr-stage')?.value || '';
+  const month = document.getElementById('sr-month')?.value || '';
+  const domain = [['move_type','in',['out_invoice','out_refund']]];
+  if (repId) domain.push(['invoice_user_id','=', parseInt(repId)]);
+  if (stage === 'pending')        domain.push(['state','=','draft']);
+  else if (stage === 'confirmed') domain.push(['state','=','posted']);
+  else if (stage === 'cancel')    domain.push(['state','=','cancel']);
+  if (month) {
+    const y = parseInt(month.split('-')[0]), m = parseInt(month.split('-')[1]);
+    domain.push(['invoice_date','>=', y + '-' + String(m).padStart(2,'0') + '-01']);
+    domain.push(['invoice_date','<',  (m === 12 ? y+1 : y) + '-' + String(m === 12 ? 1 : m+1).padStart(2,'0') + '-01']);
+  }
+  const base = ['name','partner_id','invoice_user_id','state','move_type','payment_state','amount_total','amount_untaxed','amount_tax','invoice_date','invoice_date_due'];
+  try {
+    let moves;
+    try { moves = await odooExecute(odooUid, 'account.move', 'search_read', [domain], { fields: base.concat(['partner_shipping_id']), limit: 1000, order: 'invoice_date desc, id desc' }); }
+    catch(e1) { moves = await odooExecute(odooUid, 'account.move', 'search_read', [domain], { fields: base, limit: 1000, order: 'invoice_date desc, id desc' }); }
+    moves = moves || [];
+    moves.forEach(function(o) {
+      const sign = o.move_type === 'out_refund' ? -1 : 1;
+      o._sign = sign; o.amount_total = (o.amount_total || 0) * sign;
+      o.user_id = o.invoice_user_id; o.is_rental_order = false; o._isInvoice = true;
+      o._deliveryDate = o.invoice_date || false;
+      o._typeLabel = sign < 0 ? 'Credit note' : 'Invoice';
+      const st = srInvStage(o); o._stageLabel = st[0]; o._stageColor = st[1];
+      o._engineTax = (o.amount_tax || 0) * sign;
+    });
+    _srOrders = moves;
+    const ids = moves.map(function(o){ return o.id; });
+    if (ids.length) {
+      try {
+        const lines = await odooExecute(odooUid, 'account.move.line', 'search_read',
+          [[['move_id','in', ids], ['display_type','in', ['product', false]]]],
+          { fields: ['move_id','name','price_subtotal'], limit: 8000 });
+        const byMove = {}, namesByMove = {};
+        (lines || []).forEach(function(l) {
+          if (/tax/i.test(l.name || '')) {
+            const mid = Array.isArray(l.move_id) ? l.move_id[0] : l.move_id;
+            const mv = moves.find(function(x){ return x.id === mid; }); const sg = mv ? mv._sign : 1;
+            byMove[mid] = (byMove[mid] || 0) + (l.price_subtotal || 0) * sg;
+            (namesByMove[mid] = namesByMove[mid] || []).push({ name: l.name || '(unnamed)', amount: (l.price_subtotal || 0) * sg });
+          }
+        });
+        moves.forEach(function(o) { o._taxLines = namesByMove[o.id] || []; o._taxAmount = (byMove[o.id] || 0) + (o._engineTax || 0); });
+      } catch(e) { moves.forEach(function(o) { o._taxAmount = null; o._taxLines = null; }); }
+    }
+    if (warnEl) {
+      const notes = [];
+      if (moves.length >= 1000) notes.push('Showing the most recent 1,000 invoices — narrow the month to see the rest.');
+      if (month) notes.push('Draft invoices with no invoice date yet are left out of a month view.');
+      if (notes.length) { warnEl.style.display = 'block'; warnEl.innerHTML = notes.join(' '); }
+    }
+    srRenderList();
+  } catch(e) {
+    if (resultsEl) resultsEl.innerHTML = '<div style="padding:16px;text-align:center;color:var(--danger);font-size:0.82rem">Error: ' + escHtml(e.message) + '</div>';
+    if (summaryEl) summaryEl.innerHTML = '';
+  }
+}
+
 async function srLoad() {
   const resultsEl = document.getElementById('sr-results');
   const summaryEl = document.getElementById('sr-summary');
@@ -10138,6 +10262,8 @@ async function srLoad() {
     if (summaryEl) summaryEl.innerHTML = '';
     return;
   }
+  srApplySourceUi();
+  if (_srSource === 'invoice') return srLoadInvoices();
   if (!_srDeliveryField) await srDetectDeliveryField();
   if (resultsEl) resultsEl.innerHTML = '<div style="padding:16px;text-align:center;color:var(--muted);font-size:0.82rem"><div class="dot spin" style="display:inline-block;margin-right:6px"></div>Loading…</div>';
 
@@ -10244,19 +10370,71 @@ async function srLoad() {
   }
 }
 
+// ── Tax totals by name (for whatever is currently listed) ───────────────────
+let _srShowTaxTotals = (function(){ try { return localStorage.getItem('oel_sr_taxtotals') === '1'; } catch(e) { return false; } })();
+function srToggleTaxTotals() {
+  _srShowTaxTotals = !_srShowTaxTotals;
+  try { localStorage.setItem('oel_sr_taxtotals', _srShowTaxTotals ? '1' : '0'); } catch(e) {}
+  srRenderTaxTotals();
+}
+function srRenderTaxTotals() {
+  const el = document.getElementById('sr-tax-totals'), btn = document.getElementById('sr-taxtot-btn');
+  if (btn) { btn.style.background = _srShowTaxTotals ? 'var(--accent-dim)' : ''; btn.style.borderColor = _srShowTaxTotals ? 'var(--accent)' : ''; btn.style.color = _srShowTaxTotals ? 'var(--accent)' : ''; }
+  if (!el) return;
+  if (!_srShowTaxTotals) { el.style.display = 'none'; el.innerHTML = ''; return; }
+  const money = function(n) { return (n < 0 ? '-$' : '$') + Math.abs(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); };
+  const isInv = _srSource === 'invoice', noun = isInv ? 'invoice' : 'order';
+  const rows = _srOrders || [];
+  if (!rows.length) { el.style.display = 'block'; el.innerHTML = '<div style="padding:10px 12px;font-size:0.78rem;color:var(--muted);border:1px solid var(--border);border-radius:8px">Nothing listed yet — load the report first.</div>'; return; }
+  const by = {}; let engine = 0, engineDocs = 0, unknown = 0;
+  rows.forEach(function(o) {
+    if (o._taxLines === null || o._taxAmount === null) { unknown++; return; }
+    const seen = {};
+    (o._taxLines || []).forEach(function(t) {
+      const k = String(t.name || '').trim().toLowerCase();
+      const g = by[k] || (by[k] = { name: String(t.name || '(unnamed)').trim(), total: 0, lines: 0, docs: 0, approved: srIsApprovedTaxName(t.name) });
+      g.total += t.amount || 0; g.lines++; if (!seen[k]) { g.docs++; seen[k] = 1; }
+    });
+    if (o._isInvoice && o._engineTax) { engine += o._engineTax; engineDocs++; }
+  });
+  const list = Object.keys(by).map(function(k) { return by[k]; });
+  // approved names first (in your list's order), then anything unapproved, biggest first
+  // make sure every approved name shows, even at $0, so FL vs NW is always side by side
+  _srApprovedTaxNames.forEach(function(n) { if (!list.some(function(g){ return g.name.toLowerCase() === n.trim().toLowerCase(); })) list.push({ name: n.trim(), total: 0, lines: 0, docs: 0, approved: true }); });
+  list.sort(function(a, b) {
+    if (a.approved !== b.approved) return a.approved ? -1 : 1;
+    if (a.approved) { const ia = _srApprovedTaxNames.findIndex(function(n){ return n.trim().toLowerCase() === a.name.toLowerCase(); }), ib = _srApprovedTaxNames.findIndex(function(n){ return n.trim().toLowerCase() === b.name.toLowerCase(); }); return ia - ib; }
+    return Math.abs(b.total) - Math.abs(a.total);
+  });
+  const lineTotal = list.reduce(function(s, g) { return s + g.total; }, 0), grand = lineTotal + engine;
+  const td = 'padding:6px 10px;font-size:0.8rem;border-top:1px solid var(--border)';
+  const body = list.map(function(g) {
+    return '<tr><td style="' + td + ';color:' + (g.approved ? 'var(--text)' : 'var(--danger)') + ';font-weight:' + (g.approved ? '600' : '500') + '">' + escHtml(g.name) + (g.approved ? '' : ' ⚠ not approved') + '</td>'
+      + '<td style="' + td + ';color:var(--muted);text-align:right">' + g.docs + '</td>'
+      + '<td style="' + td + ';font-family:monospace;text-align:right;color:' + (g.approved ? 'var(--accent)' : 'var(--danger)') + '">' + money(g.total) + '</td></tr>';
+  }).join('') + (isInv && engineDocs ? '<tr><td style="' + td + ';color:var(--cyan)" title="Tax calculated by Odoo\'s tax engine rather than entered as a line">Odoo tax engine</td><td style="' + td + ';color:var(--muted);text-align:right">' + engineDocs + '</td><td style="' + td + ';font-family:monospace;text-align:right;color:var(--cyan)">' + money(engine) + '</td></tr>' : '');
+  el.style.display = 'block';
+  el.innerHTML = '<div style="border:1px solid var(--border);border-radius:8px;overflow:hidden;max-width:560px">'
+    + '<table style="width:100%;border-collapse:collapse"><thead><tr style="background:var(--surface2)"><th style="padding:6px 10px;font-size:0.7rem;color:var(--muted);font-weight:500;text-align:left">Tax totals — ' + rows.length + ' ' + noun + (rows.length === 1 ? '' : 's') + ' listed</th><th style="padding:6px 10px;font-size:0.7rem;color:var(--muted);font-weight:500;text-align:right">' + (isInv ? 'Invoices' : 'Orders') + '</th><th style="padding:6px 10px;font-size:0.7rem;color:var(--muted);font-weight:500;text-align:right">Total</th></tr></thead>'
+    + '<tbody>' + body + '</tbody><tfoot><tr style="background:var(--surface2)"><td style="padding:7px 10px;font-size:0.82rem;font-weight:700;color:var(--text)">All tax</td><td></td><td style="padding:7px 10px;font-size:0.86rem;font-weight:700;font-family:monospace;text-align:right;color:var(--accent)">' + money(grand) + '</td></tr></tfoot></table>'
+    + (unknown ? '<div style="padding:6px 10px;font-size:0.72rem;color:var(--warning)">' + unknown + ' ' + noun + (unknown === 1 ? '' : 's') + ' skipped — tax lines couldn\'t be read.</div>' : '')
+    + '</div>';
+}
+
 function srRenderList() {
   const resultsEl = document.getElementById('sr-results');
   const summaryEl = document.getElementById('sr-summary');
   if (!resultsEl) return;
 
+  srRenderTaxTotals();
   const rows = _srOrders.slice();
   const key = _srSortKey, dir = _srSortDir;
   rows.sort(function(a,b) {
     let av, bv;
     if (key === 'rep')          { av = (a.user_id&&a.user_id[1])||''; bv = (b.user_id&&b.user_id[1])||''; }
     else if (key === 'partner') { av = (a.partner_id&&a.partner_id[1])||''; bv = (b.partner_id&&b.partner_id[1])||''; }
-    else if (key === 'stage')   { av = srStageLabel(a.state); bv = srStageLabel(b.state); }
-    else if (key === 'type')    { av = a.is_rental_order?'Rental':'Sales'; bv = b.is_rental_order?'Rental':'Sales'; }
+    else if (key === 'stage')   { av = a._stageLabel || srStageLabel(a.state); bv = b._stageLabel || srStageLabel(b.state); }
+    else if (key === 'type')    { av = a._typeLabel || (a.is_rental_order?'Rental':'Sales'); bv = b._typeLabel || (b.is_rental_order?'Rental':'Sales'); }
     else if (key === 'amount')  { av = a.amount_total||0; bv = b.amount_total||0; }
     else if (key === 'tax')     { av = a._taxAmount||0; bv = b._taxAmount||0; }
     else if (key === 'location'){ av = (a.partner_shipping_id&&a.partner_shipping_id[1])||''; bv = (b.partner_shipping_id&&b.partner_shipping_id[1])||''; }
@@ -10270,16 +10448,17 @@ function srRenderList() {
   const flaggedTaxCount = _srOrders.filter(function(o){
     return o._taxLines && o._taxLines.some(function(t){ return !srIsApprovedTaxName(t.name); });
   }).length;
+  const isInv = _srSource === 'invoice', nounP = isInv ? 'Invoices' : 'Orders', nounS = isInv ? 'invoice' : 'order';
   if (summaryEl) {
     summaryEl.style.gridTemplateColumns = 'repeat(4,1fr)';
     summaryEl.innerHTML =
-      '<div class="laz-stat-card"><div class="laz-stat-label">Orders</div><div class="laz-stat-value">' + _srOrders.length + '</div><div class="laz-stat-sub">matching filters</div></div>' +
-      '<div class="laz-stat-card"><div class="laz-stat-label">Total Value</div><div class="laz-stat-value accent">' + srFmt(totalAmt) + '</div><div class="laz-stat-sub">order totals</div></div>' +
-      '<div class="laz-stat-card"><div class="laz-stat-label">Avg Order</div><div class="laz-stat-value">' + srFmt(_srOrders.length?totalAmt/_srOrders.length:0) + '</div><div class="laz-stat-sub">per order</div></div>' +
-      '<div class="laz-stat-card"><div class="laz-stat-label">Unapproved Tax</div><div class="laz-stat-value' + (flaggedTaxCount ? ' warning' : '') + '">' + flaggedTaxCount + '</div><div class="laz-stat-sub">orders to review</div></div>';
+      '<div class="laz-stat-card"><div class="laz-stat-label">' + nounP + '</div><div class="laz-stat-value">' + _srOrders.length + '</div><div class="laz-stat-sub">matching filters</div></div>' +
+      '<div class="laz-stat-card"><div class="laz-stat-label">Total Value</div><div class="laz-stat-value accent">' + srFmt(totalAmt) + '</div><div class="laz-stat-sub">' + nounS + ' totals</div></div>' +
+      '<div class="laz-stat-card"><div class="laz-stat-label">Avg ' + (isInv ? 'Invoice' : 'Order') + '</div><div class="laz-stat-value">' + srFmt(_srOrders.length?totalAmt/_srOrders.length:0) + '</div><div class="laz-stat-sub">per ' + nounS + '</div></div>' +
+      '<div class="laz-stat-card"><div class="laz-stat-label">Unapproved Tax</div><div class="laz-stat-value' + (flaggedTaxCount ? ' warning' : '') + '">' + flaggedTaxCount + '</div><div class="laz-stat-sub">' + nounS + 's to review</div></div>';
   }
 
-  if (!rows.length) { resultsEl.innerHTML = '<div style="padding:16px;text-align:center;color:var(--muted);font-size:0.82rem">No orders match these filters</div>'; return; }
+  if (!rows.length) { resultsEl.innerHTML = '<div style="padding:16px;text-align:center;color:var(--muted);font-size:0.82rem">No ' + nounP.toLowerCase() + ' match these filters</div>'; return; }
 
   function arrow(k) { return _srSortKey === k ? (_srSortDir === 'asc' ? ' ▲' : ' ▼') : ''; }
   function th(label, k, align) {
@@ -10288,8 +10467,9 @@ function srRenderList() {
 
   function srTaxCellHtml(o) {
     if (o._taxAmount === null) return '<span style="color:var(--muted)">—</span>';
-    if (!o._taxLines || !o._taxLines.length) return '<span style="color:var(--muted)">' + srFmt(0) + '</span>';
-    return o._taxLines.map(function(t) {
+    const eng = (o._isInvoice && o._engineTax) ? '<div title="Tax calculated by Odoo\'s tax engine on this invoice" style="color:var(--cyan);white-space:nowrap">Odoo tax: ' + srFmt(o._engineTax) + '</div>' : '';
+    if (!o._taxLines || !o._taxLines.length) return eng || '<span style="color:var(--muted)">' + srFmt(0) + '</span>';
+    return eng + o._taxLines.map(function(t) {
       const approved = srIsApprovedTaxName(t.name);
       const color = approved ? 'var(--muted)' : 'var(--danger)';
       const title = approved ? '' : ' title="Not in your approved tax names list"';
@@ -10301,9 +10481,9 @@ function srRenderList() {
   const body = rows.map(function(o) {
     const partner  = (o.partner_id && o.partner_id[1]) ? escHtml(o.partner_id[1]) : '—';
     const rep      = (o.user_id && o.user_id[1]) ? escHtml(o.user_id[1]) : '—';
-    const type     = o.is_rental_order ? 'Rental' : 'Sales';
-    const stage    = srStageLabel(o.state);
-    const color    = srStageColor(o.state);
+    const type     = o._typeLabel || (o.is_rental_order ? 'Rental' : 'Sales');
+    const stage    = o._stageLabel || srStageLabel(o.state);
+    const color    = o._stageColor || srStageColor(o.state);
     const date     = o._deliveryDate ? String(o._deliveryDate).slice(0,10) : '—';
     const location = (o.partner_shipping_id && o.partner_shipping_id[1]) ? escHtml(o.partner_shipping_id[1]) : '—';
     return '<tr><td style="padding:5px 8px;font-size:0.78rem;color:var(--text)">' + escHtml(o.name||'') + '</td>'
@@ -10319,11 +10499,12 @@ function srRenderList() {
 
   resultsEl.innerHTML = '<table style="width:100%;min-width:960px;border-collapse:collapse">'
     + '<thead><tr style="border-bottom:1px solid var(--border)">'
-    + th('Order','name') + th('Customer','partner') + th('Rep','rep') + th('Type','type') + th('Stage','stage') + th('Delivery Date','_deliveryDate') + th('Location','location') + th('Total','amount','right') + th('Tax','tax','right')
+    + th(isInv ? 'Invoice' : 'Order','name') + th('Customer','partner') + th('Rep','rep') + th('Type','type') + th(isInv ? 'Status' : 'Stage','stage') + th(isInv ? 'Invoice Date' : 'Delivery Date','_deliveryDate') + th('Location','location') + th('Total','amount','right') + th('Tax','tax','right')
     + '</tr></thead><tbody>' + body + '</tbody></table>';
 }
 
 async function srRenderCommission() {
+  const _tt = document.getElementById('sr-tax-totals'); if (_tt) _tt.style.display = 'none';
   const resultsEl = document.getElementById('sr-results');
   const summaryEl = document.getElementById('sr-summary');
   if (!resultsEl) return;
