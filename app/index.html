@@ -3,7 +3,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <meta name="oel-version" content="v15.46">
+  <meta name="oel-version" content="v15.47">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="mobile-web-app-capable" content="yes">
@@ -3287,7 +3287,8 @@ Support Team"></textarea>
         <div class="card" style="margin-bottom:14px">
           <div class="card-title">🏦 Reconciliation</div>
           <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
-            <p style="margin:0 0 4px"><strong style="color:var(--text)">Needs Coding</strong> lists bank/credit card transactions with no partner assigned. Set a partner and account per row, or build a <strong style="color:var(--text)">rule</strong> — "description contains X → this partner, this account" — and apply it across every matching row in one click. Rules are saved on this device and reused each time you open the tab.</p>
+            <p style="margin:0 0 4px"><strong style="color:var(--text)">Needs Coding</strong> lists every unreconciled bank / credit card line (or any line with no partner) as a sortable, searchable table. For each one the tool suggests a partner and account <em>learned from lines you already reconciled</em> (up to 18 months), with a <strong style="color:var(--text)">confidence</strong> and a one-line reason: <strong style="color:var(--text)">Confident</strong> = one of your rules, or at least 3 past lines and 80%+ agreement; <strong style="color:var(--text)">Likely</strong> = fewer or less consistent examples, worth a glance; <strong style="color:var(--text)">Review</strong> = no history or mixed history, so nothing is pre-filled. Confident rows start ticked; <strong style="color:var(--text)">✓ Accept all Confident</strong> saves just those after a confirm. Use ✎ to change a partner or account by hand. A ⚠ flags lines where the partner Odoo picked disagrees with your history (<em>use it</em> swaps it). Payments that settled invoices are ignored when learning. Nothing is written until you save, and lines you save become history for next time.</p>
+            <p style="margin:0 0 4px"><strong style="color:var(--text)">Coding rules</strong> (collapsed above the table) still work — "description contains X → this partner, this account" — and always outrank history.</p>
             <p style="margin:0 0 4px"><strong style="color:var(--text)">Check for Deviations</strong> scans already-coded transactions, groups them by vendor, and flags any transaction coded to a different account than that vendor's usual one. Nothing changes automatically — review the flagged list and approve a fix per-item or in a batch.</p>
             <p style="margin:0">This is genuinely new ground for OEL — bank reconciliation is one of the more version-sensitive parts of Odoo's accounting model, so if a save or fix comes back with an error, that detail is worth passing along; it means something about this Odoo instance's setup differs from what the tool expects.</p>
           </div>
@@ -3682,38 +3683,73 @@ Support Team"></textarea>
                 <option value="">All bank/CC journals</option>
               </select>
               <input type="date" id="rc-since" onchange="rcLoadCoding()" title="Only show transactions on/after this date" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.82rem;outline:none;cursor:pointer">
+              <select id="rc-scope" onchange="rcLoadCoding()" title="Which lines to list" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.82rem;outline:none;cursor:pointer">
+                <option value="both">Unreconciled or no partner</option>
+                <option value="unrec">Unreconciled only</option>
+                <option value="nopartner">No partner only</option>
+              </select>
+              <button class="btn btn-ghost" onclick="rcRefreshHistory()" title="Reload transactions and re-learn from your reconciled history" style="padding:6px 12px;font-size:0.78rem">↻ Refresh</button>
               <div style="flex:1"></div>
               <div id="rc-code-status" style="font-size:0.78rem;color:var(--muted)"></div>
             </div>
           </div>
 
           <!-- Rules -->
-          <div class="card" id="rc-rules-card" style="margin-bottom:14px">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-              <div style="font-size:0.85rem;font-weight:500">Coding rules</div>
-              <div style="font-size:0.74rem;color:var(--muted)">Saved on this device — reused every time you open this tab</div>
-            </div>
+          <details class="card" id="rc-rules-card" style="margin-bottom:14px">
+            <summary style="cursor:pointer;font-size:0.85rem;font-weight:500;user-select:none">Coding rules <span id="rc-rules-count" style="color:var(--muted);font-weight:400"></span> <span style="font-size:0.74rem;color:var(--muted);font-weight:400">— override the suggestions · saved on this device</span></summary>
+            <div style="height:10px"></div>
             <div id="rc-rules-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px"></div>
             <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
               <input type="text" id="rc-rule-match" placeholder="Description contains… e.g. AMAZON" style="flex:1;min-width:160px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-family:'DM Mono',monospace;font-size:0.8rem;outline:none">
               <select id="rc-rule-partner" style="min-width:150px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-size:0.8rem;font-family:'DM Sans',sans-serif;outline:none"><option value="">— no partner —</option></select>
               <select id="rc-rule-account" style="min-width:170px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-size:0.8rem;font-family:'DM Sans',sans-serif;outline:none"><option value="">— no account —</option></select>
               <button class="btn btn-ghost" onclick="rcAddRule()" style="padding:6px 14px;font-size:0.8rem;white-space:nowrap">+ Add rule</button>
-              <button class="btn btn-primary" onclick="rcApplyRulesToAll()" style="padding:6px 14px;font-size:0.8rem;white-space:nowrap">Apply all rules ↓</button>
+              <button class="btn btn-ghost" onclick="rcApplyRulesToAll()" title="Rules are applied automatically — this re-runs all suggestions" style="padding:6px 14px;font-size:0.8rem;white-space:nowrap">Re-run suggestions</button>
             </div>
-          </div>
+          </details>
 
-          <div id="rc-code-summary" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px"></div>
+          <div id="rc-code-summary" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:14px"></div>
+
+          <style>
+            .rc-chip{border:1px solid var(--border);background:var(--surface2);color:var(--text);border-radius:999px;padding:5px 12px;cursor:pointer;font:inherit;font-size:0.78rem}
+            .rc-chip[aria-pressed=true]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);font-weight:600}
+            .rc-wrap{overflow:auto;max-height:calc(100vh - 330px);min-height:240px;border:1px solid var(--border);border-radius:10px}
+            .rc-tbl{border-collapse:separate;border-spacing:0;width:100%;min-width:1100px}
+            .rc-tbl th{position:sticky;top:0;z-index:2;background:var(--surface);text-align:left;padding:8px 10px;border-bottom:1px solid var(--border);font-size:0.68rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:500;white-space:nowrap;cursor:pointer;user-select:none}
+            .rc-tbl td{padding:7px 10px;border-bottom:1px solid var(--border);font-size:0.8rem;color:var(--text);vertical-align:top}
+            .rc-tbl tr:hover td{background:var(--accent-dim)}
+            .rc-tbl tfoot td{position:sticky;bottom:0;background:var(--surface);font-weight:600;border-top:1px solid var(--border);border-bottom:none}
+            .rc-tbl .rc-num{text-align:right;font-family:monospace;white-space:nowrap}
+            .rc-pos{color:var(--success);font-weight:600}
+            .rc-dim{color:var(--muted)} .rc-nowrap{white-space:nowrap}
+            .rc-lab{max-width:300px;word-break:break-word} .rc-lab small{display:block;color:var(--muted);font-size:0.7rem}
+            .rc-why{max-width:380px;color:var(--muted);font-size:0.76rem;line-height:1.4}
+            .rc-badge{display:inline-block;padding:2px 9px;border:1px solid;border-radius:999px;font-size:0.7rem;font-weight:600;white-space:nowrap}
+            .rc-warn{display:block;color:var(--danger);font-size:0.72rem}
+            .rc-edit{color:var(--muted);text-decoration:none;font-size:0.8rem;margin-left:4px} .rc-edit:hover{color:var(--accent)}
+            .rc-pick{max-width:230px;background:var(--surface2);border:1px solid var(--accent);border-radius:6px;padding:4px 6px;color:var(--text);font-size:0.78rem;font-family:'DM Sans',sans-serif}
+            .rc-saved td{opacity:.55}
+          </style>
 
           <div class="card" style="margin-bottom:14px">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+              <input type="search" id="rc-q" oninput="rcFilterChanged()" placeholder="Search description, partner, account, note…" style="flex:1 1 220px;min-width:160px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.82rem;outline:none">
+              <button class="rc-chip" data-conf="high" aria-pressed="false" onclick="rcToggleConf('high')">Confident</button>
+              <button class="rc-chip" data-conf="med" aria-pressed="false" onclick="rcToggleConf('med')">Likely</button>
+              <button class="rc-chip" data-conf="review" aria-pressed="false" onclick="rcToggleConf('review')">Review</button>
+              <select id="rc-acc-filter" onchange="rcFilterChanged()" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.82rem;outline:none;cursor:pointer"><option value="">All accounts</option></select>
+              <label style="display:flex;align-items:center;gap:6px;font-size:0.78rem;color:var(--muted);cursor:pointer"><input type="checkbox" id="rc-pf" onchange="rcFilterChanged()" style="accent-color:var(--accent)"> Odoo partner looks wrong</label>
+            </div>
             <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px">
-              <label style="display:flex;align-items:center;gap:6px;font-size:0.82rem;color:var(--muted);cursor:pointer"><input type="checkbox" id="rc-select-all" onchange="rcToggleSelectAll(this.checked)" style="accent-color:var(--accent);width:15px;height:15px"> All</label>
+              <label style="display:flex;align-items:center;gap:6px;font-size:0.82rem;color:var(--muted);cursor:pointer"><input type="checkbox" id="rc-select-all" onchange="rcToggleSelectAll(this.checked)" style="accent-color:var(--accent);width:15px;height:15px"> All shown</label>
               <span id="rc-selected-count" style="font-size:0.8rem;color:var(--muted)">0 selected</span>
               <div style="flex:1"></div>
+              <span style="font-size:0.74rem;color:var(--muted)">Confident rows start ticked · ✎ changes a partner or account</span>
+              <button class="btn btn-ghost" onclick="rcAcceptConfident()" title="Tick only the Confident rows and save them" style="padding:6px 14px;font-size:0.82rem;border-color:var(--success);color:var(--success)">✓ Accept all Confident</button>
               <button class="btn btn-primary" onclick="rcSaveChecked()" style="padding:6px 16px;font-size:0.82rem">Save checked</button>
             </div>
-            <div id="rc-code-list" style="display:flex;flex-direction:column;gap:6px">
-              <div style="padding:16px;text-align:center;color:var(--muted);font-size:0.82rem">Connect to Odoo, then open this tab to load uncoded transactions.</div>
+            <div id="rc-code-list">
+              <div style="padding:16px;text-align:center;color:var(--muted);font-size:0.82rem">Connect to Odoo, then open this tab to load transactions to code.</div>
             </div>
           </div>
         </div>
@@ -32242,520 +32278,6 @@ document.addEventListener('DOMContentLoaded', hslInit);
 })();
 </script>
 
-<!-- ── Reconciliation ───────────────────────────────────────────────────── -->
-<script>
-(function(){
-
-  // Bank reconciliation is one of the more version-sensitive parts of Odoo's
-  // accounting model. account.bank.statement.line and partner_id are stable;
-  // the "which account is this transaction coded to" mechanism (via the
-  // statement line's move_id -> line_ids, finding the non-bank counterpart
-  // line) is the part most likely to need adjustment against a live instance.
-  // Every write here is wrapped so failures surface with real detail instead
-  // of failing silently.
-
-  let _rcModuleAvailable = null;
-  let _rcFieldSet = null;
-  let _rcJournals = [];
-  let _rcAccounts = [];
-  let _rcPartners = [];
-  let _rcRules = [];
-
-  let RC = { coding: [], deviations: [] };
-
-  function rcFmt(n) { return '$' + (n||0).toLocaleString('en-US', {maximumFractionDigits:2}); }
-  function rcIsMissingModelError(msg) {
-    return /doesn.?t exist|does not exist|invalid model|access.*(right|denied)|not allowed/i.test(msg || '');
-  }
-
-  async function rcCheckModuleAvailable() {
-    if (_rcModuleAvailable !== null) return _rcModuleAvailable;
-    try {
-      await odooExecute(odooUid, 'account.bank.statement.line', 'search_count', [[]]);
-      _rcModuleAvailable = true;
-    } catch(e) {
-      _rcModuleAvailable = rcIsMissingModelError(e.message) ? false : null;
-    }
-    return _rcModuleAvailable;
-  }
-
-  async function rcDiscoverFields() {
-    if (_rcFieldSet) return _rcFieldSet;
-    try {
-      const fields = await odooExecute(odooUid, 'account.bank.statement.line', 'fields_get', [], { attributes: [] });
-      _rcFieldSet = new Set(Object.keys(fields || {}));
-    } catch(e) {
-      _rcFieldSet = new Set();
-    }
-    return _rcFieldSet;
-  }
-
-  function rcLoadRules() {
-    try { _rcRules = JSON.parse(localStorage.getItem('oel_rc_rules') || '[]'); } catch(e) { _rcRules = []; }
-  }
-  function rcSaveRules() {
-    try { localStorage.setItem('oel_rc_rules', JSON.stringify(_rcRules)); } catch(e) {}
-  }
-
-  window.rcSwitchTab = function(tab) {
-    const codeView = document.getElementById('rc-view-code');
-    const devView = document.getElementById('rc-view-deviate');
-    const codeTab = document.getElementById('rc-tab-code');
-    const devTab = document.getElementById('rc-tab-deviate');
-    if (tab === 'deviate') {
-      if (codeView) codeView.style.display = 'none';
-      if (devView) devView.style.display = 'block';
-      if (codeTab) codeTab.classList.remove('active');
-      if (devTab) devTab.classList.add('active');
-    } else {
-      if (devView) devView.style.display = 'none';
-      if (codeView) codeView.style.display = 'block';
-      if (devTab) devTab.classList.remove('active');
-      if (codeTab) codeTab.classList.add('active');
-    }
-  };
-
-  async function rcShowModuleMissingBanner() {
-    const listEl = document.getElementById('rc-code-list');
-    if (!listEl) return;
-    listEl.innerHTML = `<div style="padding:20px;text-align:center;color:var(--muted);font-size:0.85rem">
-      <div style="color:var(--text);font-weight:500;margin-bottom:6px">Can't reach account.bank.statement.line on this Odoo instance</div>
-      <div>This is a core Accounting model — if this fails, it's most likely an access-rights gap on the API user for the Accounting app. Check Settings → Users for the account tied to this API key.</div>
-      <button class="btn btn-primary" onclick="rcRetryModuleCheck()" style="padding:7px 16px;font-size:0.8rem;margin-top:12px">↻ Try Again</button>
-    </div>`;
-  }
-  window.rcRetryModuleCheck = function() { _rcModuleAvailable = null; rcInit(); };
-
-  // Rows for Excel / CSV export (these lists are cards, not tables)
-  if (window.oelxRegister) window.oelxRegister('panel-reconcile', function() {
-    const out = [];
-    if (RC.coding.length) out.push({ name: 'Needs coding',
-      headers: ['Date', 'Description', 'Journal', 'Amount', 'Currently coded to', 'Partner to set', 'Account to set'],
-      rows: RC.coding.map(r => [r.date || '', r.description, r.journalName, rcFmt(r.amount), r.currentAccountName, r._partnerName || '', r._accountName || '']) });
-    if (RC.deviations.length) out.push({ name: 'Deviations',
-      headers: ['Partner', 'Date', 'Description', 'Amount', 'Currently coded to', 'Suggested account'],
-      rows: RC.deviations.map(d => [d.partnerName, d.date || '', d.description || '', rcFmt(d.amount), d.currentAccountName, d.suggestedAccountName]) });
-    return out;
-  });
-
-  window.rcInit = async function() {
-    if (!odooUid) {
-      const listEl = document.getElementById('rc-code-list');
-      if (listEl) listEl.innerHTML = '<div style="padding:16px;text-align:center;color:var(--muted);font-size:0.82rem">Connect to Odoo first (Steps 1-2).</div>';
-      return;
-    }
-    const available = await rcCheckModuleAvailable();
-    if (available === false) { rcShowModuleMissingBanner(); return; }
-    await rcDiscoverFields();
-    rcLoadRules();
-
-    if (!_rcJournals.length) {
-      try {
-        _rcJournals = await odooExecute(odooUid, 'account.journal', 'search_read',
-          [[['type','in',['bank','cash']]]], { fields: ['id','name','default_account_id'], limit: 50 });
-        const sel = document.getElementById('rc-journal');
-        if (sel) sel.innerHTML = '<option value="">All bank/CC journals</option>' +
-          _rcJournals.map(j => `<option value="${j.id}">${escHtml(j.name)}</option>`).join('');
-      } catch(e) {}
-    }
-    if (!_rcAccounts.length) {
-      try {
-        _rcAccounts = await odooExecute(odooUid, 'account.account', 'search_read',
-          [[]], { fields: ['id','name','code'], limit: 1000, order: 'code' });
-        const opts = _rcAccounts.map(a => `<option value="${a.id}">${escHtml(a.code ? a.code + ' — ' + a.name : a.name)}</option>`).join('');
-        const ruleSel = document.getElementById('rc-rule-account');
-        if (ruleSel) ruleSel.innerHTML = '<option value="">— no account —</option>' + opts;
-      } catch(e) {}
-    }
-    if (!_rcPartners.length) {
-      try {
-        _rcPartners = await odooExecute(odooUid, 'res.partner', 'search_read',
-          [[]], { fields: ['id','name'], limit: 1000, order: 'name' });
-        const opts = _rcPartners.map(p => `<option value="${p.id}">${escHtml(p.name)}</option>`).join('');
-        const ruleSel = document.getElementById('rc-rule-partner');
-        if (ruleSel) ruleSel.innerHTML = '<option value="">— no partner —</option>' + opts;
-      } catch(e) {}
-    }
-
-    rcRenderRules();
-    rcUpdateBadge();
-    rcLoadCoding();
-  };
-
-  window.rcUpdateBadge = async function() {
-    if (!odooUid || _rcModuleAvailable === false) return;
-    try {
-      const domain = [['partner_id','=',false]];
-      const count = await odooExecute(odooUid, 'account.bank.statement.line', 'search_count', [domain]);
-      const badge = document.getElementById('badge-reconcile');
-      if (badge) { badge.textContent = count > 0 ? String(count) : ''; badge.style.display = count > 0 ? '' : 'none'; }
-    } catch(e) {}
-  };
-
-  // ── Needs Coding ──────────────────────────────────────────────────────
-  window.rcLoadCoding = async function() {
-    const listEl = document.getElementById('rc-code-list');
-    const statusEl = document.getElementById('rc-code-status');
-    if (!odooUid) return;
-    if (_rcModuleAvailable === false) { rcShowModuleMissingBanner(); return; }
-    if (listEl) listEl.innerHTML = '<div style="padding:16px;text-align:center;color:var(--muted);font-size:0.82rem"><div class="dot spin" style="display:inline-block;margin-right:6px"></div>Loading…</div>';
-
-    const journalId = document.getElementById('rc-journal')?.value || '';
-    const since = document.getElementById('rc-since')?.value || '';
-    const domain = [['partner_id','=', false]];
-    if (journalId) domain.push(['journal_id','=', parseInt(journalId)]);
-    if (since) domain.push(['date','>=', since]);
-    else domain.push(['journal_id','in', _rcJournals.map(j => j.id)]);
-
-    try {
-      const wantedFields = ['date','payment_ref','amount','partner_id','journal_id','move_id'];
-      const lines = await odooExecute(odooUid, 'account.bank.statement.line', 'search_read', [domain], {
-        fields: wantedFields, order: 'date desc', limit: 300
-      });
-
-      const moveIds = [...new Set((lines||[]).map(l => Array.isArray(l.move_id) ? l.move_id[0] : l.move_id).filter(Boolean))];
-      let moveLines = [];
-      if (moveIds.length) {
-        moveLines = await odooExecute(odooUid, 'account.move.line', 'search_read',
-          [[['move_id','in', moveIds]]], { fields: ['id','move_id','account_id','name'], limit: 3000 });
-      }
-      const linesByMove = {};
-      moveLines.forEach(ml => {
-        const mid = Array.isArray(ml.move_id) ? ml.move_id[0] : ml.move_id;
-        (linesByMove[mid] = linesByMove[mid] || []).push(ml);
-      });
-      const journalAccountByJournal = {};
-      _rcJournals.forEach(j => { journalAccountByJournal[j.id] = Array.isArray(j.default_account_id) ? j.default_account_id[0] : null; });
-
-      RC.coding = (lines||[]).map(l => {
-        const mid = Array.isArray(l.move_id) ? l.move_id[0] : l.move_id;
-        const jid = Array.isArray(l.journal_id) ? l.journal_id[0] : l.journal_id;
-        const bankAccountId = journalAccountByJournal[jid];
-        const candidates = linesByMove[mid] || [];
-        const counterpart = candidates.find(ml => {
-          const aid = Array.isArray(ml.account_id) ? ml.account_id[0] : ml.account_id;
-          return aid !== bankAccountId;
-        }) || candidates[0] || null;
-        return {
-          id: l.id,
-          date: l.date,
-          description: l.payment_ref || '(no description)',
-          amount: l.amount,
-          journalName: Array.isArray(l.journal_id) ? l.journal_id[1] : '',
-          moveLineId: counterpart ? counterpart.id : null,
-          currentAccountName: (counterpart && Array.isArray(counterpart.account_id)) ? counterpart.account_id[1] : '—',
-          _partnerId: '', _partnerName: '',
-          _accountId: '', _accountName: '',
-          _selected: true, _saved: false, _error: '',
-        };
-      });
-
-      if (statusEl) statusEl.textContent = `${RC.coding.length} uncoded transaction${RC.coding.length !== 1 ? 's' : ''}`;
-      rcRenderCodingSummary();
-      rcRenderCodingList();
-    } catch(e) {
-      if (rcIsMissingModelError(e.message)) { _rcModuleAvailable = false; rcShowModuleMissingBanner(); }
-      else if (listEl) listEl.innerHTML = '<div style="padding:16px;text-align:center;color:var(--danger);font-size:0.82rem">Error: ' + escHtml(e.message) + '</div>';
-    }
-  };
-
-  function rcRenderCodingSummary() {
-    const el = document.getElementById('rc-code-summary');
-    if (!el) return;
-    const total = RC.coding.reduce((s,r) => s + Math.abs(r.amount||0), 0);
-    const withRule = RC.coding.filter(r => r._accountId || r._partnerId).length;
-    el.innerHTML =
-      '<div class="laz-stat-card"><div class="laz-stat-label">Uncoded</div><div class="laz-stat-value">' + RC.coding.length + '</div><div class="laz-stat-sub">transactions</div></div>' +
-      '<div class="laz-stat-card"><div class="laz-stat-label">Total Amount</div><div class="laz-stat-value accent">' + rcFmt(total) + '</div><div class="laz-stat-sub">absolute value</div></div>' +
-      '<div class="laz-stat-card"><div class="laz-stat-label">Ready to Save</div><div class="laz-stat-value' + (withRule ? ' accent' : '') + '">' + withRule + '</div><div class="laz-stat-sub">have partner or account set</div></div>';
-  }
-
-  function rcAccountOptions(selectedId) {
-    return '<option value="">— account —</option>' + _rcAccounts.map(a =>
-      `<option value="${a.id}" ${String(a.id)===String(selectedId)?'selected':''}>${escHtml(a.code ? a.code+' — '+a.name : a.name)}</option>`).join('');
-  }
-  function rcPartnerOptions(selectedId) {
-    return '<option value="">— partner —</option>' + _rcPartners.map(p =>
-      `<option value="${p.id}" ${String(p.id)===String(selectedId)?'selected':''}>${escHtml(p.name)}</option>`).join('');
-  }
-
-  function rcRenderCodingList() {
-    const listEl = document.getElementById('rc-code-list');
-    if (!listEl) return;
-    if (!RC.coding.length) { listEl.innerHTML = '<div style="padding:16px;text-align:center;color:var(--muted);font-size:0.82rem">No uncoded transactions in this range — nice and clean.</div>'; return; }
-
-    listEl.innerHTML = RC.coding.map((r, i) => {
-      const savedBadge = r._saved ? '<span style="color:var(--success);font-size:0.72rem">✓ saved</span>'
-        : r._error ? `<span style="color:var(--danger);font-size:0.72rem" title="${escHtml(r._error)}">✗ error</span>` : '';
-      return `<div class="card" style="padding:10px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-        <input type="checkbox" class="rc-code-select" data-idx="${i}" ${r._selected ? 'checked' : ''} onchange="rcToggleOne(${i}, this.checked)" style="accent-color:var(--accent);width:15px;height:15px;flex-shrink:0">
-        <div style="flex:1;min-width:220px">
-          <div style="font-size:0.84rem;color:var(--text)">${escHtml(r.description)}</div>
-          <div style="font-size:0.72rem;color:var(--muted);margin-top:2px">${escHtml(r.date||'')} · ${escHtml(r.journalName)} · currently: ${escHtml(r.currentAccountName)}</div>
-        </div>
-        <div style="font-family:monospace;font-size:0.85rem;color:var(--text);min-width:80px;text-align:right">${rcFmt(r.amount)}</div>
-        <select data-idx="${i}" onchange="rcSetRowPartner(${i}, this.value)" style="min-width:150px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:5px 9px;color:var(--text);font-size:0.79rem;font-family:'DM Sans',sans-serif;outline:none">${rcPartnerOptions(r._partnerId)}</select>
-        <select data-idx="${i}" onchange="rcSetRowAccount(${i}, this.value)" style="min-width:170px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:5px 9px;color:var(--text);font-size:0.79rem;font-family:'DM Sans',sans-serif;outline:none">${rcAccountOptions(r._accountId)}</select>
-        <div style="width:70px;text-align:right">${savedBadge}</div>
-      </div>`;
-    }).join('');
-    rcUpdateSelectedCount();
-  }
-
-  window.rcToggleSelectAll = function(checked) {
-    RC.coding.forEach(r => { if (!r._saved) r._selected = checked; });
-    document.querySelectorAll('.rc-code-select').forEach(cb => {
-      const idx = parseInt(cb.dataset.idx);
-      if (RC.coding[idx] && !RC.coding[idx]._saved) cb.checked = checked;
-    });
-    rcUpdateSelectedCount();
-  };
-  window.rcToggleOne = function(idx, checked) { if (RC.coding[idx]) RC.coding[idx]._selected = checked; rcUpdateSelectedCount(); };
-  window.rcSetRowPartner = function(idx, val) {
-    const r = RC.coding[idx]; if (!r) return;
-    r._partnerId = val;
-    r._partnerName = val ? (_rcPartners.find(p => String(p.id)===String(val))?.name || '') : '';
-    rcRenderCodingSummary();
-  };
-  window.rcSetRowAccount = function(idx, val) {
-    const r = RC.coding[idx]; if (!r) return;
-    r._accountId = val;
-    r._accountName = val ? (_rcAccounts.find(a => String(a.id)===String(val))?.name || '') : '';
-    rcRenderCodingSummary();
-  };
-
-  function rcUpdateSelectedCount() {
-    const selectable = RC.coding.filter(r => !r._saved);
-    const n = selectable.filter(r => r._selected).length;
-    const el = document.getElementById('rc-selected-count');
-    if (el) el.textContent = `${n} of ${selectable.length} selected`;
-  }
-
-  // ── Rules ──────────────────────────────────────────────────────────────
-  function rcRenderRules() {
-    const el = document.getElementById('rc-rules-list');
-    if (!el) return;
-    if (!_rcRules.length) { el.innerHTML = '<div style="font-size:0.78rem;color:var(--muted)">No rules yet — add one below.</div>'; return; }
-    el.innerHTML = _rcRules.map((r, i) => `<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--surface2);border-radius:6px;font-size:0.79rem">
-      <span style="flex:1"><strong style="color:var(--text)">"${escHtml(r.match)}"</strong> → ${r.partnerName ? escHtml(r.partnerName) : '<span style="color:var(--muted)">no partner</span>'}${r.accountName ? ' · ' + escHtml(r.accountName) : ''}</span>
-      <button class="btn btn-ghost" onclick="rcRemoveRule(${i})" style="padding:2px 8px;font-size:0.72rem">✕</button>
-    </div>`).join('');
-  }
-
-  window.rcAddRule = function() {
-    const match = document.getElementById('rc-rule-match')?.value?.trim();
-    const partnerSel = document.getElementById('rc-rule-partner');
-    const accountSel = document.getElementById('rc-rule-account');
-    if (!match) { alert('Enter text to match against the transaction description first.'); return; }
-    _rcRules.push({
-      match,
-      partnerId: partnerSel?.value || '',
-      partnerName: partnerSel?.value ? partnerSel.selectedOptions[0].textContent : '',
-      accountId: accountSel?.value || '',
-      accountName: accountSel?.value ? accountSel.selectedOptions[0].textContent : '',
-    });
-    rcSaveRules();
-    rcRenderRules();
-    document.getElementById('rc-rule-match').value = '';
-  };
-  window.rcRemoveRule = function(idx) { _rcRules.splice(idx, 1); rcSaveRules(); rcRenderRules(); };
-
-  window.rcApplyRulesToAll = function() {
-    if (!_rcRules.length) { alert('Add at least one rule first.'); return; }
-    let applied = 0;
-    RC.coding.forEach(r => {
-      if (r._saved) return;
-      const rule = _rcRules.find(rl => r.description.toLowerCase().includes(rl.match.toLowerCase()));
-      if (rule) {
-        if (rule.partnerId) { r._partnerId = rule.partnerId; r._partnerName = rule.partnerName; }
-        if (rule.accountId) { r._accountId = rule.accountId; r._accountName = rule.accountName; }
-        applied++;
-      }
-    });
-    rcRenderCodingList();
-    rcRenderCodingSummary();
-    const statusEl = document.getElementById('rc-code-status');
-    if (statusEl) statusEl.textContent = `Rules matched ${applied} transaction${applied !== 1 ? 's' : ''} — review below, then Save checked.`;
-  };
-
-  window.rcSaveChecked = async function() {
-    if (!odooUid) { alert('Connect to Odoo first'); return; }
-    const targets = RC.coding.filter(r => r._selected && !r._saved && (r._partnerId || r._accountId));
-    if (!targets.length) { alert('Select rows with a partner or account set first.'); return; }
-
-    const statusEl = document.getElementById('rc-code-status');
-    let ok = 0, err = 0;
-    for (const r of targets) {
-      if (statusEl) statusEl.textContent = `Saving ${ok+err+1} of ${targets.length}…`;
-      try {
-        if (r._partnerId) {
-          await odooExecute(odooUid, 'account.bank.statement.line', 'write', [[r.id], { partner_id: parseInt(r._partnerId) }]);
-        }
-        if (r._accountId && r.moveLineId) {
-          await odooExecute(odooUid, 'account.move.line', 'write', [[r.moveLineId], { account_id: parseInt(r._accountId) }]);
-        }
-        r._saved = true;
-        ok++;
-      } catch(e) {
-        r._error = e.message;
-        err++;
-      }
-    }
-    if (statusEl) statusEl.textContent = `Done — ${ok} saved${err ? `, ${err} failed (see ✗ tooltip on each row)` : ''}`;
-    rcRenderCodingList();
-    rcUpdateBadge();
-  };
-
-  // ── Deviation Scan ────────────────────────────────────────────────────
-  window.rcScanDeviations = async function() {
-    if (!odooUid) { alert('Connect to Odoo first'); return; }
-    const statusEl = document.getElementById('rc-dev-status');
-    const listEl = document.getElementById('rc-dev-list');
-    if (listEl) listEl.innerHTML = '<div style="padding:16px;text-align:center;color:var(--muted);font-size:0.82rem"><div class="dot spin" style="display:inline-block;margin-right:6px"></div>Scanning…</div>';
-    if (statusEl) statusEl.textContent = '';
-
-    const since = document.getElementById('rc-dev-since')?.value || '';
-    const journalIds = _rcJournals.map(j => j.id);
-    const domain = [['partner_id','!=', false], ['journal_id','in', journalIds]];
-    if (since) domain.push(['date','>=', since]);
-
-    try {
-      const lines = await odooExecute(odooUid, 'account.bank.statement.line', 'search_read', [domain], {
-        fields: ['date','payment_ref','amount','partner_id','journal_id','move_id'], order: 'date desc', limit: 1000
-      });
-
-      const moveIds = [...new Set((lines||[]).map(l => Array.isArray(l.move_id) ? l.move_id[0] : l.move_id).filter(Boolean))];
-      let moveLines = [];
-      if (moveIds.length) {
-        moveLines = await odooExecute(odooUid, 'account.move.line', 'search_read',
-          [[['move_id','in', moveIds]]], { fields: ['id','move_id','account_id'], limit: 8000 });
-      }
-      const linesByMove = {};
-      moveLines.forEach(ml => {
-        const mid = Array.isArray(ml.move_id) ? ml.move_id[0] : ml.move_id;
-        (linesByMove[mid] = linesByMove[mid] || []).push(ml);
-      });
-      const journalAccountByJournal = {};
-      _rcJournals.forEach(j => { journalAccountByJournal[j.id] = Array.isArray(j.default_account_id) ? j.default_account_id[0] : null; });
-
-      // Build per-partner tally of account usage
-      const byPartner = {}; // partnerId -> { name, entries: [{line, accountId, accountName}], tally: {accountId: count} }
-      (lines||[]).forEach(l => {
-        const mid = Array.isArray(l.move_id) ? l.move_id[0] : l.move_id;
-        const jid = Array.isArray(l.journal_id) ? l.journal_id[0] : l.journal_id;
-        const bankAccountId = journalAccountByJournal[jid];
-        const candidates = linesByMove[mid] || [];
-        const counterpart = candidates.find(ml => {
-          const aid = Array.isArray(ml.account_id) ? ml.account_id[0] : ml.account_id;
-          return aid !== bankAccountId;
-        }) || candidates[0] || null;
-        if (!counterpart) return;
-        const pid = Array.isArray(l.partner_id) ? l.partner_id[0] : l.partner_id;
-        const pname = Array.isArray(l.partner_id) ? l.partner_id[1] : '';
-        const accId = Array.isArray(counterpart.account_id) ? counterpart.account_id[0] : counterpart.account_id;
-        const accName = Array.isArray(counterpart.account_id) ? counterpart.account_id[1] : '—';
-        if (!byPartner[pid]) byPartner[pid] = { name: pname, entries: [], tally: {} };
-        byPartner[pid].entries.push({ date: l.date, description: l.payment_ref, amount: l.amount, accountId: accId, accountName: accName, moveLineId: counterpart.id });
-        byPartner[pid].tally[accId] = (byPartner[pid].tally[accId] || 0) + 1;
-      });
-
-      const flagged = [];
-      Object.values(byPartner).forEach(p => {
-        if (p.entries.length < 2) return; // need at least 2 to establish a pattern
-        const modeAccId = Object.entries(p.tally).sort((a,b) => b[1]-a[1])[0][0];
-        const modeAccName = p.entries.find(e => String(e.accountId) === String(modeAccId))?.accountName || '';
-        p.entries.forEach(e => {
-          if (String(e.accountId) !== String(modeAccId)) {
-            flagged.push({
-              partnerName: p.name, date: e.date, description: e.description, amount: e.amount,
-              currentAccountId: e.accountId, currentAccountName: e.accountName,
-              suggestedAccountId: modeAccId, suggestedAccountName: modeAccName,
-              moveLineId: e.moveLineId, _selected: true, _saved: false, _error: '',
-            });
-          }
-        });
-      });
-
-      RC.deviations = flagged;
-      if (statusEl) statusEl.textContent = `Scanned ${lines.length} transactions across ${Object.keys(byPartner).length} partners`;
-      rcRenderDeviationSummary();
-      rcRenderDeviationList();
-    } catch(e) {
-      if (listEl) listEl.innerHTML = '<div style="padding:16px;text-align:center;color:var(--danger);font-size:0.82rem">Error: ' + escHtml(e.message) + '</div>';
-    }
-  };
-
-  function rcRenderDeviationSummary() {
-    const el = document.getElementById('rc-dev-summary');
-    if (!el) return;
-    el.innerHTML =
-      '<div class="laz-stat-card"><div class="laz-stat-label">Deviations Found</div><div class="laz-stat-value' + (RC.deviations.length ? ' warning' : '') + '">' + RC.deviations.length + '</div><div class="laz-stat-sub">coded differently than usual</div></div>' +
-      '<div class="laz-stat-card"><div class="laz-stat-label">Affected Amount</div><div class="laz-stat-value">' + rcFmt(RC.deviations.reduce((s,d)=>s+Math.abs(d.amount||0),0)) + '</div><div class="laz-stat-sub">absolute value</div></div>' +
-      '<div class="laz-stat-card"><div class="laz-stat-label">Vendors Affected</div><div class="laz-stat-value">' + new Set(RC.deviations.map(d=>d.partnerName)).size + '</div><div class="laz-stat-sub">unique partners</div></div>';
-  }
-
-  function rcRenderDeviationList() {
-    const listEl = document.getElementById('rc-dev-list');
-    if (!listEl) return;
-    if (!RC.deviations.length) { listEl.innerHTML = '<div style="padding:16px;text-align:center;color:var(--muted);font-size:0.82rem">No deviations found in this range.</div>'; return; }
-    listEl.innerHTML = RC.deviations.map((d, i) => {
-      const savedBadge = d._saved ? '<span style="color:var(--success);font-size:0.72rem">✓ fixed</span>'
-        : d._error ? `<span style="color:var(--danger);font-size:0.72rem" title="${escHtml(d._error)}">✗ error</span>` : '';
-      return `<div class="card" style="padding:10px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-        <input type="checkbox" class="rc-dev-select" data-idx="${i}" ${d._selected ? 'checked' : ''} onchange="rcDevToggleOne(${i}, this.checked)" style="accent-color:var(--accent);width:15px;height:15px;flex-shrink:0">
-        <div style="flex:1;min-width:220px">
-          <div style="font-size:0.84rem;color:var(--text)">${escHtml(d.partnerName)} — ${escHtml(d.description||'')}</div>
-          <div style="font-size:0.72rem;color:var(--muted);margin-top:2px">${escHtml(d.date||'')} · currently <span style="color:var(--danger)">${escHtml(d.currentAccountName)}</span> → suggested <span style="color:var(--success)">${escHtml(d.suggestedAccountName)}</span></div>
-        </div>
-        <div style="font-family:monospace;font-size:0.85rem;color:var(--text);min-width:80px;text-align:right">${rcFmt(d.amount)}</div>
-        <div style="width:70px;text-align:right">${savedBadge}</div>
-      </div>`;
-    }).join('');
-    rcDevUpdateSelectedCount();
-  }
-
-  window.rcDevToggleSelectAll = function(checked) {
-    RC.deviations.forEach(d => { if (!d._saved) d._selected = checked; });
-    document.querySelectorAll('.rc-dev-select').forEach(cb => {
-      const idx = parseInt(cb.dataset.idx);
-      if (RC.deviations[idx] && !RC.deviations[idx]._saved) cb.checked = checked;
-    });
-    rcDevUpdateSelectedCount();
-  };
-  window.rcDevToggleOne = function(idx, checked) { if (RC.deviations[idx]) RC.deviations[idx]._selected = checked; rcDevUpdateSelectedCount(); };
-  function rcDevUpdateSelectedCount() {
-    const selectable = RC.deviations.filter(d => !d._saved);
-    const n = selectable.filter(d => d._selected).length;
-    const el = document.getElementById('rc-dev-selected-count');
-    if (el) el.textContent = `${n} of ${selectable.length} selected`;
-  }
-
-  window.rcFixChecked = async function() {
-    if (!odooUid) { alert('Connect to Odoo first'); return; }
-    const targets = RC.deviations.filter(d => d._selected && !d._saved);
-    if (!targets.length) { alert('Select at least one deviation first.'); return; }
-    if (!confirm(`Rewrite the account on ${targets.length} transaction${targets.length!==1?'s':''} to match the suggested account? This edits posted accounting entries.`)) return;
-
-    const statusEl = document.getElementById('rc-dev-status');
-    let ok = 0, err = 0;
-    for (const d of targets) {
-      if (statusEl) statusEl.textContent = `Fixing ${ok+err+1} of ${targets.length}…`;
-      try {
-        await odooExecute(odooUid, 'account.move.line', 'write', [[d.moveLineId], { account_id: parseInt(d.suggestedAccountId) }]);
-        d._saved = true;
-        ok++;
-      } catch(e) {
-        d._error = e.message;
-        err++;
-      }
-    }
-    if (statusEl) statusEl.textContent = `Done — ${ok} fixed${err ? `, ${err} failed (locked period or access — see ✗ tooltip)` : ''}`;
-    rcRenderDeviationList();
-  };
-
-})();
-</script>
-
 <!-- ── Export / Print (works on every tab) ──────────────────────────────── -->
 <script>
 (function(){
@@ -32814,7 +32336,10 @@ document.addEventListener('DOMContentLoaded', hslInit);
       let headers = [...t.querySelectorAll('thead th')].map(cellText);
       let bodyRows = [...t.querySelectorAll('tbody tr')];
       if (!headers.length) { const r0 = t.rows[0]; headers = [...r0.cells].map(cellText); bodyRows = [...t.rows].slice(1); }
-      const rows = bodyRows.map(tr => [...tr.cells].map(cellText)).filter(r => r.some(Boolean));
+      let rows = bodyRows.map(tr => [...tr.cells].map(cellText)).filter(r => r.some(Boolean));
+      const keep = headers.map((h, c) => h || rows.some(r => r[c]));            // drop checkbox / button-only columns
+      headers = headers.filter((_, c) => keep[c]);
+      rows = rows.map(r => r.filter((_, c) => keep[c]));
       if (rows.length) out.push({ name: sectionName(t, null, scope), headers, rows });
     });
     out.forEach((sec, i) => { if (!sec.name) sec.name = (fallback || 'Table') + (out.length > 1 ? ' ' + (i + 1) : ''); });
@@ -33006,6 +32531,784 @@ document.addEventListener('DOMContentLoaded', hslInit);
     if (ca) new MutationObserver(sync).observe(ca, { attributes: true, attributeFilter: ['class'], subtree: true });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+</script>
+
+<!-- ── Reconciliation ───────────────────────────────────────────────────── -->
+<script>
+(function(){
+
+  // Bank reconciliation is one of the more version-sensitive parts of Odoo's
+  // accounting model. account.bank.statement.line and partner_id are stable;
+  // the "which account is this transaction coded to" mechanism (via the
+  // statement line's move_id -> line_ids, finding the non-bank counterpart
+  // line) is the part most likely to need adjustment against a live instance.
+  // Every write here is wrapped so failures surface with real detail instead
+  // of failing silently.
+
+  let _rcModuleAvailable = null;
+  let _rcFieldSet = null;
+  let _rcJournals = [];
+  let _rcAccounts = [];
+  let _rcPartners = [];
+  let _rcRules = [];
+
+  let RC = { coding: [], deviations: [] };
+
+  function rcFmt(n) { return '$' + (n||0).toLocaleString('en-US', {maximumFractionDigits:2}); }
+  function rcIsMissingModelError(msg) {
+    return /doesn.?t exist|does not exist|invalid model|access.*(right|denied)|not allowed/i.test(msg || '');
+  }
+
+  async function rcCheckModuleAvailable() {
+    if (_rcModuleAvailable !== null) return _rcModuleAvailable;
+    try {
+      await odooExecute(odooUid, 'account.bank.statement.line', 'search_count', [[]]);
+      _rcModuleAvailable = true;
+    } catch(e) {
+      _rcModuleAvailable = rcIsMissingModelError(e.message) ? false : null;
+    }
+    return _rcModuleAvailable;
+  }
+
+  async function rcDiscoverFields() {
+    if (_rcFieldSet) return _rcFieldSet;
+    try {
+      const fields = await odooExecute(odooUid, 'account.bank.statement.line', 'fields_get', [], { attributes: [] });
+      _rcFieldSet = new Set(Object.keys(fields || {}));
+    } catch(e) {
+      _rcFieldSet = new Set();
+    }
+    return _rcFieldSet;
+  }
+
+  function rcLoadRules() {
+    try { _rcRules = JSON.parse(localStorage.getItem('oel_rc_rules') || '[]'); } catch(e) { _rcRules = []; }
+  }
+  function rcSaveRules() {
+    try { localStorage.setItem('oel_rc_rules', JSON.stringify(_rcRules)); } catch(e) {}
+  }
+
+  window.rcSwitchTab = function(tab) {
+    const codeView = document.getElementById('rc-view-code');
+    const devView = document.getElementById('rc-view-deviate');
+    const codeTab = document.getElementById('rc-tab-code');
+    const devTab = document.getElementById('rc-tab-deviate');
+    if (tab === 'deviate') {
+      if (codeView) codeView.style.display = 'none';
+      if (devView) devView.style.display = 'block';
+      if (codeTab) codeTab.classList.remove('active');
+      if (devTab) devTab.classList.add('active');
+    } else {
+      if (devView) devView.style.display = 'none';
+      if (codeView) codeView.style.display = 'block';
+      if (devTab) devTab.classList.remove('active');
+      if (codeTab) codeTab.classList.add('active');
+    }
+  };
+
+  async function rcShowModuleMissingBanner() {
+    const listEl = document.getElementById('rc-code-list');
+    if (!listEl) return;
+    listEl.innerHTML = `<div style="padding:20px;text-align:center;color:var(--muted);font-size:0.85rem">
+      <div style="color:var(--text);font-weight:500;margin-bottom:6px">Can't reach account.bank.statement.line on this Odoo instance</div>
+      <div>This is a core Accounting model — if this fails, it's most likely an access-rights gap on the API user for the Accounting app. Check Settings → Users for the account tied to this API key.</div>
+      <button class="btn btn-primary" onclick="rcRetryModuleCheck()" style="padding:7px 16px;font-size:0.8rem;margin-top:12px">↻ Try Again</button>
+    </div>`;
+  }
+  window.rcRetryModuleCheck = function() { _rcModuleAvailable = null; rcInit(); };
+
+  // Rows for Excel / CSV export (these lists are cards, not tables)
+  if (window.oelxRegister) window.oelxRegister('panel-reconcile', function() {
+    const out = [];
+    if (RC.coding.length) out.push({ name: 'Needs coding',
+      headers: ['Date', 'Description', 'Journal', 'Amount', 'Odoo partner', 'Suggested partner', 'Suggested account', 'Confidence', 'Why'],
+      rows: rcVisibleRows().map(r => [r.date || '', r.description, r.journalName, rcMoney(r.amount), r.odooPartnerName, r._partnerName || '', r._accountName || '', (RC_CONF[r._conf] || [''])[0], r._why]) });
+    if (RC.deviations.length) out.push({ name: 'Deviations',
+      headers: ['Partner', 'Date', 'Description', 'Amount', 'Currently coded to', 'Suggested account'],
+      rows: RC.deviations.map(d => [d.partnerName, d.date || '', d.description || '', rcFmt(d.amount), d.currentAccountName, d.suggestedAccountName]) });
+    return out;
+  });
+
+  window.rcInit = async function() {
+    if (!odooUid) {
+      const listEl = document.getElementById('rc-code-list');
+      if (listEl) listEl.innerHTML = '<div style="padding:16px;text-align:center;color:var(--muted);font-size:0.82rem">Connect to Odoo first (Steps 1-2).</div>';
+      return;
+    }
+    const available = await rcCheckModuleAvailable();
+    if (available === false) { rcShowModuleMissingBanner(); return; }
+    await rcDiscoverFields();
+    rcLoadRules();
+
+    if (!_rcJournals.length) {
+      try {
+        try {
+          _rcJournals = await odooExecute(odooUid, 'account.journal', 'search_read',
+            [[['type','in',['bank','cash','credit']]]], { fields: ['id','name','default_account_id'], limit: 50 });
+        } catch(e) {   // older Odoo has no 'credit' journal type
+          _rcJournals = await odooExecute(odooUid, 'account.journal', 'search_read',
+            [[['type','in',['bank','cash']]]], { fields: ['id','name','default_account_id'], limit: 50 });
+        }
+        const sel = document.getElementById('rc-journal');
+        if (sel) sel.innerHTML = '<option value="">All bank/CC journals</option>' +
+          _rcJournals.map(j => `<option value="${j.id}">${escHtml(j.name)}</option>`).join('');
+      } catch(e) {}
+    }
+    if (!_rcAccounts.length) {
+      try {
+        try {
+          _rcAccounts = await odooExecute(odooUid, 'account.account', 'search_read',
+            [[]], { fields: ['id','name','code','account_type'], limit: 1000, order: 'code' });
+        } catch(e) {
+          _rcAccounts = await odooExecute(odooUid, 'account.account', 'search_read',
+            [[]], { fields: ['id','name','code'], limit: 1000, order: 'code' });
+        }
+        const opts = _rcAccounts.map(a => `<option value="${a.id}">${escHtml(a.code ? a.code + ' — ' + a.name : a.name)}</option>`).join('');
+        const ruleSel = document.getElementById('rc-rule-account');
+        if (ruleSel) ruleSel.innerHTML = '<option value="">— no account —</option>' + opts;
+      } catch(e) {}
+    }
+    if (!_rcPartners.length) {
+      try {
+        _rcPartners = await odooExecute(odooUid, 'res.partner', 'search_read',
+          [[]], { fields: ['id','name'], limit: 1000, order: 'name' });
+        const opts = _rcPartners.map(p => `<option value="${p.id}">${escHtml(p.name)}</option>`).join('');
+        const ruleSel = document.getElementById('rc-rule-partner');
+        if (ruleSel) ruleSel.innerHTML = '<option value="">— no partner —</option>' + opts;
+      } catch(e) {}
+    }
+
+    rcRenderRules();
+    rcUpdateBadge();
+    rcLoadCoding();
+  };
+
+  window.rcUpdateBadge = async function() {
+    if (!odooUid || _rcModuleAvailable === false) return;
+    try {
+      const canRec = _rcFieldSet && _rcFieldSet.has('is_reconciled');
+      const domain = canRec ? ['|', ['partner_id','=',false], ['is_reconciled','=',false]] : [['partner_id','=',false]];
+      const count = await odooExecute(odooUid, 'account.bank.statement.line', 'search_count', [domain]);
+      const badge = document.getElementById('badge-reconcile');
+      if (badge) { badge.textContent = count > 0 ? String(count) : ''; badge.style.display = count > 0 ? '' : 'none'; }
+    } catch(e) {}
+  };
+
+  // ── Needs Coding ──────────────────────────────────────────────────────
+  // Every unreconciled bank / credit-card line (or any line with no partner) is
+  // listed with a suggested partner + account learned from lines you already
+  // reconciled, a confidence level, and a plain-English reason. Your saved rules
+  // always win. Nothing is written until you tick rows and press Save.
+
+  // <rc-engine> — pure functions (no DOM / no Odoo calls), unit-tested outside the app
+  const RC_NOISE = new Set(['pmts','pmt','payment','payments','pos','purchase','debit','credit','card','ach','online','www','com','inc','llc','ltd','the','sq','tst','dd','web','id','co','corp','checkcard','visa','recurring','autopay']);
+  function rcMerchantKeys(desc) {
+    const toks = String(desc || '').toLowerCase().replace(/[^a-z0-9 ]+/g, ' ').split(/\s+/)
+      .filter(t => t && !/\d/.test(t) && t.length > 1 && !RC_NOISE.has(t));
+    return { k2: toks.slice(0, 2).join(' '), k1: toks[0] || '' };
+  }
+  function rcBump(map, id, name) {
+    const e = map[id] || (map[id] = { id, name, n: 0 });
+    e.n++; if (name) e.name = name;
+  }
+  // hist: [{desc, partnerId, partnerName, accountId, accountName}]
+  function rcBuildHistory(hist) {
+    const H = { byPartner: {}, byKey2: {}, byKey1: {}, count: hist.length };
+    const rec = (idx, key, h) => {
+      if (!key) return;
+      const e = idx[key] || (idx[key] = { n: 0, partners: {}, accounts: {} });
+      e.n++;
+      if (h.partnerId) rcBump(e.partners, h.partnerId, h.partnerName);
+      rcBump(e.accounts, h.accountId, h.accountName);
+    };
+    hist.forEach(h => {
+      const k = rcMerchantKeys(h.desc);
+      rec(H.byKey2, k.k2, h);
+      if (k.k1.length >= 4) rec(H.byKey1, k.k1, h);
+      if (h.partnerId) {
+        const p = H.byPartner[h.partnerId] || (H.byPartner[h.partnerId] = { n: 0, accounts: {} });
+        p.n++; rcBump(p.accounts, h.accountId, h.accountName);
+      }
+    });
+    return H;
+  }
+  function rcTop(map) {
+    const arr = Object.values(map).sort((a, b) => b.n - a.n);
+    const total = arr.reduce((s, x) => s + x.n, 0);
+    return { top: arr[0] || null, second: arr[1] || null, total, share: arr[0] ? arr[0].n / total : 0 };
+  }
+  // r: {description, odooPartnerId, odooPartnerName}; returns the suggestion for one line
+  function rcSuggest(r, H, rules) {
+    const out = { partnerId: '', partnerName: '', accountId: '', accountName: '', conf: 'review', why: '', pflag: false, src: '' };
+    const desc = String(r.description || '');
+    const low = desc.toLowerCase();
+    const rule = (rules || []).find(rl => rl.match && low.includes(String(rl.match).toLowerCase()) && (rl.partnerId || rl.accountId));
+    const k = rcMerchantKeys(desc);
+    const mk = H.byKey2[k.k2] || (k.k1.length >= 4 ? H.byKey1[k.k1] : null) || null;
+
+    // partner
+    if (rule && rule.partnerId) { out.partnerId = String(rule.partnerId); out.partnerName = rule.partnerName || ''; }
+    else if (r.odooPartnerId) { out.partnerId = String(r.odooPartnerId); out.partnerName = r.odooPartnerName || ''; }
+    else if (mk) {
+      const t = rcTop(mk.partners);
+      if (t.top && t.share >= 0.6) { out.partnerId = String(t.top.id); out.partnerName = t.top.name || ''; }
+    }
+    // does history disagree with the partner Odoo picked?
+    if (r.odooPartnerId && mk && !(rule && rule.partnerId)) {
+      const t = rcTop(mk.partners);
+      if (t.top && String(t.top.id) !== String(r.odooPartnerId) && t.top.n >= 3 && t.share >= 0.8) {
+        out.pflag = true; out.flagName = t.top.name; out.flagId = String(t.top.id);
+      }
+    }
+    // account
+    const notes = [];
+    if (rule && rule.accountId) {
+      out.accountId = String(rule.accountId); out.accountName = rule.accountName || '';
+      out.conf = 'high'; out.src = 'rule'; notes.push('Your rule “' + rule.match + '”');
+    } else {
+      const pr = out.partnerId && H.byPartner[out.partnerId];
+      const ev = pr ? { accounts: pr.accounts, label: 'for ' + (out.partnerName || 'this partner') } : (mk ? { accounts: mk.accounts, label: 'for this merchant' } : null);
+      if (ev) {
+        const t = rcTop(ev.accounts);
+        const nm = x => x ? x.name : '';
+        if (t.share >= 0.6) {
+          out.accountId = String(t.top.id); out.accountName = t.top.name || '';
+          out.src = pr ? 'partner' : 'merchant';
+          out.conf = (t.top.n >= 3 && t.share >= 0.8) ? 'high' : 'med';
+          notes.push(t.top.n === t.total ? 'Booked to ' + nm(t.top) + ' ' + (t.total === 1 ? 'once' : t.total + ' of ' + t.total + ' times') + ' ' + ev.label
+                                         : 'Booked to ' + nm(t.top) + ' ' + t.top.n + ' of ' + t.total + ' times ' + ev.label);
+        } else {
+          out.conf = 'review';
+          notes.push('Mixed history ' + ev.label + ': ' + Object.values(ev.accounts).sort((a, b) => b.n - a.n).slice(0, 3).map(x => nm(x) + ' ×' + x.n).join(', ') + ' — your call');
+        }
+      } else {
+        out.conf = 'review';
+        notes.push(out.partnerId ? 'No coding history for ' + (out.partnerName || 'this partner') + ' — needs your decision' : 'No history for this merchant — needs your decision');
+      }
+    }
+    if (out.pflag && out.conf === 'high' && out.src !== 'rule') out.conf = 'med';   // partner is suspect — keep it a quick check
+    if (out.pflag) notes.push('⚠ Odoo set “' + (r.odooPartnerName || '') + '” but history for this merchant points to “' + out.flagName + '”');
+    out.why = notes.join(' · ');
+    return out;
+  }
+  // </rc-engine>
+
+  const RC_CONF = { high: ['Confident', 'var(--success)', 2], med: ['Likely', 'var(--warning)', 1], review: ['Review', 'var(--danger)', 0] };
+  let _rcHistory = null, _rcHistoryAt = 0;
+  RC.f = { q: '', conf: new Set(), account: '', pf: false };
+  RC.sort = { key: 'date', dir: -1 };
+  RC.hitLimit = false;
+
+  function rcMoney(n) { return (n < 0 ? '-' : '') + '$' + Math.abs(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+  const rcId = v => Array.isArray(v) ? v[0] : v;
+
+  // Find the non-bank ("counterpart") move line of a statement line
+  function rcCounterpart(l, linesByMove, journalAccountByJournal) {
+    const mid = rcId(l.move_id), jid = rcId(l.journal_id);
+    const bankAccountId = journalAccountByJournal[jid];
+    const cands = linesByMove[mid] || [];
+    return cands.find(ml => rcId(ml.account_id) !== bankAccountId) || cands[0] || null;
+  }
+
+  async function rcFetchMoveLines(moveIds, fields) {
+    const out = [];
+    for (let i = 0; i < moveIds.length; i += 500) {
+      const chunk = moveIds.slice(i, i + 500);
+      const rows = await odooExecute(odooUid, 'account.move.line', 'search_read',
+        [[['move_id', 'in', chunk]]], { fields, limit: 5000 });
+      out.push(...(rows || []));
+    }
+    return out;
+  }
+
+  // Learn from lines already reconciled (cached for 10 minutes)
+  async function rcLoadHistory(force) {
+    if (!force && _rcHistory && Date.now() - _rcHistoryAt < 600000) return _rcHistory;
+    if (!_rcFieldSet || !_rcFieldSet.has('is_reconciled')) { _rcHistory = rcBuildHistory([]); _rcHistoryAt = Date.now(); return _rcHistory; }
+    const d = new Date(); d.setDate(d.getDate() - 540);
+    const since = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    const lines = await odooExecute(odooUid, 'account.bank.statement.line', 'search_read',
+      [[['is_reconciled', '=', true], ['date', '>=', since], ['journal_id', 'in', _rcJournals.map(j => j.id)]]],
+      { fields: ['date', 'payment_ref', 'partner_id', 'journal_id', 'move_id'], order: 'date desc', limit: 3000 });
+    const moveIds = [...new Set((lines || []).map(l => rcId(l.move_id)).filter(Boolean))];
+    const mls = moveIds.length ? await rcFetchMoveLines(moveIds, ['id', 'move_id', 'account_id']) : [];
+    const byMove = {}; mls.forEach(ml => { (byMove[rcId(ml.move_id)] = byMove[rcId(ml.move_id)] || []).push(ml); });
+    const jAcc = {}; _rcJournals.forEach(j => { jAcc[j.id] = rcId(j.default_account_id) || null; });
+    const skipType = new Set(['asset_receivable', 'liability_payable', 'asset_cash', 'liability_credit_card']);
+    const accById = {}; _rcAccounts.forEach(a => { accById[a.id] = a; });
+    const hist = [];
+    (lines || []).forEach(l => {
+      const cp = rcCounterpart(l, byMove, jAcc); if (!cp) return;
+      const aid = rcId(cp.account_id); const acc = accById[aid];
+      const aname = Array.isArray(cp.account_id) ? cp.account_id[1] : (acc ? acc.name : '');
+      if (acc && acc.account_type && skipType.has(acc.account_type)) return;       // paid an invoice / transfer — not a coding decision
+      if (!acc && /receivable|payable|outstanding|suspense/i.test(aname)) return;
+      hist.push({ desc: l.payment_ref || '', partnerId: rcId(l.partner_id) || '', partnerName: Array.isArray(l.partner_id) ? l.partner_id[1] : '', accountId: aid, accountName: aname });
+    });
+    _rcHistory = rcBuildHistory(hist); _rcHistoryAt = Date.now();
+    return _rcHistory;
+  }
+
+  function rcCodingDomain() {
+    const journalId = document.getElementById('rc-journal')?.value || '';
+    const since = document.getElementById('rc-since')?.value || '';
+    const scope = document.getElementById('rc-scope')?.value || 'both';
+    const canRec = _rcFieldSet && _rcFieldSet.has('is_reconciled');
+    const domain = [];
+    if (scope === 'nopartner' || !canRec) domain.push(['partner_id', '=', false]);
+    else if (scope === 'unrec') domain.push(['is_reconciled', '=', false]);
+    else domain.push('|', ['partner_id', '=', false], ['is_reconciled', '=', false]);
+    if (journalId) domain.push(['journal_id', '=', parseInt(journalId)]);
+    else domain.push(['journal_id', 'in', _rcJournals.map(j => j.id)]);
+    if (since) domain.push(['date', '>=', since]);
+    return domain;
+  }
+
+  window.rcLoadCoding = async function(forceHistory) {
+    const listEl = document.getElementById('rc-code-list');
+    const statusEl = document.getElementById('rc-code-status');
+    if (!odooUid) return;
+    if (_rcModuleAvailable === false) { rcShowModuleMissingBanner(); return; }
+    if (listEl) listEl.innerHTML = '<div style="padding:16px;text-align:center;color:var(--muted);font-size:0.82rem"><div class="dot spin" style="display:inline-block;margin-right:6px"></div>Loading transactions…</div>';
+    const LIMIT = 600;
+    try {
+      const lines = await odooExecute(odooUid, 'account.bank.statement.line', 'search_read', [rcCodingDomain()], {
+        fields: ['date', 'payment_ref', 'amount', 'partner_id', 'journal_id', 'move_id'], order: 'date desc', limit: LIMIT
+      });
+      RC.hitLimit = (lines || []).length >= LIMIT;
+      const moveIds = [...new Set((lines || []).map(l => rcId(l.move_id)).filter(Boolean))];
+      const moveLines = moveIds.length ? await rcFetchMoveLines(moveIds, ['id', 'move_id', 'account_id', 'name']) : [];
+      const linesByMove = {}; moveLines.forEach(ml => { (linesByMove[rcId(ml.move_id)] = linesByMove[rcId(ml.move_id)] || []).push(ml); });
+      const jAcc = {}; _rcJournals.forEach(j => { jAcc[j.id] = rcId(j.default_account_id) || null; });
+
+      RC.coding = (lines || []).map((l, i) => {
+        const cp = rcCounterpart(l, linesByMove, jAcc);
+        return {
+          _i: i, id: l.id, date: l.date,
+          description: l.payment_ref || '(no description)',
+          amount: l.amount,
+          journalName: Array.isArray(l.journal_id) ? l.journal_id[1] : '',
+          odooPartnerId: rcId(l.partner_id) || '', odooPartnerName: Array.isArray(l.partner_id) ? l.partner_id[1] : '',
+          moveLineId: cp ? cp.id : null,
+          currentAccountName: (cp && Array.isArray(cp.account_id)) ? cp.account_id[1] : '—',
+          _partnerId: '', _partnerName: '', _accountId: '', _accountName: '',
+          _conf: 'review', _why: '', _pflag: false,
+          _manualP: false, _manualA: false, _selTouched: false,
+          _selected: false, _saved: false, _error: '', _editP: false, _editA: false,
+        };
+      });
+
+      if (statusEl) statusEl.textContent = 'Learning from your reconciled history…';
+      try { await rcLoadHistory(forceHistory === true); }
+      catch(e) { _rcHistory = rcBuildHistory([]); if (statusEl) statusEl.textContent = 'Couldn’t read reconciled history (' + e.message + ') — suggestions limited to your rules.'; }
+      rcRecompute();
+    } catch(e) {
+      if (rcIsMissingModelError(e.message)) { _rcModuleAvailable = false; rcShowModuleMissingBanner(); }
+      else if (listEl) listEl.innerHTML = '<div style="padding:16px;text-align:center;color:var(--danger);font-size:0.82rem">Error: ' + escHtml(e.message) + '</div>';
+    }
+  };
+  window.rcRefreshHistory = function() { rcLoadCoding(true); };
+
+  // Re-run suggestions over every row (keeps anything you picked by hand)
+  window.rcRecompute = function() {
+    const H = _rcHistory || rcBuildHistory([]);
+    RC.coding.forEach(r => {
+      if (r._saved) return;
+      const s = rcSuggest(r, H, _rcRules);
+      r._conf = s.conf; r._why = s.why; r._pflag = s.pflag; r._flagName = s.flagName || ''; r._flagId = s.flagId || '';
+      if (!r._manualP) { r._partnerId = s.partnerId; r._partnerName = s.partnerName; }
+      if (!r._manualA) { r._accountId = s.accountId; r._accountName = s.accountName; }
+      if (!r._selTouched) r._selected = (r._conf === 'high') && !!(r._accountId || r._partnerId);
+    });
+    const statusEl = document.getElementById('rc-code-status');
+    if (statusEl && !/Couldn/.test(statusEl.textContent)) {
+      const hn = H.count || 0;
+      statusEl.textContent = `${RC.coding.length} to code${RC.hitLimit ? ' (newest 600 shown)' : ''} · suggestions learned from ${hn} reconciled line${hn === 1 ? '' : 's'}`;
+    }
+    rcBuildAccountFilter();
+    rcRenderCodingSummary();
+    rcRenderCodingList();
+  };
+
+  function rcBuildAccountFilter() {
+    const sel = document.getElementById('rc-acc-filter'); if (!sel) return;
+    const cur = RC.f.account;
+    const names = [...new Set(RC.coding.map(r => r._accountName).filter(Boolean))].sort();
+    sel.innerHTML = '<option value="">All accounts</option><option value="__none">No account yet</option>' + names.map(n => `<option value="${escHtml(n)}" ${n === cur ? 'selected' : ''}>${escHtml(n)}</option>`).join('');
+    sel.value = cur;
+  }
+
+  function rcRenderCodingSummary() {
+    const el = document.getElementById('rc-code-summary');
+    if (!el) return;
+    const open = RC.coding.filter(r => !r._saved);
+    const c = { high: 0, med: 0, review: 0 }; open.forEach(r => c[r._conf]++);
+    const pf = open.filter(r => r._pflag).length;
+    const net = open.reduce((s, r) => s + (r.amount || 0), 0);
+    const tile = (label, val, sub, cls, click) => `<div class="laz-stat-card"${click ? ` onclick="${click}" style="cursor:pointer"` : ''}><div class="laz-stat-label">${label}</div><div class="laz-stat-value${cls ? ' ' + cls : ''}">${val}</div><div class="laz-stat-sub">${sub}</div></div>`;
+    el.style.gridTemplateColumns = 'repeat(auto-fit,minmax(140px,1fr))';
+    el.innerHTML =
+      tile('To Code', open.length, 'unreconciled') +
+      tile('Confident', c.high, 'rule or solid history', c.high ? 'accent' : '', "rcToggleConf('high')") +
+      tile('Likely', c.med, 'quick check', c.med ? 'warning' : '', "rcToggleConf('med')") +
+      tile('Need Review', c.review, 'your decision', c.review ? 'danger' : '', "rcToggleConf('review')") +
+      tile('Partner Looks Wrong', pf, 'Odoo vs history', pf ? 'warning' : '', 'rcTogglePf()') +
+      tile('Net Amount', rcMoney(net), 'open lines');
+  }
+
+  // ── Filter / sort ──────────────────────────────────────────────────────
+  window.rcToggleConf = function(v) { if (RC.f.conf.has(v)) RC.f.conf.delete(v); else RC.f.conf.add(v); rcSyncFilterUi(); rcRenderCodingList(); };
+  window.rcTogglePf = function() { RC.f.pf = !RC.f.pf; rcSyncFilterUi(); rcRenderCodingList(); };
+  window.rcFilterChanged = function() {
+    RC.f.q = (document.getElementById('rc-q')?.value || '').trim().toLowerCase();
+    RC.f.account = document.getElementById('rc-acc-filter')?.value || '';
+    RC.f.pf = !!document.getElementById('rc-pf')?.checked;
+    rcRenderCodingList();
+  };
+  function rcSyncFilterUi() {
+    document.querySelectorAll('.rc-chip').forEach(ch => ch.setAttribute('aria-pressed', RC.f.conf.has(ch.dataset.conf) ? 'true' : 'false'));
+    const pf = document.getElementById('rc-pf'); if (pf) pf.checked = RC.f.pf;
+  }
+  window.rcSetSort = function(key) {
+    if (RC.sort.key === key) RC.sort.dir *= -1; else RC.sort = { key, dir: (key === 'date' || key === 'amount') ? -1 : 1 };
+    rcRenderCodingList();
+  };
+  function rcVisibleRows() {
+    const f = RC.f;
+    let rows = RC.coding.filter(r => {
+      if (f.conf.size && !f.conf.has(r._conf)) return false;
+      if (f.pf && !r._pflag) return false;
+      if (f.account === '__none') { if (r._accountName) return false; }
+      else if (f.account && r._accountName !== f.account) return false;
+      if (f.q && !(r.description + ' ' + r.odooPartnerName + ' ' + r._partnerName + ' ' + r._accountName + ' ' + r._why + ' ' + r.journalName).toLowerCase().includes(f.q)) return false;
+      return true;
+    });
+    const k = RC.sort.key, dir = RC.sort.dir;
+    const val = r => k === 'amount' ? r.amount : k === 'conf' ? RC_CONF[r._conf][2]
+      : k === 'odoo' ? r.odooPartnerName.toLowerCase() : k === 'partner' ? r._partnerName.toLowerCase()
+      : k === 'account' ? r._accountName.toLowerCase() : k === 'why' ? r._why.toLowerCase()
+      : k === 'description' ? r.description.toLowerCase() : (r.date || '');
+    rows.sort((a, b) => { const x = val(a), y = val(b); return ((x < y ? -1 : x > y ? 1 : 0) * dir) || ((a.date || '') < (b.date || '') ? 1 : -1); });
+    return rows;
+  }
+
+  // ── Table ───────────────────────────────────────────────────────────────
+  function rcPartnerSelect(r) {
+    const have = _rcPartners.some(p => String(p.id) === String(r._partnerId));
+    const extra = (!have && r._partnerId) ? `<option value="${r._partnerId}" selected>${escHtml(r._partnerName)}</option>` : '';
+    return `<select class="rc-pick" onchange="rcSetRowPartner(${r._i}, this.value)" onblur="rcCloseEdit(${r._i})">` +
+      '<option value="">— no partner —</option>' + extra + _rcPartners.map(p => `<option value="${p.id}" ${String(p.id) === String(r._partnerId) ? 'selected' : ''}>${escHtml(p.name)}</option>`).join('') + '</select>';
+  }
+  function rcAccountSelect(r) {
+    return `<select class="rc-pick" onchange="rcSetRowAccount(${r._i}, this.value)" onblur="rcCloseEdit(${r._i})">` +
+      '<option value="">— no account —</option>' + _rcAccounts.map(a => `<option value="${a.id}" ${String(a.id) === String(r._accountId) ? 'selected' : ''}>${escHtml(a.code ? a.code + ' — ' + a.name : a.name)}</option>`).join('') + '</select>';
+  }
+  function rcRowHtml(r) {
+    const conf = RC_CONF[r._conf];
+    const badge = r._saved ? '<span style="color:var(--success);font-size:0.74rem;font-weight:600">✓ saved</span>'
+      : `<span class="rc-badge" style="color:${conf[1]};border-color:${conf[1]}">${conf[0]}</span>`;
+    const err = r._error ? `<span class="rc-warn" title="${escHtml(r._error)}">✗ ${escHtml(r._error.slice(0, 60))}</span>` : '';
+    const pCell = r._editP ? rcPartnerSelect(r)
+      : (r._partnerName ? `<b>${escHtml(r._partnerName)}</b>${r._pflag ? `<span class="rc-warn">⚠ history says “${escHtml(r._flagName)}” <a href="#" onclick="rcUseFlagged(${r._i});return false">use it</a></span>` : ''}`
+        : '<span class="rc-dim">— unknown payee —</span>') + (r._saved ? '' : ` <a class="rc-edit" href="#" onclick="rcEdit(${r._i},'p');return false" title="Change partner">✎</a>`);
+    const aCell = r._editA ? rcAccountSelect(r)
+      : (r._accountName ? escHtml(r._accountName) : '<span class="rc-dim">— none suggested —</span>') + (r._saved ? '' : ` <a class="rc-edit" href="#" onclick="rcEdit(${r._i},'a');return false" title="Change account">✎</a>`);
+    return `<tr id="rc-row-${r._i}" class="${r._saved ? 'rc-saved' : ''}">
+      <td style="width:28px"><input type="checkbox" class="rc-code-select" ${r._selected ? 'checked' : ''} ${r._saved ? 'disabled' : ''} onchange="rcToggleOne(${r._i}, this.checked)" style="accent-color:var(--accent);width:15px;height:15px"></td>
+      <td class="rc-nowrap rc-dim">${escHtml(r.date || '')}</td>
+      <td class="rc-lab">${escHtml(r.description)}<small>${escHtml(r.journalName)}</small></td>
+      <td class="rc-dim">${r.odooPartnerName ? escHtml(r.odooPartnerName) : '—'}</td>
+      <td class="rc-num ${r.amount > 0 ? 'rc-pos' : ''}">${rcMoney(r.amount)}</td>
+      <td>${pCell}</td>
+      <td>${aCell}</td>
+      <td>${badge}</td>
+      <td class="rc-why">${escHtml(r._why)}${err}</td></tr>`;
+  }
+
+  function rcRenderCodingList() {
+    const listEl = document.getElementById('rc-code-list');
+    if (!listEl) return;
+    if (!RC.coding.length) { listEl.innerHTML = '<div style="padding:16px;text-align:center;color:var(--muted);font-size:0.82rem">No transactions to code in this range — nice and clean.</div>'; rcUpdateSelectedCount(); return; }
+    const rows = rcVisibleRows();
+    const cols = [['', null], ['Date', 'date'], ['Description', 'description'], ['Odoo partner', 'odoo'], ['Amount', 'amount'], ['Partner', 'partner'], ['Account', 'account'], ['Confidence', 'conf'], ['Why / what to check', 'why']];
+    const th = cols.map(([t, k]) => k ? `<th onclick="rcSetSort('${k}')" class="${k === 'amount' ? 'rc-num' : ''}">${t}${RC.sort.key === k ? (RC.sort.dir > 0 ? ' ▲' : ' ▼') : ''}</th>` : '<th></th>').join('');
+    const net = rows.reduce((s, r) => s + (r.amount || 0), 0);
+    listEl.innerHTML = `<div class="rc-wrap"><table class="rc-tbl"><thead><tr>${th}</tr></thead><tbody>` +
+      (rows.length ? rows.map(rcRowHtml).join('') : '<tr><td colspan="9" style="padding:26px;text-align:center;color:var(--muted)">No transactions match these filters.</td></tr>') +
+      `</tbody><tfoot><tr><td colspan="4">${rows.length} shown of ${RC.coding.length}</td><td class="rc-num">${rcMoney(net)}</td><td colspan="4"></td></tr></tfoot></table></div>`;
+    rcUpdateSelectedCount();
+  }
+  function rcRenderRow(i) {
+    const r = RC.coding[i], el = document.getElementById('rc-row-' + i);
+    if (r && el) el.outerHTML = rcRowHtml(r); else rcRenderCodingList();
+  }
+
+  window.rcEdit = function(i, which) {
+    const r = RC.coding[i]; if (!r) return;
+    if (which === 'p') r._editP = true; else r._editA = true;
+    rcRenderRow(i);
+    const sel = document.querySelector('#rc-row-' + i + ' select.rc-pick'); if (sel) sel.focus();
+  };
+  window.rcCloseEdit = function(i) {
+    const r = RC.coding[i]; if (!r || (!r._editP && !r._editA)) return;
+    setTimeout(() => { const rr = RC.coding[i]; if (rr && (rr._editP || rr._editA)) { rr._editP = rr._editA = false; rcRenderRow(i); } }, 150);
+  };
+  window.rcSetRowPartner = function(i, val) {
+    const r = RC.coding[i]; if (!r) return;
+    r._manualP = true; r._editP = false; r._partnerId = val;
+    r._partnerName = val ? (_rcPartners.find(p => String(p.id) === String(val))?.name || r._partnerName || '') : '';
+    if (!r._selTouched && (r._partnerId || r._accountId)) r._selected = true;
+    rcRenderRow(i); rcRenderCodingSummary(); rcUpdateSelectedCount();
+  };
+  window.rcSetRowAccount = function(i, val) {
+    const r = RC.coding[i]; if (!r) return;
+    r._manualA = true; r._editA = false; r._accountId = val;
+    const a = _rcAccounts.find(x => String(x.id) === String(val));
+    r._accountName = val ? (a ? (a.code ? a.code + ' ' + a.name : a.name) : '') : '';
+    if (!r._selTouched && (r._partnerId || r._accountId)) r._selected = true;
+    rcRenderRow(i); rcRenderCodingSummary(); rcUpdateSelectedCount();
+  };
+  window.rcUseFlagged = function(i) {
+    const r = RC.coding[i]; if (!r || !r._pflag) return;
+    r._manualP = true; r._partnerId = r._flagId || ''; r._partnerName = r._flagName; r._pflag = false;
+    rcRenderRow(i); rcRenderCodingSummary();
+  };
+
+  window.rcToggleSelectAll = function(checked) {
+    rcVisibleRows().forEach(r => { if (!r._saved) { r._selected = checked; r._selTouched = true; } });
+    rcRenderCodingList();
+  };
+  window.rcToggleOne = function(i, checked) { const r = RC.coding[i]; if (r) { r._selected = checked; r._selTouched = true; } rcUpdateSelectedCount(); };
+  function rcUpdateSelectedCount() {
+    const selectable = RC.coding.filter(r => !r._saved);
+    const n = selectable.filter(r => r._selected).length;
+    const el = document.getElementById('rc-selected-count');
+    if (el) el.textContent = `${n} of ${selectable.length} selected`;
+  }
+
+  // Tick every Confident row (and only those), confirm, and save
+  window.rcAcceptConfident = async function() {
+    const conf = RC.coding.filter(r => !r._saved && r._conf === 'high' && (r._accountId || r._partnerId));
+    if (!conf.length) { alert('No Confident rows to accept right now.'); return; }
+    const total = conf.reduce((s, r) => s + Math.abs(r.amount || 0), 0);
+    if (!confirm(`Save ${conf.length} Confident row${conf.length === 1 ? '' : 's'} (${rcMoney(total)} total) to Odoo?\n\nThese match your rules or a solid history. Likely and Review rows are left alone.`)) return;
+    RC.coding.forEach(r => { r._selected = conf.includes(r); r._selTouched = true; });
+    await rcSaveChecked(true);
+  };
+
+  // ── Rules ──────────────────────────────────────────────────────────────
+  function rcRenderRules() {
+    const el = document.getElementById('rc-rules-list');
+    if (!el) return;
+    const rcCnt = document.getElementById('rc-rules-count'); if (rcCnt) rcCnt.textContent = _rcRules.length ? '(' + _rcRules.length + ')' : '';
+    if (!_rcRules.length) { el.innerHTML = '<div style="font-size:0.78rem;color:var(--muted)">No rules yet — add one below.</div>'; return; }
+    el.innerHTML = _rcRules.map((r, i) => `<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--surface2);border-radius:6px;font-size:0.79rem">
+      <span style="flex:1"><strong style="color:var(--text)">"${escHtml(r.match)}"</strong> → ${r.partnerName ? escHtml(r.partnerName) : '<span style="color:var(--muted)">no partner</span>'}${r.accountName ? ' · ' + escHtml(r.accountName) : ''}</span>
+      <button class="btn btn-ghost" onclick="rcRemoveRule(${i})" style="padding:2px 8px;font-size:0.72rem">✕</button>
+    </div>`).join('');
+  }
+
+  window.rcAddRule = function() {
+    const match = document.getElementById('rc-rule-match')?.value?.trim();
+    const partnerSel = document.getElementById('rc-rule-partner');
+    const accountSel = document.getElementById('rc-rule-account');
+    if (!match) { alert('Enter text to match against the transaction description first.'); return; }
+    _rcRules.push({
+      match,
+      partnerId: partnerSel?.value || '',
+      partnerName: partnerSel?.value ? partnerSel.selectedOptions[0].textContent : '',
+      accountId: accountSel?.value || '',
+      accountName: accountSel?.value ? accountSel.selectedOptions[0].textContent : '',
+    });
+    rcSaveRules();
+    rcRenderRules();
+    document.getElementById('rc-rule-match').value = '';
+    rcRecompute();
+  };
+  window.rcRemoveRule = function(idx) { _rcRules.splice(idx, 1); rcSaveRules(); rcRenderRules(); rcRecompute(); };
+
+  // Rules are applied automatically (they outrank history); this just re-runs suggestions
+  window.rcApplyRulesToAll = function() { rcRecompute(); };
+
+  window.rcSaveChecked = async function(skipAlert) {
+    if (!odooUid) { alert('Connect to Odoo first'); return; }
+    const targets = RC.coding.filter(r => r._selected && !r._saved && (r._partnerId || r._accountId));
+    if (!targets.length) { if (skipAlert !== true) alert('Tick rows that have a partner or account first.'); return; }
+
+    const statusEl = document.getElementById('rc-code-status');
+    let ok = 0, err = 0;
+    for (const r of targets) {
+      if (statusEl) statusEl.textContent = `Saving ${ok+err+1} of ${targets.length}…`;
+      try {
+        if (r._partnerId && String(r._partnerId) !== String(r.odooPartnerId)) {
+          await odooExecute(odooUid, 'account.bank.statement.line', 'write', [[r.id], { partner_id: parseInt(r._partnerId) }]);
+        }
+        if (r._accountId) {
+          if (!r.moveLineId) throw new Error('No journal item found to re-code for this line');
+          await odooExecute(odooUid, 'account.move.line', 'write', [[r.moveLineId], { account_id: parseInt(r._accountId) }]);
+        }
+        r._saved = true; r._error = ''; r._selected = false;
+        ok++;
+      } catch(e) {
+        r._error = e.message;
+        err++;
+      }
+    }
+    _rcHistoryAt = 0; // newly coded lines become history next time
+    if (statusEl) statusEl.textContent = `Done — ${ok} saved${err ? `, ${err} failed (reason shown on each row)` : ''}`;
+    rcRenderCodingSummary();
+    rcRenderCodingList();
+    rcUpdateBadge();
+  };
+
+  // ── Deviation Scan ────────────────────────────────────────────────────
+  window.rcScanDeviations = async function() {
+    if (!odooUid) { alert('Connect to Odoo first'); return; }
+    const statusEl = document.getElementById('rc-dev-status');
+    const listEl = document.getElementById('rc-dev-list');
+    if (listEl) listEl.innerHTML = '<div style="padding:16px;text-align:center;color:var(--muted);font-size:0.82rem"><div class="dot spin" style="display:inline-block;margin-right:6px"></div>Scanning…</div>';
+    if (statusEl) statusEl.textContent = '';
+
+    const since = document.getElementById('rc-dev-since')?.value || '';
+    const journalIds = _rcJournals.map(j => j.id);
+    const domain = [['partner_id','!=', false], ['journal_id','in', journalIds]];
+    if (since) domain.push(['date','>=', since]);
+
+    try {
+      const lines = await odooExecute(odooUid, 'account.bank.statement.line', 'search_read', [domain], {
+        fields: ['date','payment_ref','amount','partner_id','journal_id','move_id'], order: 'date desc', limit: 1000
+      });
+
+      const moveIds = [...new Set((lines||[]).map(l => Array.isArray(l.move_id) ? l.move_id[0] : l.move_id).filter(Boolean))];
+      let moveLines = [];
+      if (moveIds.length) {
+        moveLines = await odooExecute(odooUid, 'account.move.line', 'search_read',
+          [[['move_id','in', moveIds]]], { fields: ['id','move_id','account_id'], limit: 8000 });
+      }
+      const linesByMove = {};
+      moveLines.forEach(ml => {
+        const mid = Array.isArray(ml.move_id) ? ml.move_id[0] : ml.move_id;
+        (linesByMove[mid] = linesByMove[mid] || []).push(ml);
+      });
+      const journalAccountByJournal = {};
+      _rcJournals.forEach(j => { journalAccountByJournal[j.id] = Array.isArray(j.default_account_id) ? j.default_account_id[0] : null; });
+
+      // Build per-partner tally of account usage
+      const byPartner = {}; // partnerId -> { name, entries: [{line, accountId, accountName}], tally: {accountId: count} }
+      (lines||[]).forEach(l => {
+        const mid = Array.isArray(l.move_id) ? l.move_id[0] : l.move_id;
+        const jid = Array.isArray(l.journal_id) ? l.journal_id[0] : l.journal_id;
+        const bankAccountId = journalAccountByJournal[jid];
+        const candidates = linesByMove[mid] || [];
+        const counterpart = candidates.find(ml => {
+          const aid = Array.isArray(ml.account_id) ? ml.account_id[0] : ml.account_id;
+          return aid !== bankAccountId;
+        }) || candidates[0] || null;
+        if (!counterpart) return;
+        const pid = Array.isArray(l.partner_id) ? l.partner_id[0] : l.partner_id;
+        const pname = Array.isArray(l.partner_id) ? l.partner_id[1] : '';
+        const accId = Array.isArray(counterpart.account_id) ? counterpart.account_id[0] : counterpart.account_id;
+        const accName = Array.isArray(counterpart.account_id) ? counterpart.account_id[1] : '—';
+        if (!byPartner[pid]) byPartner[pid] = { name: pname, entries: [], tally: {} };
+        byPartner[pid].entries.push({ date: l.date, description: l.payment_ref, amount: l.amount, accountId: accId, accountName: accName, moveLineId: counterpart.id });
+        byPartner[pid].tally[accId] = (byPartner[pid].tally[accId] || 0) + 1;
+      });
+
+      const flagged = [];
+      Object.values(byPartner).forEach(p => {
+        if (p.entries.length < 2) return; // need at least 2 to establish a pattern
+        const modeAccId = Object.entries(p.tally).sort((a,b) => b[1]-a[1])[0][0];
+        const modeAccName = p.entries.find(e => String(e.accountId) === String(modeAccId))?.accountName || '';
+        p.entries.forEach(e => {
+          if (String(e.accountId) !== String(modeAccId)) {
+            flagged.push({
+              partnerName: p.name, date: e.date, description: e.description, amount: e.amount,
+              currentAccountId: e.accountId, currentAccountName: e.accountName,
+              suggestedAccountId: modeAccId, suggestedAccountName: modeAccName,
+              moveLineId: e.moveLineId, _selected: true, _saved: false, _error: '',
+            });
+          }
+        });
+      });
+
+      RC.deviations = flagged;
+      if (statusEl) statusEl.textContent = `Scanned ${lines.length} transactions across ${Object.keys(byPartner).length} partners`;
+      rcRenderDeviationSummary();
+      rcRenderDeviationList();
+    } catch(e) {
+      if (listEl) listEl.innerHTML = '<div style="padding:16px;text-align:center;color:var(--danger);font-size:0.82rem">Error: ' + escHtml(e.message) + '</div>';
+    }
+  };
+
+  function rcRenderDeviationSummary() {
+    const el = document.getElementById('rc-dev-summary');
+    if (!el) return;
+    el.innerHTML =
+      '<div class="laz-stat-card"><div class="laz-stat-label">Deviations Found</div><div class="laz-stat-value' + (RC.deviations.length ? ' warning' : '') + '">' + RC.deviations.length + '</div><div class="laz-stat-sub">coded differently than usual</div></div>' +
+      '<div class="laz-stat-card"><div class="laz-stat-label">Affected Amount</div><div class="laz-stat-value">' + rcFmt(RC.deviations.reduce((s,d)=>s+Math.abs(d.amount||0),0)) + '</div><div class="laz-stat-sub">absolute value</div></div>' +
+      '<div class="laz-stat-card"><div class="laz-stat-label">Vendors Affected</div><div class="laz-stat-value">' + new Set(RC.deviations.map(d=>d.partnerName)).size + '</div><div class="laz-stat-sub">unique partners</div></div>';
+  }
+
+  function rcRenderDeviationList() {
+    const listEl = document.getElementById('rc-dev-list');
+    if (!listEl) return;
+    if (!RC.deviations.length) { listEl.innerHTML = '<div style="padding:16px;text-align:center;color:var(--muted);font-size:0.82rem">No deviations found in this range.</div>'; return; }
+    listEl.innerHTML = RC.deviations.map((d, i) => {
+      const savedBadge = d._saved ? '<span style="color:var(--success);font-size:0.72rem">✓ fixed</span>'
+        : d._error ? `<span style="color:var(--danger);font-size:0.72rem" title="${escHtml(d._error)}">✗ error</span>` : '';
+      return `<div class="card" style="padding:10px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <input type="checkbox" class="rc-dev-select" data-idx="${i}" ${d._selected ? 'checked' : ''} onchange="rcDevToggleOne(${i}, this.checked)" style="accent-color:var(--accent);width:15px;height:15px;flex-shrink:0">
+        <div style="flex:1;min-width:220px">
+          <div style="font-size:0.84rem;color:var(--text)">${escHtml(d.partnerName)} — ${escHtml(d.description||'')}</div>
+          <div style="font-size:0.72rem;color:var(--muted);margin-top:2px">${escHtml(d.date||'')} · currently <span style="color:var(--danger)">${escHtml(d.currentAccountName)}</span> → suggested <span style="color:var(--success)">${escHtml(d.suggestedAccountName)}</span></div>
+        </div>
+        <div style="font-family:monospace;font-size:0.85rem;color:var(--text);min-width:80px;text-align:right">${rcFmt(d.amount)}</div>
+        <div style="width:70px;text-align:right">${savedBadge}</div>
+      </div>`;
+    }).join('');
+    rcDevUpdateSelectedCount();
+  }
+
+  window.rcDevToggleSelectAll = function(checked) {
+    RC.deviations.forEach(d => { if (!d._saved) d._selected = checked; });
+    document.querySelectorAll('.rc-dev-select').forEach(cb => {
+      const idx = parseInt(cb.dataset.idx);
+      if (RC.deviations[idx] && !RC.deviations[idx]._saved) cb.checked = checked;
+    });
+    rcDevUpdateSelectedCount();
+  };
+  window.rcDevToggleOne = function(idx, checked) { if (RC.deviations[idx]) RC.deviations[idx]._selected = checked; rcDevUpdateSelectedCount(); };
+  function rcDevUpdateSelectedCount() {
+    const selectable = RC.deviations.filter(d => !d._saved);
+    const n = selectable.filter(d => d._selected).length;
+    const el = document.getElementById('rc-dev-selected-count');
+    if (el) el.textContent = `${n} of ${selectable.length} selected`;
+  }
+
+  window.rcFixChecked = async function() {
+    if (!odooUid) { alert('Connect to Odoo first'); return; }
+    const targets = RC.deviations.filter(d => d._selected && !d._saved);
+    if (!targets.length) { alert('Select at least one deviation first.'); return; }
+    if (!confirm(`Rewrite the account on ${targets.length} transaction${targets.length!==1?'s':''} to match the suggested account? This edits posted accounting entries.`)) return;
+
+    const statusEl = document.getElementById('rc-dev-status');
+    let ok = 0, err = 0;
+    for (const d of targets) {
+      if (statusEl) statusEl.textContent = `Fixing ${ok+err+1} of ${targets.length}…`;
+      try {
+        await odooExecute(odooUid, 'account.move.line', 'write', [[d.moveLineId], { account_id: parseInt(d.suggestedAccountId) }]);
+        d._saved = true;
+        ok++;
+      } catch(e) {
+        d._error = e.message;
+        err++;
+      }
+    }
+    if (statusEl) statusEl.textContent = `Done — ${ok} fixed${err ? `, ${err} failed (locked period or access — see ✗ tooltip)` : ''}`;
+    rcRenderDeviationList();
+  };
+
 })();
 </script>
 
