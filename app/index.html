@@ -3,7 +3,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <meta name="oel-version" content="v15.52">
+  <meta name="oel-version" content="v15.53">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="mobile-web-app-capable" content="yes">
@@ -3234,7 +3234,7 @@ Support Team"></textarea>
           <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
             <p style="margin:0 0 4px">The master marketing email, ready to edit. Open a section on the left to change the text, links, buttons and pictures (<strong style="color:var(--text)">Upload / replace</strong> crops and shrinks a photo to fit, or paste a hosted image URL). Untick <em>show</em> to drop a section, add or reorder feature cards, switch Dark / Light, or override the brand and accent colours.</p>
             <p style="margin:0 0 4px"><strong style="color:var(--text)">Save as new…</strong> keeps your version as a reusable template (stored in this browser; <strong style="color:var(--text)">Export</strong> / <strong style="color:var(--text)">Import</strong> a file to back it up or move it to another computer). Your work-in-progress is autosaved as a draft. <strong style="color:var(--text)">↺ Master</strong> returns to the original design.</p>
-            <p style="margin:0"><strong style="color:var(--text)">Copy for Outlook</strong> then Ctrl+V into a new message; <strong style="color:var(--text)">Copy HTML</strong> is for Mailchimp / HubSpot. Pair it with Mass Mail to send to a list and log it in Odoo.</p>
+            <p style="margin:0"><strong style="color:var(--text)">✨ Write with AI</strong> (needs your Groq key): describe the campaign and it rewrites the ticked parts of the copy and suggests three subject lines — links and pictures are untouched, and <em>Undo AI changes</em> restores everything. <strong style="color:var(--text)">Copy for Outlook</strong> then Ctrl+V into a new message; <strong style="color:var(--text)">Copy HTML</strong> is for Mailchimp / HubSpot. Pair it with Mass Mail to send to a list and log it in Odoo.</p>
           </div>
         </div>
 
@@ -4537,6 +4537,27 @@ Thank you</textarea>
             <input type="file" id="es-import" accept=".json,application/json" style="display:none" onchange="esImportJson(this)">
             <span class="es-dirty" id="es-dirty"></span>
           </div>
+        </div>
+        <div class="card" style="margin-bottom:14px">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+            <div style="font-size:0.88rem;font-weight:600">✨ Write with AI</div>
+            <span style="font-size:0.74rem;color:var(--muted)">Describe the campaign — AI rewrites the copy in this template. Links and pictures stay as they are.</span>
+          </div>
+          <textarea id="es-ai-brief" rows="3" placeholder="e.g. Fall corporate meetings push — hybrid events, LED walls and wireless mics, 10% off bookings made before Nov 30. Friendly but professional tone." style="margin-bottom:8px"></textarea>
+          <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:0.76rem;color:var(--muted);margin-bottom:10px">
+            <span>Rewrite:</span>
+            <label style="display:flex;gap:5px;align-items:center;cursor:pointer"><input type="checkbox" class="es-ai-scope" value="hero" checked> Hero</label>
+            <label style="display:flex;gap:5px;align-items:center;cursor:pointer"><input type="checkbox" class="es-ai-scope" value="intro" checked> Intro &amp; button</label>
+            <label style="display:flex;gap:5px;align-items:center;cursor:pointer"><input type="checkbox" class="es-ai-scope" value="cards" checked> Feature cards</label>
+            <label style="display:flex;gap:5px;align-items:center;cursor:pointer"><input type="checkbox" class="es-ai-scope" value="why" checked> “Why us”</label>
+            <label style="display:flex;gap:5px;align-items:center;cursor:pointer"><input type="checkbox" class="es-ai-scope" value="buttons" checked> Bottom buttons</label>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <button class="btn btn-primary" id="es-ai-btn" onclick="esAiWrite()" style="padding:7px 16px;font-size:0.82rem">✨ Write it</button>
+            <button class="btn btn-ghost" id="es-ai-undo" onclick="esAiUndo()" style="padding:7px 14px;font-size:0.82rem;display:none">↶ Undo AI changes</button>
+            <span id="es-ai-status" style="font-size:0.76rem;color:var(--muted)"></span>
+          </div>
+          <div id="es-ai-subjects" style="display:none;margin-top:12px"></div>
         </div>
         <div class="es-grid">
           <div id="es-editor"></div>
@@ -26337,7 +26358,7 @@ window.inboxTab = function(tab) {
   var SECTIONS = [
     { key:'daily',    label:'DAILY',        items:['nav-inbox','nav-leads','nav-activities'] },
     { key:'quoting',  label:'QUOTING',      items:['nav-quotedesk','nav-smartbuilder','nav-quotes','nav-templates'] },
-    { key:'pipeline', label:'PIPELINE',     items:['nav-prospect','nav-catchup','nav-vendor','nav-massmail','nav-oppimport','nav-shortagerfq'] },
+    { key:'pipeline', label:'PIPELINE',     items:['nav-prospect','nav-catchup','nav-vendor','nav-massmail','nav-emailstudio','nav-oppimport','nav-shortagerfq'] },
     { key:'work',     label:'WORK & COMMS', items:['nav-projects','nav-discuss','nav-support'] },
     { key:'utils',    label:'UTILITIES',    items:['nav-bounces','nav-expenses','nav-salestargeting','nav-dataexplorer','nav-docs'] },
     { key:'accounting',label:'ACCOUNTING',   items:['nav-reconcile','nav-arfollowup','nav-finreports'] },
@@ -26355,6 +26376,12 @@ window.inboxTab = function(tab) {
       for (var i = 0; i < SECTIONS.length; i++) { if (SECTIONS[i].label === text) { sec = SECTIONS[i]; break; } }
       if (!sec) return;
       var itemEls = sec.items.map(function(id){ return document.getElementById(id); }).filter(Boolean);
+      // Also adopt any sidebar item that sits directly under this label but isn't listed above,
+      // so a newly added item can never be left behind (and float to the top) when sections move.
+      for (var sib = labelEl.nextElementSibling; sib && sib.classList.contains('sb-item'); sib = sib.nextElementSibling) {
+        if (itemEls.indexOf(sib) < 0) itemEls.push(sib);
+      }
+      itemEls.sort(function(a, b){ return (a.compareDocumentPosition(b) & 4) ? -1 : 1; });
       var lastItem = itemEls[itemEls.length - 1];
       var dividerEl = (lastItem && lastItem.nextElementSibling && lastItem.nextElementSibling.classList.contains('sb-divider'))
         ? lastItem.nextElementSibling : null;
@@ -36185,6 +36212,60 @@ ${header}${hero}${intro}${pk}${why}${btn}${footer}
       renderEditor(); touched();
     });
   }
+
+  // ── ✨ Write with AI (Groq) ────────────────────────────────────────────────────────────
+  let aiSnap = null, aiOk = false;
+  const clip = (v, n) => String(v == null ? '' : v).replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim().slice(0, n);
+  function aiStatus(msg, bad) { const el = $('es-ai-status'); if (el) { el.textContent = msg; el.style.color = bad ? 'var(--danger)' : 'var(--muted)'; } }
+  window.esAiWrite = async function() {
+    const key = (document.getElementById('gemini-key') || {}).value; const k = key && key.trim();
+    if (!k) { alert('Groq API key required — add it in Settings.'); return; }
+    const model = (document.getElementById('gemini-model') || {}).value || 'qwen/qwen3.8-27b';
+    const brief = ($('es-ai-brief').value || '').trim();
+    if (brief.length < 10) { aiStatus('Tell me a little about the campaign first (audience, offer, tone).', true); return; }
+    const scope = [...document.querySelectorAll('.es-ai-scope:checked')].map(x => x.value);
+    if (!scope.length) { aiStatus('Tick at least one part to rewrite.', true); return; }
+    if (!aiOk && !confirm('Send your brief and the current wording of this email to Groq to write new copy?\n\nNothing is changed until it replies, and you can undo it.')) return;
+    aiOk = true;
+    const cur = {}, want = {};
+    if (scope.includes('hero')) { cur.hero = { pill: S.hero.pill, headline: S.hero.headline, sub: S.hero.sub }; want.hero = '{"pill":"≤40 chars, ALL CAPS ok","headline":"≤70 chars; wrap 1-3 key words in [[double brackets]]","sub":"≤160 chars"}'; }
+    if (scope.includes('intro')) { cur.intro = { heading: S.intro.heading, p1: S.intro.p1, p2: S.intro.p2, cta: S.intro.cta }; want.intro = '{"heading":"≤50 chars","p1":"≤260 chars","p2":"≤220 chars; may bold the company name with **double asterisks**","cta":"≤34 chars, may end with →"}'; }
+    if (scope.includes('cards')) { cur.cards = S.packages.cards.map(c => ({ label: c.label, title: c.title, text: c.text, linkText: c.linkText })); want.cards = '[exactly ' + S.packages.cards.length + ' objects in the same order: {"label":"≤28 chars","title":"≤45 chars","text":"≤150 chars","linkText":"≤24 chars"}]'; }
+    if (scope.includes('why')) { cur.why = S.why.items; want.why = '[exactly ' + S.why.items.length + ' strings, each "Short Title: one short sentence" ≤95 chars]'; }
+    if (scope.includes('buttons')) { cur.buttons = { b1Text: S.buttons.b1Text, b2Text: S.buttons.b2Text }; want.buttons = '{"b1Text":"≤30 chars","b2Text":"≤30 chars"}'; }
+    want.subjects = '[3 distinct email subject lines, ≤60 chars each, no emoji]';
+    const prompt = 'You are a marketing copywriter for ' + (S.brand.name1 + ' ' + S.brand.name2).trim() + ' (' + S.brand.tagline + '), writing a B2B marketing email.\n' +
+      'CAMPAIGN BRIEF:\n' + brief + '\n\nCURRENT COPY (rewrite it for the brief; keep the same structure, voice quality and rough length):\n' + JSON.stringify(cur) + '\n\n' +
+      'Return ONLY one JSON object with exactly these keys and limits — no commentary, no markdown:\n{' + Object.keys(want).map(x => '"' + x + '":' + want[x]).join(',') + '}\n' +
+      'Rules: plain text only (no HTML); do not invent prices, dates or discounts that are not in the brief; keep it concrete and benefit-led.';
+    const btn = $('es-ai-btn'); btn.disabled = true; aiStatus('Writing…');
+    try {
+      const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + k },
+        body: JSON.stringify({ model, reasoning_effort: 'none', reasoning_format: 'hidden', max_tokens: 2500, temperature: 0.7, messages: [{ role: 'user', content: prompt }] }),
+        signal: AbortSignal.timeout(60000)
+      });
+      if (!resp.ok) throw new Error('Groq HTTP ' + resp.status);
+      const txt = (((await resp.json()).choices || [{}])[0].message || {}).content || '';
+      const m = txt.replace(/```json|```/g, '').match(/\{[\s\S]*\}/); if (!m) throw new Error('the reply wasn’t JSON — try again');
+      const r = JSON.parse(m[0]); const before = clone(S); let n = 0;
+      const put = (obj, key, v, max) => { const c = clip(v, max); if (c) { obj[key] = c; n++; } };
+      if (scope.includes('hero') && r.hero) { put(S.hero, 'pill', r.hero.pill, 48); put(S.hero, 'headline', r.hero.headline, 90); put(S.hero, 'sub', r.hero.sub, 200); }
+      if (scope.includes('intro') && r.intro) { put(S.intro, 'heading', r.intro.heading, 60); put(S.intro, 'p1', r.intro.p1, 320); put(S.intro, 'p2', r.intro.p2, 280); put(S.intro, 'cta', r.intro.cta, 40); }
+      if (scope.includes('cards') && Array.isArray(r.cards)) r.cards.slice(0, S.packages.cards.length).forEach((c, i) => { if (!c) return; const t = S.packages.cards[i]; put(t, 'label', c.label, 34); put(t, 'title', c.title, 56); put(t, 'text', c.text, 190); if (t.linkText) put(t, 'linkText', c.linkText, 30); });
+      if (scope.includes('why') && Array.isArray(r.why)) r.why.slice(0, S.why.items.length).forEach((w, i) => put(S.why.items, i, w, 120));
+      if (scope.includes('buttons') && r.buttons) { if (S.buttons.b1Text) put(S.buttons, 'b1Text', r.buttons.b1Text, 36); if (S.buttons.b2Text) put(S.buttons, 'b2Text', r.buttons.b2Text, 36); }
+      if (!n) throw new Error('nothing usable came back — try again');
+      aiSnap = before; $('es-ai-undo').style.display = '';
+      const subs = (Array.isArray(r.subjects) ? r.subjects : []).map(x => clip(x, 80)).filter(Boolean).slice(0, 3);
+      const box = $('es-ai-subjects');
+      if (subs.length) { box.style.display = ''; box.innerHTML = '<div style="font-size:0.72rem;color:var(--muted);margin-bottom:5px">Subject line ideas (click to copy)</div>' + subs.map(x => '<div class="es-subj" style="cursor:pointer;border:1px solid var(--border);border-radius:7px;padding:6px 10px;margin-bottom:5px;font-size:0.82rem;background:var(--surface2)">' + E(x) + '</div>').join(''); }
+      renderEditor(); touched(); aiStatus('Done — ' + n + ' fields rewritten. Review the preview; Undo puts everything back.');
+    } catch (e) { aiStatus('AI step failed: ' + e.message, true); }
+    finally { btn.disabled = false; }
+  };
+  window.esAiUndo = function() { if (!aiSnap) return; S = aiSnap; aiSnap = null; $('es-ai-undo').style.display = 'none'; renderEditor(); touched(); aiStatus('Undone.'); };
+  document.addEventListener('click', e => { const el = e.target.closest && e.target.closest('.es-subj'); if (!el) return; try { navigator.clipboard.writeText(el.textContent); el.style.borderColor = 'var(--success)'; status('Subject line copied'); } catch (x) {} });
 
   window.esInit = async function() {
     if (inited) { renderPreview(); return; } inited = true; wire();
