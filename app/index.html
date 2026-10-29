@@ -9098,7 +9098,16 @@ function importCredentials(eventOrElement) {
       }
 
       // ── Save core creds ───────────────────────────
-      localStorage.setItem('odoo_email_link_creds', JSON.stringify(data));
+      // Never store the document files in the settings key — they're already in the Document Library (IndexedDB)
+      // and would blow the ~5 MB localStorage quota.
+      const coreCreds = Object.assign({}, data);
+      delete coreCreds.docLibrary;
+      try { localStorage.setItem('odoo_email_link_creds', JSON.stringify(coreCreds)); }
+      catch(qe) {
+        const slim = { url: data.url, db: data.db, user: data.user, odooKey: data.odooKey, geminiKey: data.geminiKey, geminiModel: data.geminiModel, followUpDays: data.followUpDays };
+        localStorage.setItem('odoo_email_link_creds', JSON.stringify(slim));
+        imported.push('(some saved extras skipped — browser storage is nearly full)');
+      }
       document.getElementById('saved-notice').classList.remove('hidden');
 
       alert('✓ Imported: ' + (imported.length ? imported.join(', ') : 'settings'));
