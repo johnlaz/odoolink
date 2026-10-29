@@ -19,7 +19,7 @@ PORT       = 7843
 PROXY_PORT = 7842
 GROQ_ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions'
 GROQ_MODEL    = 'llama-3.3-70b-versatile'
-BUILD         = '15.58'   # keep equal to <meta name="oel-version"> in index.html
+BUILD         = '15.59'   # keep equal to <meta name="oel-version"> in index.html
 
 # ─── Scan progress (polled via GET /status) ───────────────────────────────────
 
@@ -582,7 +582,7 @@ class IMAPHandler(BaseHTTPRequestHandler):
                 self._json({'error': str(e)})
 
         elif path == '/flag':
-            # Mark one email read/unread on the server (the only endpoint that opens the mailbox read-write)
+            # Mark one email read/unread on the server, then READ THE FLAGS BACK to prove it stuck
             config = data.get('config', {})
             uid    = str(data.get('uid', '')).strip()
             seen   = bool(data.get('seen', True))
@@ -592,15 +592,85 @@ class IMAPHandler(BaseHTTPRequestHandler):
                 return
             try:
                 def work(conn):
+                    st, resp = conn.select(folder, readonly=False)
+                    if st != 'OK':
+                        raise RuntimeError('Could not open folder ' + folder)
+                    st, resp = conn.uid('store', uid.encode(), '+FLAGS' if seen else '-FLAGS', '(\\Seen)')
+                    if st != 'OK':
+                        raise RuntimeError('Server refused the flag change: ' + str(resp))
+                    st, resp = conn.uid('fetch', uid.encode(), '(FLAGS)')
+                    flags = ''
+                    for item in (resp or []):
+                        raw = item[0] if isinstance(item, tuple) else item
+                        if isinstance(raw, bytes):
+                            m = re.search(rb'FLAGS \(([^)]*)\)', raw)
+                            if m:
+                                flags = m.group(1).decode('utf-8', 'ignore')
+                    if flags == '' and not any(isinstance(i, (bytes, tuple)) and b'FLAGS' in (i[0] if isinstance(i, tuple) else i) for i in (resp or [])):
+                        raise RuntimeError('Email UID %s not found in %s' % (uid, folder))
+                    now_seen = '\\Seen' in flags
+                    if now_seen != seen:
+                        raise RuntimeError('Server accepted the command but the email is still %s (flags: %s)' % ('read' if now_seen else 'unread', flags or 'none'))
+                    return flags
+                flags = with_conn(config, work)
+                self._json({'ok': True, 'uid': uid, 'seen': seen, 'flags': flags})
+            except Exception as e:
+                self._json({'error': str(e)})
+
+        elif path == '/trash':
+            # Move one email to the Trash folder (copy, flag deleted, expunge that one message)
+            config = data.get('config', {})
+            uid    = str(data.get('uid', '')).strip()
+            folder = (data.get('folder') or 'INBOX').strip() or 'INBOX'
+            if not config.get('email') or not config.get('password') or not uid.isdigit():
+                self._json({'error': 'Missing params'}, 400)
+                return
+            try:
+                def work(conn):
+                    # find the Trash folder: special-use flag first, then common names
+                    trash = None
+                    st, lst = conn.list()
+                    names = []
+                    if st == 'OK':
+                        for f in lst or []:
+                            if not f:
+                                continue
+                            line = f.decode('utf-8', 'ignore') if isinstance(f, bytes) else str(f)
+                            m = re.search(r'"([^"]+)"\s*$', line) or re.search(r'(\S+)\s*$', line)
+                            if not m:
+                                continue
+                            name = m.group(1)
+                            names.append(name)
+                            if '\\Trash' in line and not trash:
+                                trash = name
+                    if not trash:
+                        lower = {n.lower(): n for n in names}
+                        for cand in ('trash', 'inbox.trash', 'deleted items', 'deleted', 'deleted messages', '[gmail]/trash', 'bin'):
+                            if cand in lower:
+                                trash = lower[cand]
+                                break
+                    if not trash:
+                        raise RuntimeError('Could not find a Trash folder (folders: ' + ', '.join(names[:12]) + ')')
+                    if trash.lower() == folder.lower():
+                        raise RuntimeError('This email is already in the Trash folder')
                     st, _ = conn.select(folder, readonly=False)
                     if st != 'OK':
                         raise RuntimeError('Could not open folder ' + folder)
-                    st, _ = conn.uid('store', uid.encode(), '+FLAGS' if seen else '-FLAGS', '(\\Seen)')
+                    q = ('"%s"' % trash) if (' ' in trash and not trash.startswith('"')) else trash
+                    st, resp = conn.uid('copy', uid.encode(), q)
                     if st != 'OK':
-                        raise RuntimeError('Server refused the flag change')
-                    return True
-                with_conn(config, work)
-                self._json({'ok': True, 'uid': uid, 'seen': seen})
+                        raise RuntimeError('Copy to Trash failed: ' + str(resp))
+                    st, resp = conn.uid('store', uid.encode(), '+FLAGS', '(\\Deleted)')
+                    if st != 'OK':
+                        raise RuntimeError('Could not flag the original as deleted: ' + str(resp))
+                    caps = [c.upper() if isinstance(c, str) else c.decode().upper() for c in (getattr(conn, 'capabilities', ()) or ())]
+                    if 'UIDPLUS' in caps:
+                        conn.uid('expunge', uid.encode())      # removes only this message
+                    else:
+                        conn.expunge()
+                    return trash
+                trash = with_conn(config, work)
+                self._json({'ok': True, 'uid': uid, 'trash': trash})
             except Exception as e:
                 self._json({'error': str(e)})
 

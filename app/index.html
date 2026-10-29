@@ -3,7 +3,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <meta name="oel-version" content="v15.58">
+  <meta name="oel-version" content="v15.59">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="mobile-web-app-capable" content="yes">
@@ -11466,12 +11466,14 @@ async function imapMoveToTrash(uid, src) {
     const r = await fetch(IMAP_SERVER + '/trash', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ config: cfg, uid: String(uid) }),
+      body: JSON.stringify({ config: cfg, uid: String(uid), folder: window._turbifyFolder || 'INBOX' }),
       signal: AbortSignal.timeout(20000),
     });
     if (!r.ok) {
       const t = await r.text();
-      throw new Error('Server ' + r.status + ': ' + t.slice(0, 120));
+      throw new Error(r.status === 404
+        ? 'the running imap_server.py does not support Trash yet — copy the new imap_server.py into /app, close the old server window, and run start.bat again'
+        : 'Server ' + r.status + ': ' + t.slice(0, 120));
     }
     const d = await r.json();
     if (d.error) throw new Error(d.error);
@@ -12079,7 +12081,7 @@ async function qdBuildStatus() {
     const j = await r.json();
     srv = j.build || 'old';
   } catch(e) {}
-  const NEED_MINOR = 58;   // oldest imap_server.py build this page works with (15.58: fast inbox, auto-check, mark read/unread)
+  const NEED_MINOR = 59;   // oldest imap_server.py build this page works with (15.59: fast inbox, auto-check, verified read/unread, trash)
   const minor = parseInt(String(srv).split('.')[1] || '0', 10);
   const ok = srv !== 'offline' && srv !== 'old' && minor >= NEED_MINOR;
   el.style.color = ok ? 'var(--muted)' : '#d9a441';
@@ -15600,9 +15602,15 @@ async function _irSetSeen(w, seen) {
       body: JSON.stringify({ config: getImapConfig(), uid: em.uid, seen: seen, folder: window._turbifyFolder || 'INBOX' }),
       signal: AbortSignal.timeout(15000)
     });
-    if (r.status === 404) throw new Error('imap_server.py is out of date — copy the new one and run start.bat');
+    if (r.status === 404) throw new Error('imap_server.py is out of date — copy the new one into /app, close the old server window, and run start.bat again');
     const d = await r.json();
     if (d.error) throw new Error(d.error);
+    if (statusEl) {
+      const old = statusEl.textContent, oldColor = statusEl.style.color;
+      statusEl.style.color = 'var(--success)';
+      statusEl.textContent = '✓ Marked ' + (seen ? 'read' : 'unread') + ' on Turbify (confirmed by server)';
+      setTimeout(() => { if (statusEl.textContent.indexOf('confirmed by server') > -1) { statusEl.textContent = old; statusEl.style.color = oldColor; } }, 3500);
+    }
     return true;
   } catch (e) {
     em.unread = prev; _irRowSetUnread(w, prev); _irUpdateReadBtn(w);
