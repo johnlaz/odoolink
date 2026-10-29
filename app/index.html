@@ -3,7 +3,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <meta name="oel-version" content="v15.56">
+  <meta name="oel-version" content="v15.57">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="mobile-web-app-capable" content="yes">
@@ -1182,7 +1182,34 @@
       <div class="section-scroll" id="inbox-scroll" style="position:relative;display:flex;flex-direction:column;gap:0;padding:0">
 
         <!-- Multi-inbox container: panels appear here when toggled -->
-        <div id="inbox-panels-container" style="display:flex;flex-direction:column;flex:1;overflow:hidden">
+        <div id="inbox-panels-container" data-view="standard" data-size="m" style="display:flex;flex-direction:column;flex:1;overflow:hidden">
+
+          <!-- Inbox display + auto-check controls -->
+          <div id="inbox-viewbar" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:6px 16px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;font-size:0.74rem;color:var(--muted)">
+            <label style="display:flex;align-items:center;gap:5px">View
+              <select id="inbox-view-sel" onchange="oelInboxApplyView()" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:3px 6px;color:var(--text);font-size:0.74rem;outline:none">
+                <option value="standard">Standard</option>
+                <option value="compact">Compact (one line)</option>
+                <option value="comfortable">Comfortable</option>
+              </select>
+            </label>
+            <label style="display:flex;align-items:center;gap:5px">Text
+              <select id="inbox-size-sel" onchange="oelInboxApplyView()" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:3px 6px;color:var(--text);font-size:0.74rem;outline:none">
+                <option value="s">Small</option>
+                <option value="m">Medium</option>
+                <option value="l">Large</option>
+              </select>
+            </label>
+            <label style="display:flex;align-items:center;gap:5px" title="Checks for new mail in the background while the Inbox is open. It only fetches mail newer than what you already see.">Auto-check
+              <select id="inbox-auto-sel" onchange="oelInboxApplyView()" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:3px 6px;color:var(--text);font-size:0.74rem;outline:none">
+                <option value="0">Off</option>
+                <option value="30">Every 30 sec</option>
+                <option value="60">Every minute</option>
+                <option value="120">Every 2 min</option>
+                <option value="300">Every 5 min</option>
+              </select>
+            </label>
+          </div>
 
           <!-- Odoo inbox panel -->
           <div id="inbox-panel-odoo" class="inbox-float-panel" style="display:none;flex-direction:column;border-bottom:1px solid var(--border)">
@@ -12014,7 +12041,7 @@ async function qdBuildStatus() {
     const j = await r.json();
     srv = j.build || 'old';
   } catch(e) {}
-  const NEED_MINOR = 37;   // oldest imap_server.py build this page works with (15.37)
+  const NEED_MINOR = 57;   // oldest imap_server.py build this page works with (15.57: fast inbox + auto-check)
   const minor = parseInt(String(srv).split('.')[1] || '0', 10);
   const ok = srv !== 'offline' && srv !== 'old' && minor >= NEED_MINOR;
   el.style.color = ok ? 'var(--muted)' : '#d9a441';
@@ -15329,12 +15356,145 @@ window.refreshInboxPanel = async function(src) {
 // Per-panel selection state
 window._panelSelected = { odoo: new Map(), turbify: new Map(), gmail: new Map() };
 
+// ── Inbox row helpers ───────────────────────────────────────────────────────
+function _irSenderName(name, addr) {
+  let n = String(name || '').replace(/<[^>]*>/g, '').replace(/["']/g, '').trim();
+  if (!n) n = String(addr || '').trim();
+  return n || '(unknown sender)';
+}
+function _irDate(raw) {
+  if (!raw) return '';
+  const d = new Date(raw);
+  if (isNaN(d)) return String(raw).slice(0, 16);
+  const now = new Date();
+  if (d.toDateString() === now.toDateString()) return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  const y = new Date(now); y.setDate(now.getDate() - 1);
+  if (d.toDateString() === y.toDateString()) return 'Yesterday';
+  return d.getFullYear() === now.getFullYear()
+    ? d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+(function() {
+  const st = document.createElement('style');
+  st.textContent = `
+    #inbox-panels-container { --ir-scale: 1; }
+    #inbox-panels-container[data-size="s"] { --ir-scale: 0.9; }
+    #inbox-panels-container[data-size="l"] { --ir-scale: 1.14; }
+    .ir-row { padding: 9px 12px; }
+    .ir-top { display: grid; grid-template-columns: minmax(0,1fr) auto; grid-template-areas: "sender date" "subject subject"; column-gap: 10px; row-gap: 2px; align-items: baseline; }
+    .ir-sender  { grid-area: sender;  font-size: calc(0.92rem * var(--ir-scale)); font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ir-subject { grid-area: subject; font-size: calc(0.86rem * var(--ir-scale)); font-weight: 400; color: var(--text); opacity: 0.88; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ir-date    { grid-area: date;    font-size: calc(0.76rem * var(--ir-scale)); color: var(--muted); white-space: nowrap; }
+    .ir-record  { font-size: 0.8em; opacity: 0.6; font-weight: 400; margin-left: 6px; }
+    .ir-unread .ir-sender, .ir-unread .ir-subject { font-weight: 700; opacity: 1; }
+    .ir-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); margin-right: 7px; vertical-align: middle; }
+    .ir-new { animation: irFlash 2.4s ease-out; }
+    @keyframes irFlash { from { background: var(--accent-dim); } to { background: var(--surface); } }
+
+    #inbox-panels-container[data-view="compact"] .ir-row { padding: 5px 10px; }
+    #inbox-panels-container[data-view="compact"] .ir-top { grid-template-columns: minmax(120px,210px) minmax(0,1fr) auto; grid-template-areas: "sender subject date"; column-gap: 14px; align-items: center; }
+    #inbox-panels-container[data-view="compact"] .ir-sender  { font-size: calc(0.84rem * var(--ir-scale)); }
+    #inbox-panels-container[data-view="compact"] .ir-subject { font-size: calc(0.84rem * var(--ir-scale)); }
+
+    #inbox-panels-container[data-view="comfortable"] .ir-row { padding: 14px 16px; }
+    #inbox-panels-container[data-view="comfortable"] .ir-top { row-gap: 5px; }
+    #inbox-panels-container[data-view="comfortable"] .ir-sender  { font-size: calc(1rem * var(--ir-scale)); }
+    #inbox-panels-container[data-view="comfortable"] .ir-subject { font-size: calc(0.92rem * var(--ir-scale)); white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  `;
+  document.head.appendChild(st);
+})();
+
+// ── View settings (remembered on this PC) ───────────────────────────────────
+function _irGet(k, d) { try { return localStorage.getItem(k) || d; } catch(e) { return d; } }
+function _irSet(k, v) { try { localStorage.setItem(k, v); } catch(e) {} }
+window.oelInboxApplyView = function(init) {
+  const vSel = document.getElementById('inbox-view-sel'), zSel = document.getElementById('inbox-size-sel'), aSel = document.getElementById('inbox-auto-sel');
+  if (init === true) {
+    if (vSel) vSel.value = _irGet('oel_inbox_view', 'standard');
+    if (zSel) zSel.value = _irGet('oel_inbox_size', 'm');
+    if (aSel) aSel.value = _irGet('oel_inbox_auto', '60');
+  } else {
+    if (vSel) _irSet('oel_inbox_view', vSel.value);
+    if (zSel) _irSet('oel_inbox_size', zSel.value);
+    if (aSel) _irSet('oel_inbox_auto', aSel.value);
+  }
+  const c = document.getElementById('inbox-panels-container');
+  if (c) { c.dataset.view = vSel?.value || 'standard'; c.dataset.size = zSel?.value || 'm'; }
+  _irSchedulePoll();
+};
+
+// ── Auto-check for new mail (Turbify/IMAP) ──────────────────────────────────
+// Only fetches mail newer than the newest UID on screen, so it is one small request.
+window._turbifyMaxUid = 0;
+window._turbifyPolling = false;
+window._turbifyLastCheck = 0;
+let _irPollTimer = null;
+function _irSchedulePoll() {
+  if (_irPollTimer) { clearInterval(_irPollTimer); _irPollTimer = null; }
+  const secs = parseInt(_irGet('oel_inbox_auto', '60'), 10) || 0;
+  if (!secs) return;
+  _irPollTimer = setInterval(() => { _turbifyPoll(false); }, Math.max(15, secs) * 1000);
+}
+async function _turbifyPoll(force) {
+  if (window._turbifyPolling) return;
+  if (!window._openPanels || !window._openPanels.has('turbify')) return;
+  if (!force && document.hidden) return;
+  if (!document.getElementById('panel-inbox')?.classList.contains('active')) return;
+  if (document.getElementById('turbify-flagged-only')?.checked) return;   // flagged view is a full list, not a feed
+  if (!window._turbifyMaxUid) return;                                     // initial load not finished yet
+  window._turbifyPolling = true;
+  const statusEl = document.getElementById('turbify-panel-status');
+  const listEl   = document.getElementById('turbify-panel-list');
+  try {
+    const r = await fetch(IMAP_SERVER + '/browse', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ config: getImapConfig(), limit: 50, since_uid: window._turbifyMaxUid }),
+      signal: AbortSignal.timeout(20000)
+    });
+    const data = await r.json();
+    if (data.error) throw new Error(data.error);
+    const fresh = (data.emails || []).filter(e => parseInt(e.uid, 10) > window._turbifyMaxUid);
+    window._turbifyLastCheck = Date.now();
+    if (fresh.length) {
+      const ph = listEl.querySelector('.ir-empty'); if (ph) ph.remove();
+      // fresh is newest-first; insert oldest-first at the top so the newest ends on top
+      fresh.slice().reverse().forEach(em => {
+        const row = _renderInboxRow({
+          subject: em.subject, sender_name: em.sender_name || em.sender, sender_email: em.sender_email || em.sender,
+          email_from: em.sender_email || em.sender, date: em.date, flagged: em.flagged, unread: em.unread,
+          list_unsubscribe: em.list_unsubscribe, uid: em.uid,
+        }, 'turbify', 'n' + em.uid);
+        row.firstChild && row.firstChild.classList.add('ir-new');
+        listEl.insertBefore(row, listEl.firstChild);
+      });
+      window._turbifyMaxUid = Math.max(window._turbifyMaxUid, ...fresh.map(e => parseInt(e.uid, 10)));
+      window._turbifyEmails = fresh.concat(window._turbifyEmails || []);
+    }
+    if (statusEl) {
+      const n = listEl.querySelectorAll('.ir-row').length;
+      statusEl.style.color = 'var(--muted)';
+      statusEl.textContent = n + ' email' + (n !== 1 ? 's' : '') + (fresh.length ? ' · ' + fresh.length + ' new' : '') +
+        ' · checked ' + new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    }
+  } catch (e) {
+    if (statusEl) { statusEl.style.color = 'var(--warning)'; statusEl.textContent = 'Auto-check failed: ' + e.message; }
+  }
+  window._turbifyPolling = false;
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) return;
+  const secs = parseInt(_irGet('oel_inbox_auto', '60'), 10) || 0;
+  if (secs && Date.now() - window._turbifyLastCheck > secs * 1000) _turbifyPoll(false);   // catch up when you come back to the tab
+});
+document.addEventListener('DOMContentLoaded', () => { window.oelInboxApplyView(true); });
+if (document.readyState !== 'loading') window.oelInboxApplyView(true);
+
 function _renderInboxRow(em, src, idx) {
   const cfg     = INBOX_SOURCES[src];
   const color   = cfg ? cfg.color : 'var(--accent)';
   const subject = em.subject || '(no subject)';
   const sender  = em.sender_name || em.sender || em.author || '';
-  const date    = (em.date||'').split('T')[0].split(' ')[0];
   const record  = em._record || em.record_name || '';
   const emailTo = em.email_from || em.sender_email || em.sender || '';
   const uid     = em.uid || (src + '_' + idx);
@@ -15345,7 +15505,8 @@ function _renderInboxRow(em, src, idx) {
   wrapper._em = em;
 
   const row = document.createElement('div');
-  row.style.cssText = 'display:flex;align-items:flex-start;gap:8px;padding:9px 10px;border:1px solid var(--border);border-left:3px solid '+color+';border-radius:8px;transition:background 0.12s;background:var(--surface)';
+  row.className = 'ir-row' + (em.unread ? ' ir-unread' : '');
+  row.style.cssText = 'display:flex;align-items:center;gap:8px;border:1px solid var(--border);border-left:3px solid '+color+';border-radius:8px;transition:background 0.12s;background:var(--surface)';
 
   const cb = document.createElement('input');
   cb.type = 'checkbox';
@@ -15365,14 +15526,13 @@ function _renderInboxRow(em, src, idx) {
 
   const meta = document.createElement('div');
   meta.style.cssText = 'flex:1;min-width:0;cursor:pointer';
+  const _nice = _irSenderName(sender, em.sender_email || emailTo);
+  const _when = _irDate(em.date || '');
   meta.innerHTML =
-    '<div style="font-size:0.82rem;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'
-      +escHtml(subject)+(em.flagged?' 🚩':'')+
-    '</div>'+
-    '<div style="font-size:0.73rem;color:var(--muted);margin-top:2px;display:flex;gap:8px;flex-wrap:wrap">'+
-      (sender?'<span>'+escHtml(sender)+'</span>':'')+
-      (record?'<span style="opacity:0.6">'+escHtml(record)+'</span>':'')+
-      (date?'<span>'+escHtml(date)+'</span>':'')+
+    '<div class="ir-top">'+
+      '<span class="ir-sender">'+(em.unread?'<i class="ir-dot"></i>':'')+escHtml(_nice)+(record?' <span class="ir-record">'+escHtml(record)+'</span>':'')+'</span>'+
+      '<span class="ir-subject">'+escHtml(subject)+(em.flagged?' 🚩':'')+'</span>'+
+      '<span class="ir-date">'+escHtml(_when)+'</span>'+
     '</div>';
   // Click meta: toggle checkbox + expand/show email body below the row
   meta.onclick = async () => {
@@ -16332,9 +16492,14 @@ async function _loadTurbifyPanel(listEl, statusEl) {
     const data = await r.json();
     if (data.error) throw new Error(data.error);
     const emails = data.emails||[];
-    if (statusEl) statusEl.textContent = emails.length+' email'+(emails.length!==1?'s':'');
+    if (statusEl) {
+      statusEl.style.color = 'var(--muted)';
+      statusEl.textContent = emails.length+' email'+(emails.length!==1?'s':'') + (data.ms ? ' · loaded in ' + (data.ms/1000).toFixed(1) + 's' : '');
+    }
+    window._turbifyMaxUid = flagged ? 0 : emails.reduce((m, e) => Math.max(m, parseInt(e.uid, 10) || 0), 0);
+    window._turbifyLastCheck = Date.now();
     if (!emails.length) {
-      listEl.innerHTML='<div style="padding:20px;text-align:center;color:var(--muted);font-size:0.82rem">No emails found</div>';
+      listEl.innerHTML='<div class="ir-empty" style="padding:20px;text-align:center;color:var(--muted);font-size:0.82rem">No emails found</div>';
       return;
     }
     emails.forEach((em, i) => listEl.appendChild(_renderInboxRow({
@@ -16344,6 +16509,7 @@ async function _loadTurbifyPanel(listEl, statusEl) {
       email_from: em.sender_email||em.sender,
       date: em.date,
       flagged: em.flagged,
+      unread: em.unread,
       list_unsubscribe: em.list_unsubscribe,
       uid: em.uid,
     }, 'turbify', i)));

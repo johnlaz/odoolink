@@ -19,7 +19,7 @@ PORT       = 7843
 PROXY_PORT = 7842
 GROQ_ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions'
 GROQ_MODEL    = 'llama-3.3-70b-versatile'
-BUILD         = '15.37'   # keep equal to <meta name="oel-version"> in index.html
+BUILD         = '15.57'   # keep equal to <meta name="oel-version"> in index.html
 
 # ─── Scan progress (polled via GET /status) ───────────────────────────────────
 
@@ -105,6 +105,95 @@ def connect_imap(config):
     conn = imaplib.IMAP4_SSL(config['host'], int(config.get('port', 993)), ssl_context=ctx)
     conn.login(config['email'], config['password'])
     return conn
+
+# ─── Connection reuse ─────────────────────────────────────────────────────────
+# Logging in to Turbify is the slowest part of every inbox load, so keep one logged-in
+# connection per account and reuse it. imaplib is not thread-safe, so each account
+# has a lock; if the server dropped the connection we reconnect once and retry.
+_POOL = {}
+_POOL_LOCK = threading.Lock()
+
+def with_conn(config, fn):
+    key = (config.get('host', ''), config.get('email', ''))
+    with _POOL_LOCK:
+        entry = _POOL.setdefault(key, {'lock': threading.Lock(), 'conn': None, 'pw': None})
+    with entry['lock']:
+        last = None
+        for attempt in (0, 1):
+            try:
+                if entry['conn'] is None or entry['pw'] != config.get('password'):
+                    if entry['conn'] is not None:
+                        try: entry['conn'].logout()
+                        except Exception: pass
+                    entry['conn'] = connect_imap(config)
+                    entry['pw'] = config.get('password')
+                return fn(entry['conn'])
+            except (imaplib.IMAP4.abort, OSError, ssl.SSLError, EOFError) as e:
+                last = e
+                try: entry['conn'].logout()
+                except Exception: pass
+                entry['conn'] = None
+        raise last
+
+_FETCH_SPEC = '(UID FLAGS BODY.PEEK[HEADER.FIELDS (FROM SUBJECT DATE LIST-UNSUBSCRIBE)])'
+
+def _parse_header_fetch(data):
+    """Turn one batched FETCH response into email dicts (newest first)."""
+    recs, cur = [], None
+    for item in data or []:
+        if isinstance(item, tuple):
+            prefix = item[0].decode('utf-8', 'ignore') if isinstance(item[0], bytes) else str(item[0])
+            cur = {'prefix': prefix, 'raw': item[1]}
+            recs.append(cur)
+        elif isinstance(item, bytes) and cur is not None:
+            cur['prefix'] += ' ' + item.decode('utf-8', 'ignore')   # UID/FLAGS sometimes arrive after the literal
+    out = []
+    for r in recs:
+        mu = re.search(r'UID (\d+)', r['prefix'])
+        if not mu:
+            continue
+        mf = re.search(r'FLAGS \(([^)]*)\)', r['prefix'])
+        flags = mf.group(1) if mf else ''
+        hdr = email.message_from_bytes(r['raw'] or b'')
+        sender = decode_mime(hdr.get('From', ''))
+        em = re.search(r'<([^>]+)>', sender)
+        out.append({
+            'uid':              mu.group(1),
+            'subject':          decode_mime(hdr.get('Subject', '')),
+            'sender':           sender,
+            'sender_email':     em.group(1) if em else sender,
+            'date':             hdr.get('Date', ''),
+            'flagged':          '\\Flagged' in flags,
+            'unread':           '\\Seen' not in flags,
+            'list_unsubscribe': hdr.get('List-Unsubscribe', ''),
+        })
+    out.sort(key=lambda e: int(e['uid']), reverse=True)
+    return out
+
+def browse_fast(conn, folder, limit, flagged_only, since_uid):
+    """Newest `limit` headers in ONE round trip (no whole-mailbox search, no per-message fetch)."""
+    status, count_data = conn.select(folder, readonly=True)
+    if status != 'OK':
+        return None
+    n = int(count_data[0]) if count_data and count_data[0] else 0
+    if n == 0:
+        return None
+    if flagged_only:
+        st, u = conn.uid('search', None, 'FLAGGED')
+        uids = (u[0].split() if st == 'OK' and u and u[0] else [])[-limit:]
+        if not uids:
+            return []
+        st, data = conn.uid('fetch', b','.join(uids), _FETCH_SPEC)
+    elif since_uid:
+        st, data = conn.uid('fetch', ('%d:*' % (since_uid + 1)).encode(), _FETCH_SPEC)
+    else:
+        st, data = conn.fetch(('%d:%d' % (max(1, n - limit + 1), n)).encode(), _FETCH_SPEC)
+    if st != 'OK':
+        return []
+    emails = _parse_header_fetch(data)
+    if since_uid:   # IMAP returns the last message even when nothing is newer
+        emails = [e for e in emails if int(e['uid']) > since_uid]
+    return emails
 
 def imap_test(config):
     try:
@@ -406,75 +495,37 @@ class IMAPHandler(BaseHTTPRequestHandler):
             self._json(result)
 
         elif path == '/browse':
-            # Return last N email headers (no spec filtering)
+            # Return the newest N email headers. Optional since_uid = only mail newer than that UID (auto-check).
             config       = data.get('config', {})
             limit        = int(data.get('limit', 30))
             flagged_only = bool(data.get('flagged_only', False))
+            since_uid    = int(data.get('since_uid') or 0)
             if not config.get('email') or not config.get('password'):
                 self._json({'error': 'Missing IMAP credentials'}, 400)
                 return
+            t0 = time.time()
             try:
-                conn = connect_imap(config)
-
-                # Use explicit folder if provided, otherwise auto-detect
                 explicit_folder = data.get('folder', '').strip()
-                if explicit_folder:
-                    folders_to_try = [explicit_folder]
-                else:
-                    # Try INBOX first; if empty, try Gmail's All Mail folder
-                    folders_to_try = ['INBOX', '"[Gmail]/All Mail"', '[Gmail]/All Mail', 'INBOX.Inbox', 'Inbox']
-                selected_folder = None
-                uid_list = []
-                search_criteria = 'FLAGGED' if flagged_only else 'ALL'
+                folders_to_try = [explicit_folder] if explicit_folder else \
+                    ['INBOX', '"[Gmail]/All Mail"', '[Gmail]/All Mail', 'INBOX.Inbox', 'Inbox']
 
-                for folder in folders_to_try:
-                    try:
-                        status, count_data = conn.select(folder, readonly=True)
-                        if status != 'OK':
+                def work(conn):
+                    for folder in folders_to_try:
+                        try:
+                            res = browse_fast(conn, folder, limit, flagged_only, since_uid)
+                        except imaplib.IMAP4.abort:
+                            raise
+                        except Exception:
                             continue
-                        msg_count = int(count_data[0]) if count_data and count_data[0] else 0
-                        if msg_count == 0:
-                            continue
-                        status, uids = conn.uid('search', None, search_criteria)
-                        if status == 'OK' and uids[0]:
-                            uid_list = uids[0].split()
-                            if uid_list:
-                                selected_folder = folder
-                                break
-                    except Exception:
-                        continue
+                        if res is not None:
+                            return folder, res
+                    return None, []
 
-                if not uid_list:
-                    conn.logout()
-                    self._json({'emails': [], 'flagged_only': flagged_only,
-                                'debug': 'No emails found in any folder'})
-                    return
-
-                uid_list = uid_list[-limit:]
-                emails = []
-                for uid in reversed(uid_list):
-                    status, data2 = conn.uid('fetch', uid, '(BODY.PEEK[HEADER.FIELDS (FROM SUBJECT DATE FLAGS LIST-UNSUBSCRIBE)])')
-                    if status != 'OK' or not data2 or data2[0] is None:
-                        continue
-                    raw_hdr  = data2[0][1] if isinstance(data2[0], tuple) else b''
-                    hdr      = email.message_from_bytes(raw_hdr)
-                    subject  = decode_mime(hdr.get('Subject', ''))
-                    sender   = decode_mime(hdr.get('From', ''))
-                    date_str = hdr.get('Date', '')
-                    unsub    = hdr.get('List-Unsubscribe', '')
-                    em       = re.search(r'<([^>]+)>', sender)
-                    emails.append({
-                        'uid':              uid.decode(),
-                        'subject':          subject,
-                        'sender':           sender,
-                        'sender_email':     em.group(1) if em else sender,
-                        'date':             date_str,
-                        'flagged':          True if flagged_only else False,
-                        'list_unsubscribe': unsub,
-                    })
-                conn.logout()
+                selected_folder, emails = with_conn(config, work)
                 self._json({'emails': emails, 'flagged_only': flagged_only,
-                            'total_found': len(emails), 'folder': selected_folder})
+                            'total_found': len(emails), 'folder': selected_folder,
+                            'incremental': bool(since_uid),
+                            'ms': int((time.time() - t0) * 1000)})
             except Exception as e:
                 self._json({'error': str(e)})
 
@@ -516,16 +567,16 @@ class IMAPHandler(BaseHTTPRequestHandler):
                 self._json({'error': 'Missing params'}, 400)
                 return
             try:
-                conn = connect_imap(config)
-                conn.select('INBOX', readonly=True)
-                status, data2 = conn.uid('fetch', uid.encode(), '(RFC822)')
-                if status != 'OK' or not data2 or data2[0] is None:
-                    conn.logout()
+                def work(conn):
+                    conn.select('INBOX', readonly=True)
+                    status, data2 = conn.uid('fetch', uid.encode(), '(BODY.PEEK[])')
+                    if status != 'OK' or not data2 or data2[0] is None or not isinstance(data2[0], tuple):
+                        return None
+                    return get_text_body(email.message_from_bytes(data2[0][1]))
+                body = with_conn(config, work)
+                if body is None:
                     self._json({'error': 'Email not found'})
                     return
-                msg  = email.message_from_bytes(data2[0][1])
-                body = get_text_body(msg)
-                conn.logout()
                 self._json({'body': body})
             except Exception as e:
                 self._json({'error': str(e)})
