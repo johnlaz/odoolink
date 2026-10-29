@@ -1264,6 +1264,7 @@
             <div style="font-size:0.78rem;opacity:0.7">Click Odoo, Turbify, or Gmail to open that inbox</div>
           </div>
           </div><!-- end inbox-list-col -->
+          <div id="irp-splitter" role="separator" tabindex="0" title="Drag to resize · double-click to reset"></div>
 
           <!-- Reading pane -->
           <div id="inbox-reading-pane">
@@ -15510,12 +15511,24 @@ window._panelSelected = { odoo: new Map(), turbify: new Map(), gmail: new Map() 
     #inbox-reading-pane { display: none; flex-direction: column; flex: 1; min-height: 0; min-width: 0; background: var(--surface); }
     #inbox-panels-container:not([data-layout="list"]) #inbox-reading-pane { display: flex; }
     #inbox-panels-container[data-layout="right"] #inbox-split { flex-direction: row; }
-    #inbox-panels-container[data-layout="right"] #inbox-list-col { flex: 0 0 42%; min-width: 340px; max-width: 640px; border-right: 1px solid var(--border); }
-    #inbox-panels-container[data-layout="bottom"] #inbox-list-col { flex: 0 0 42%; border-bottom: 1px solid var(--border); }
+    #inbox-panels-container[data-layout="right"] #inbox-list-col { flex: 0 0 var(--irp-w, 42%); min-width: 0; }
+    #inbox-panels-container[data-layout="bottom"] #inbox-list-col { flex: 0 0 var(--irp-h, 42%); min-height: 0; }
     @media (max-width: 900px) {
       #inbox-panels-container[data-layout="right"] #inbox-split { flex-direction: column; }
-      #inbox-panels-container[data-layout="right"] #inbox-list-col { flex: 0 0 42%; max-width: none; min-width: 0; border-right: none; border-bottom: 1px solid var(--border); }
+      #inbox-panels-container[data-layout="right"] #inbox-list-col { flex: 0 0 var(--irp-h, 42%); }
     }
+    /* Draggable divider between the list and the reading pane */
+    #irp-splitter { display: none; flex: 0 0 7px; background: var(--border); position: relative; touch-action: none; z-index: 2; transition: background 0.12s; }
+    #inbox-panels-container:not([data-layout="list"]) #irp-splitter { display: block; }
+    #inbox-panels-container[data-layout="right"] #irp-splitter { cursor: col-resize; }
+    #inbox-panels-container[data-layout="bottom"] #irp-splitter { cursor: row-resize; }
+    @media (max-width: 900px) { #inbox-panels-container[data-layout="right"] #irp-splitter { cursor: row-resize; } }
+    #irp-splitter:hover, #irp-splitter.dragging, #irp-splitter:focus-visible { background: var(--accent); outline: none; }
+    #irp-splitter::after { content: ''; position: absolute; inset: 50% auto auto 50%; transform: translate(-50%,-50%); border-radius: 2px; background: var(--muted); opacity: 0.6; }
+    #inbox-split:not([data-dir="col"]) #irp-splitter::after { width: 2px; height: 26px; }
+    #inbox-split[data-dir="col"] #irp-splitter::after { width: 26px; height: 2px; }
+    body.irp-dragging { user-select: none; cursor: inherit; }
+    body.irp-dragging #inbox-reading-pane, body.irp-dragging #inbox-list-col { pointer-events: none; }
     #inbox-panels-container:not([data-layout="list"]) .ir-row > .ir-actions { display: none !important; }
     #inbox-panels-container:not([data-layout="list"]) .ir-wrap > .inline-draft-area { display: none; }
     #inbox-panels-container:not([data-layout="list"]) .ir-row { cursor: pointer; }
@@ -15605,6 +15618,78 @@ async function _irPaneOpen(w, info) {
   bodyEl.textContent = clean.slice(0, 30000) + (clean.length > 30000 ? '\n\n[…truncated]' : '');
 }
 
+// ── Draggable divider ───────────────────────────────────────────────────────
+// Remembers the list size per orientation (width for side-by-side, height for stacked). Double-click resets.
+(function() {
+  const sp = document.getElementById('irp-splitter');
+  const split = document.getElementById('inbox-split');
+  const cont = document.getElementById('inbox-panels-container');
+  const col = document.getElementById('inbox-list-col');
+  if (!sp || !split || !cont || !col) return;
+  const isCol = () => getComputedStyle(split).flexDirection === 'column';   // stacked layout (bottom, or narrow window)
+  const syncDir = () => { split.dataset.dir = isCol() ? 'col' : 'row'; };
+  const clampPx = (v, total, stacked) => {
+    const min = stacked ? 120 : 280, minOther = stacked ? 160 : 320;
+    return Math.round(Math.max(min, Math.min(total - minOther, v)));
+  };
+  function apply(px, stacked) {
+    if (px == null) { cont.style.removeProperty(stacked ? '--irp-h' : '--irp-w'); return; }
+    cont.style.setProperty(stacked ? '--irp-h' : '--irp-w', px + 'px');
+  }
+  function restore() {
+    syncDir();
+    const stacked = isCol();
+    const saved = parseFloat(_irGet(stacked ? 'oel_irp_h' : 'oel_irp_w', ''));
+    if (saved > 0) {
+      const total = stacked ? split.clientHeight : split.clientWidth;
+      if (total > 0) apply(clampPx(saved, total, stacked), stacked);
+    } else apply(null, stacked);
+  }
+  window._irpRestoreSize = restore;
+  let drag = null;
+  sp.addEventListener('pointerdown', (e) => {
+    if (e.button !== 0) return;
+    syncDir();
+    const stacked = isCol();
+    drag = { stacked, start: stacked ? e.clientY : e.clientX, base: stacked ? col.getBoundingClientRect().height : col.getBoundingClientRect().width };
+    sp.setPointerCapture(e.pointerId);
+    sp.classList.add('dragging'); document.body.classList.add('irp-dragging');
+    e.preventDefault();
+  });
+  sp.addEventListener('pointermove', (e) => {
+    if (!drag) return;
+    const total = drag.stacked ? split.clientHeight : split.clientWidth;
+    const px = clampPx(drag.base + ((drag.stacked ? e.clientY : e.clientX) - drag.start), total, drag.stacked);
+    apply(px, drag.stacked);
+    drag.last = px;
+  });
+  const end = () => {
+    if (!drag) return;
+    if (drag.last) _irSet(drag.stacked ? 'oel_irp_h' : 'oel_irp_w', String(drag.last));
+    drag = null; sp.classList.remove('dragging'); document.body.classList.remove('irp-dragging');
+  };
+  sp.addEventListener('pointerup', end);
+  sp.addEventListener('pointercancel', end);
+  sp.addEventListener('dblclick', () => {
+    syncDir();
+    const stacked = isCol();
+    _irSet(stacked ? 'oel_irp_h' : 'oel_irp_w', '');
+    apply(null, stacked);
+  });
+  sp.addEventListener('keydown', (e) => {
+    const stacked = isCol();
+    const k = e.key;
+    if (!(stacked ? (k === 'ArrowUp' || k === 'ArrowDown') : (k === 'ArrowLeft' || k === 'ArrowRight'))) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const cur = stacked ? col.getBoundingClientRect().height : col.getBoundingClientRect().width;
+    const total = stacked ? split.clientHeight : split.clientWidth;
+    const px = clampPx(cur + ((k === 'ArrowDown' || k === 'ArrowRight') ? 24 : -24), total, stacked);
+    apply(px, stacked); _irSet(stacked ? 'oel_irp_h' : 'oel_irp_w', String(px));
+  });
+  window.addEventListener('resize', restore);
+})();
+
 // ↑ / ↓ (or j / k) move between emails in pane mode
 document.addEventListener('keydown', (e) => {
   if (!window._irPaneOn()) return;
@@ -15692,6 +15777,7 @@ window.oelInboxApplyView = function(init) {
   const prevLayout = c?.dataset.layout;
   if (c) { c.dataset.view = vSel?.value || 'standard'; c.dataset.size = zSel?.value || 'm'; c.dataset.layout = lSel?.value || 'right'; }
   if (prevLayout && prevLayout !== c.dataset.layout && c.dataset.layout === 'list') window._irPaneClear();
+  if (window._irpRestoreSize) setTimeout(window._irpRestoreSize, 0);
   _irSchedulePoll();
 };
 
