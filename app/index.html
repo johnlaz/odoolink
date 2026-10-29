@@ -8784,7 +8784,7 @@ function escHtml(s) {
 }
 
 // ─── Credential import/export ─────────────────────────────
-function exportCredentials() {
+async function exportCredentials() {
   let imapCreds = {};
   try { imapCreds = JSON.parse(localStorage.getItem('oel_imap_creds') || '{}'); } catch(e) {}
 
@@ -8833,7 +8833,7 @@ function exportCredentials() {
     // ── Appearance ────────────────────────────────
     theme:        localStorage.getItem('oelTheme') || 'lime',
     connMode:     localStorage.getItem('odoo_conn_mode') || 'proxy',
-    docLibrary:   JSON.parse(localStorage.getItem('oel_doc_library') || '[]'),
+    docLibrary:   [],   // filled from IndexedDB just before download
     compactMode:  localStorage.getItem('oelCompact') === '1',
     sidebarOrder: (() => { try { return JSON.parse(localStorage.getItem('oel_sidebar_section_order')||'[]'); } catch(e){ return []; } })(),
 
@@ -8865,6 +8865,7 @@ function exportCredentials() {
     return;
   }
 
+  try { data.docLibrary = await _docLibExportAll(); } catch(e) { console.warn('Doc export:', e.message); }
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -9005,20 +9006,9 @@ function importCredentials(eventOrElement) {
 
       // ── Document Library ─────────────────────────
       if (Array.isArray(data.docLibrary) && data.docLibrary.length) {
-        try {
-          const existing = JSON.parse(localStorage.getItem('oel_doc_library') || '[]');
-          const existingNames = new Set(existing.map(function(d){ return d.name + '_' + d.date; }));
-          let added = 0;
-          data.docLibrary.forEach(function(d) {
-            const key = d.name + '_' + d.date;
-            if (!existingNames.has(key)) { existing.push(d); added++; }
-          });
-          if (added) {
-            localStorage.setItem('oel_doc_library', JSON.stringify(existing));
-            if (typeof docLibRender === 'function') docLibRender();
-            imported.push(added + ' document' + (added !== 1 ? 's' : ''));
-          }
-        } catch(e) {}
+        _docLibImportAll(data.docLibrary).then(function(added) {
+          if (added) alert(added + ' document' + (added !== 1 ? 's' : '') + ' restored to the Document Library');
+        }).catch(function(e) { alert('Document import failed: ' + e.message); });
       }
 
       // ── Sidebar order ─────────────────────────────
@@ -13862,13 +13852,120 @@ let _docLibrary = [];
 
 let _bouncedTagId = null;
 
+// Files live in IndexedDB (hundreds of MB). localStorage only holds the small metadata list;
+// the old approach stored every file as base64 in localStorage, which caps out around 5 MB (≈3 PDFs).
+let _docDbP = null;
+function _docDb() {
+  if (_docDbP) return _docDbP;
+  _docDbP = new Promise(function(resolve, reject) {
+    const req = indexedDB.open('oel_docs', 1);
+    req.onupgradeneeded = function() { req.result.createObjectStore('files'); };
+    req.onsuccess = function() { resolve(req.result); };
+    req.onerror   = function() { _docDbP = null; reject(req.error || new Error('IndexedDB unavailable')); };
+  });
+  return _docDbP;
+}
+async function _docPut(id, blob) {
+  const db = await _docDb();
+  return new Promise(function(res, rej) {
+    const tx = db.transaction('files', 'readwrite');
+    tx.objectStore('files').put(blob, id);
+    tx.oncomplete = function() { res(); };
+    tx.onerror = tx.onabort = function() { rej(tx.error || new Error('Could not save file')); };
+  });
+}
+async function _docGet(id) {
+  const db = await _docDb();
+  return new Promise(function(res, rej) {
+    const r = db.transaction('files').objectStore('files').get(id);
+    r.onsuccess = function() { res(r.result || null); };
+    r.onerror = function() { rej(r.error); };
+  });
+}
+async function _docDel(id) {
+  const db = await _docDb();
+  return new Promise(function(res) {
+    const tx = db.transaction('files', 'readwrite');
+    tx.objectStore('files').delete(id);
+    tx.oncomplete = tx.onerror = tx.onabort = function() { res(); };
+  });
+}
+function _docNewId() { return 'd' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
+function _dataUrlToBlob(du) {
+  const m = /^data:([^;,]*)(;base64)?,(.*)$/s.exec(du || '');
+  if (!m) return null;
+  const bin = m[2] ? atob(m[3]) : decodeURIComponent(m[3]);
+  const arr = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+  return new Blob([arr], { type: m[1] || 'application/octet-stream' });
+}
+function _blobToDataUrl(blob) {
+  return new Promise(function(res, rej) { const r = new FileReader(); r.onload = function() { res(r.result); }; r.onerror = function() { rej(r.error); }; r.readAsDataURL(blob); });
+}
+
 function docLibLoad() {
   try { _docLibrary = JSON.parse(localStorage.getItem(DOC_LIB_KEY) || '[]'); }
   catch(e) { _docLibrary = []; }
 }
 
 function docLibSave() {
-  localStorage.setItem(DOC_LIB_KEY, JSON.stringify(_docLibrary));
+  try { localStorage.setItem(DOC_LIB_KEY, JSON.stringify(_docLibrary)); return true; }
+  catch(e) { alert('Could not save the document list: ' + e.message); return false; }
+}
+
+// One-time: move files that older versions kept inside localStorage into IndexedDB
+async function docLibMigrate() {
+  docLibLoad();
+  let moved = 0;
+  for (const d of _docLibrary) {
+    if (typeof d.data === 'string' && d.data) {
+      try {
+        const blob = _dataUrlToBlob(d.data);
+        if (!blob) continue;
+        d.id = d.id || _docNewId();
+        await _docPut(d.id, blob);
+        delete d.data;
+        moved++;
+      } catch(e) { console.warn('Doc migrate failed for', d.name, e.message); }
+    } else if (!d.id) { d.id = _docNewId(); }
+  }
+  if (moved) { docLibSave(); docLibRender(); }
+}
+
+async function _docLibBlob(doc) {
+  if (doc.id) { const b = await _docGet(doc.id); if (b) return b; }
+  if (doc.data) return _dataUrlToBlob(doc.data);   // not migrated yet
+  return null;
+}
+
+// Backup export / import need the actual file bytes
+async function _docLibExportAll() {
+  docLibLoad();
+  const out = [];
+  for (const d of _docLibrary) {
+    const copy = Object.assign({}, d);
+    try { const b = await _docLibBlob(d); if (b) copy.data = await _blobToDataUrl(b); } catch(e) {}
+    delete copy.id;
+    out.push(copy);
+  }
+  return out;
+}
+async function _docLibImportAll(list) {
+  docLibLoad();
+  const have = new Set(_docLibrary.map(function(d){ return d.name + '_' + d.date; }));
+  let added = 0;
+  for (const d of list) {
+    const key = d.name + '_' + d.date;
+    if (have.has(key) || !d.data) continue;
+    const blob = _dataUrlToBlob(d.data);
+    if (!blob) continue;
+    const id = _docNewId();
+    await _docPut(id, blob);
+    _docLibrary.push({ id: id, name: d.name, size: d.size || blob.size, type: d.type || blob.type, date: d.date, tags: d.tags || [], odooPartnerId: d.odooPartnerId });
+    have.add(key); added++;
+  }
+  if (added) { docLibSave(); docLibRender(); }
+  return added;
 }
 
 function docLibRender() {
@@ -13921,41 +14018,45 @@ function docLibUpload() {
   input.type = 'file';
   input.accept = '.pdf,.doc,.docx,.png,.jpg,.jpeg,.txt,.csv,.xlsx';
   input.multiple = true;
-  input.onchange = function() {
-    Array.from(input.files).forEach(function(file) {
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        docLibLoad();
-        _docLibrary.push({
-          name: file.name,
-          size: file.size,
-          type: file.type,
-          date: new Date().toLocaleDateString(),
-          data: e.target.result, // base64 data URL
-          tags: [],
-        });
-        docLibSave();
-        docLibRender();
-      };
-      reader.readAsDataURL(file);
-    });
+  input.onchange = async function() {
+    const files = Array.from(input.files);
+    let ok = 0; const failed = [];
+    docLibLoad();
+    for (const file of files) {
+      try {
+        const id = _docNewId();
+        await _docPut(id, file);
+        _docLibrary.push({ id: id, name: file.name, size: file.size, type: file.type, date: new Date().toLocaleDateString(), tags: [] });
+        ok++;
+      } catch(e) { failed.push(file.name + ' (' + e.message + ')'); }
+    }
+    if (ok) { docLibSave(); docLibRender(); }
+    if (failed.length) alert('Could not store ' + failed.length + ' file' + (failed.length !== 1 ? 's' : '') + ':\n' + failed.join('\n'));
   };
   input.click();
 }
 
-function docLibDownload(idx) {
+async function docLibDownload(idx) {
   docLibLoad();
   const doc = _docLibrary[idx];
   if (!doc) return;
-  const a = document.createElement('a');
-  a.href = doc.data;
-  a.download = doc.name;
-  a.click();
+  try {
+    const blob = await _docLibBlob(doc);
+    if (!blob) { alert('File data not found for "' + doc.name + '"'); return; }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = doc.name;
+    a.click();
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 10000);
+  } catch(e) { alert('Download failed: ' + e.message); }
 }
 
-function docLibDelete(idx) {
+async function docLibDelete(idx) {
   if (!confirm('Remove "' + (_docLibrary[idx]?.name || 'this document') + '" from the library?')) return;
   docLibLoad();
+  const doc = _docLibrary[idx];
+  if (doc && doc.id) await _docDel(doc.id);
   _docLibrary.splice(idx, 1);
   docLibSave();
   docLibRender();
@@ -13994,7 +14095,9 @@ async function docLibAttachToOdoo(idx) {
       picked = partners[choice];
     }
     // Extract base64 content (strip data:...;base64, prefix)
-    const b64 = doc.data.split(',')[1];
+    const fileBlob = await _docLibBlob(doc);
+    if (!fileBlob) { alert('File data not found for "' + doc.name + '"'); return; }
+    const b64 = (await _blobToDataUrl(fileBlob)).split(',')[1];
     await odooExecute(odooUid, 'ir.attachment', 'create', [{
       name:     doc.name,
       type:     'binary',
@@ -14346,6 +14449,7 @@ window.addEventListener('DOMContentLoaded', () => {
   // v13: restore sidebar order + load document library
   if (typeof docLibLoad === 'function') docLibLoad();
   if (typeof docLibRender  === 'function') docLibRender();
+  if (typeof docLibMigrate === 'function') docLibMigrate().catch(function(e){ console.warn('docLibMigrate:', e.message); });
   // Re-apply sidebar order after all init is complete (prevents race with nav render)
   setTimeout(function(){ if (typeof window.applySidebarOrder === 'function') window.applySidebarOrder(); }, 100);
 });
