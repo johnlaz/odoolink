@@ -1182,10 +1182,17 @@
       <div class="section-scroll" id="inbox-scroll" style="position:relative;display:flex;flex-direction:column;gap:0;padding:0">
 
         <!-- Multi-inbox container: panels appear here when toggled -->
-        <div id="inbox-panels-container" data-view="standard" data-size="m" style="display:flex;flex-direction:column;flex:1;overflow:hidden">
+        <div id="inbox-panels-container" data-view="standard" data-size="m" data-layout="right" style="display:flex;flex-direction:column;flex:1;overflow:hidden">
 
           <!-- Inbox display + auto-check controls -->
           <div id="inbox-viewbar" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:6px 16px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;font-size:0.74rem;color:var(--muted)">
+            <label style="display:flex;align-items:center;gap:5px">Layout
+              <select id="inbox-layout-sel" onchange="oelInboxApplyView()" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:3px 6px;color:var(--text);font-size:0.74rem;outline:none">
+                <option value="right">Reading pane — right</option>
+                <option value="bottom">Reading pane — bottom</option>
+                <option value="list">List only</option>
+              </select>
+            </label>
             <label style="display:flex;align-items:center;gap:5px">View
               <select id="inbox-view-sel" onchange="oelInboxApplyView()" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:3px 6px;color:var(--text);font-size:0.74rem;outline:none">
                 <option value="standard">Standard</option>
@@ -1211,6 +1218,8 @@
             </label>
           </div>
 
+          <div id="inbox-split">
+          <div id="inbox-list-col">
           <!-- Odoo inbox panel -->
           <div id="inbox-panel-odoo" class="inbox-float-panel" style="display:none;flex-direction:column;border-bottom:1px solid var(--border)">
             <div class="inbox-float-header" style="display:flex;align-items:center;gap:10px;padding:10px 16px;background:var(--surface2);flex-shrink:0;border-bottom:1px solid var(--border)">
@@ -1254,6 +1263,29 @@
             <div style="font-size:0.9rem;margin-bottom:6px">Select an inbox above</div>
             <div style="font-size:0.78rem;opacity:0.7">Click Odoo, Turbify, or Gmail to open that inbox</div>
           </div>
+          </div><!-- end inbox-list-col -->
+
+          <!-- Reading pane -->
+          <div id="inbox-reading-pane">
+            <div id="irp-empty">
+              <svg width="38" height="38" viewBox="0 0 40 40" fill="none" style="margin-bottom:12px;opacity:0.3"><rect x="4" y="7" width="32" height="26" rx="4" stroke="currentColor" stroke-width="2"></rect><path d="M4 14l16 11 16-11" stroke="currentColor" stroke-width="2"></path></svg>
+              <div>Select an email to read it here</div>
+              <div style="font-size:0.72rem;opacity:0.7;margin-top:4px">Tip: ↑ / ↓ moves between emails</div>
+            </div>
+            <div id="irp-content" style="display:none">
+              <div id="irp-head">
+                <div id="irp-subject"></div>
+                <div id="irp-from"></div>
+                <div id="irp-date"></div>
+              </div>
+              <div id="irp-actions"></div>
+              <div id="irp-scroll">
+                <div id="irp-body"></div>
+                <div id="irp-draft"></div>
+              </div>
+            </div>
+          </div>
+          </div><!-- end inbox-split -->
         </div>
 
         <!-- Hidden: original laz inbox assistant content preserved for AI drafting functions -->
@@ -15356,6 +15388,127 @@ window.refreshInboxPanel = async function(src) {
 // Per-panel selection state
 window._panelSelected = { odoo: new Map(), turbify: new Map(), gmail: new Map() };
 
+// ── Reading pane ────────────────────────────────────────────────────────────
+(function() {
+  const st = document.createElement('style');
+  st.textContent = `
+    #inbox-split { display: flex; flex-direction: column; flex: 1; min-height: 0; min-width: 0; overflow: hidden; }
+    #inbox-list-col { display: flex; flex-direction: column; flex: 1; min-height: 0; min-width: 0; overflow: hidden; }
+    #inbox-reading-pane { display: none; flex-direction: column; flex: 1; min-height: 0; min-width: 0; background: var(--surface); }
+    #inbox-panels-container:not([data-layout="list"]) #inbox-reading-pane { display: flex; }
+    #inbox-panels-container[data-layout="right"] #inbox-split { flex-direction: row; }
+    #inbox-panels-container[data-layout="right"] #inbox-list-col { flex: 0 0 42%; min-width: 340px; max-width: 640px; border-right: 1px solid var(--border); }
+    #inbox-panels-container[data-layout="bottom"] #inbox-list-col { flex: 0 0 42%; border-bottom: 1px solid var(--border); }
+    @media (max-width: 900px) {
+      #inbox-panels-container[data-layout="right"] #inbox-split { flex-direction: column; }
+      #inbox-panels-container[data-layout="right"] #inbox-list-col { flex: 0 0 42%; max-width: none; min-width: 0; border-right: none; border-bottom: 1px solid var(--border); }
+    }
+    #inbox-panels-container:not([data-layout="list"]) .ir-row > .ir-actions { display: none !important; }
+    #inbox-panels-container:not([data-layout="list"]) .ir-wrap > .inline-draft-area { display: none; }
+    #inbox-panels-container:not([data-layout="list"]) .ir-row { cursor: pointer; }
+    .ir-selected { background: var(--accent-dim) !important; }
+    #irp-empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--muted); font-size: 0.86rem; text-align: center; padding: 30px; }
+    #irp-content { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+    #irp-head { padding: 14px 20px 8px; flex-shrink: 0; }
+    #irp-subject { font-size: calc(1.18rem * var(--ir-scale)); font-weight: 600; color: var(--text); line-height: 1.3; word-break: break-word; }
+    #irp-from { font-size: calc(0.88rem * var(--ir-scale)); color: var(--text); margin-top: 6px; }
+    #irp-from span { color: var(--muted); }
+    #irp-date { font-size: calc(0.76rem * var(--ir-scale)); color: var(--muted); margin-top: 2px; }
+    #irp-actions { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; padding: 8px 20px 10px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+    #irp-actions > div { flex-wrap: wrap; }
+    #irp-scroll { flex: 1; overflow-y: auto; padding: 14px 20px 24px; min-height: 0; }
+    #irp-body { font-size: calc(0.9rem * var(--ir-scale)); color: var(--text); line-height: 1.65; white-space: pre-wrap; word-break: break-word; }
+  `;
+  document.head.appendChild(st);
+})();
+
+window._irSelected = null;
+window._irPaneOn = function() { return (document.getElementById('inbox-panels-container')?.dataset.layout || 'list') !== 'list'; };
+
+function _irRelease(w) {
+  if (!w) return;
+  const slot = document.getElementById('irp-draft');
+  const d = slot && slot.querySelector('.inline-draft-area');
+  if (d) w.appendChild(d);                                   // park the draft with its email
+  if (w._actions && w._actionsHome) w._actionsHome.appendChild(w._actions);
+  w.firstChild && w.firstChild.classList.remove('ir-selected');
+}
+function _irShowEmpty() {
+  const e = document.getElementById('irp-empty'), c = document.getElementById('irp-content');
+  if (e) e.style.display = 'flex';
+  if (c) c.style.display = 'none';
+}
+window._irPaneClear = function() { _irRelease(window._irSelected); window._irSelected = null; _irShowEmpty(); };
+window._irPaneForget = function(w) { if (window._irSelected === w) { window._irSelected = null; _irShowEmpty(); } };
+
+async function _irLoadBody(em) {
+  let body = em.body || em.preview || '';
+  if (!body && em.uid) {
+    try {
+      const br = await fetch(IMAP_SERVER + '/body', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ config: getImapConfig(), uid: em.uid }),
+        signal: AbortSignal.timeout(15000)
+      });
+      const bd = await br.json();
+      if (bd.body) { body = bd.body; em.body = body; }
+    } catch(e) { return '(Could not fetch body: ' + e.message + ')'; }
+  }
+  return body;
+}
+
+async function _irPaneOpen(w, info) {
+  if (window._irSelected && window._irSelected !== w) _irRelease(window._irSelected);
+  window._irSelected = w;
+  const em = info.em;
+  w.firstChild.classList.add('ir-selected');
+  w.firstChild.classList.remove('ir-unread');
+  const dot = w.querySelector('.ir-dot'); if (dot) dot.remove();
+  em.unread = false;
+
+  document.getElementById('irp-empty').style.display = 'none';
+  document.getElementById('irp-content').style.display = 'flex';
+  document.getElementById('irp-subject').textContent = info.subject + (em.flagged ? ' 🚩' : '');
+  const fromEl = document.getElementById('irp-from');
+  const nice = _irSenderName(info.sender, info.emailTo);
+  fromEl.innerHTML = escHtml(nice) + (info.emailTo && nice !== info.emailTo ? ' <span>&lt;' + escHtml(info.emailTo) + '&gt;</span>' : '');
+  const d = new Date(em.date || '');
+  document.getElementById('irp-date').textContent = isNaN(d) ? (em.date || '') : d.toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' });
+
+  const act = document.getElementById('irp-actions');
+  act.innerHTML = '';
+  if (w._actions) act.appendChild(w._actions);
+  const slot = document.getElementById('irp-draft');
+  slot.innerHTML = '';
+  const parked = w.querySelector(':scope > .inline-draft-area');
+  if (parked) slot.appendChild(parked);
+
+  const bodyEl = document.getElementById('irp-body');
+  bodyEl.textContent = 'Loading…';
+  document.getElementById('irp-scroll').scrollTop = 0;
+  const body = await _irLoadBody(em);
+  if (window._irSelected !== w) return;                      // user moved on while loading
+  const clean = cleanEmailBody(body || '(No body available)');
+  bodyEl.textContent = clean.slice(0, 30000) + (clean.length > 30000 ? '\n\n[…truncated]' : '');
+}
+
+// ↑ / ↓ (or j / k) move between emails in pane mode
+document.addEventListener('keydown', (e) => {
+  if (!window._irPaneOn()) return;
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  const t = e.target;
+  if (t && (/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName) || t.isContentEditable)) return;
+  if (!document.getElementById('panel-inbox')?.classList.contains('active')) return;
+  const dir = (e.key === 'ArrowDown' || e.key === 'j') ? 1 : (e.key === 'ArrowUp' || e.key === 'k') ? -1 : 0;
+  if (!dir) return;
+  const rows = Array.from(document.querySelectorAll('#inbox-list-col .ir-wrap')).filter(r => r.offsetParent !== null);
+  if (!rows.length) return;
+  let i = rows.indexOf(window._irSelected);
+  i = i < 0 ? (dir > 0 ? 0 : rows.length - 1) : Math.max(0, Math.min(rows.length - 1, i + dir));
+  const target = rows[i];
+  if (target && target._irOpen) { e.preventDefault(); target._irOpen(); target.scrollIntoView({ block: 'nearest' }); }
+});
+
 // ── Inbox row helpers ───────────────────────────────────────────────────────
 function _irSenderName(name, addr) {
   let n = String(name || '').replace(/<[^>]*>/g, '').replace(/["']/g, '').trim();
@@ -15411,16 +15564,21 @@ function _irSet(k, v) { try { localStorage.setItem(k, v); } catch(e) {} }
 window.oelInboxApplyView = function(init) {
   const vSel = document.getElementById('inbox-view-sel'), zSel = document.getElementById('inbox-size-sel'), aSel = document.getElementById('inbox-auto-sel');
   if (init === true) {
+    const lSel0 = document.getElementById('inbox-layout-sel'); if (lSel0) lSel0.value = _irGet('oel_inbox_layout', 'right');
     if (vSel) vSel.value = _irGet('oel_inbox_view', 'standard');
     if (zSel) zSel.value = _irGet('oel_inbox_size', 'm');
     if (aSel) aSel.value = _irGet('oel_inbox_auto', '60');
   } else {
+    const lSel1 = document.getElementById('inbox-layout-sel'); if (lSel1) _irSet('oel_inbox_layout', lSel1.value);
     if (vSel) _irSet('oel_inbox_view', vSel.value);
     if (zSel) _irSet('oel_inbox_size', zSel.value);
     if (aSel) _irSet('oel_inbox_auto', aSel.value);
   }
   const c = document.getElementById('inbox-panels-container');
-  if (c) { c.dataset.view = vSel?.value || 'standard'; c.dataset.size = zSel?.value || 'm'; }
+  const lSel = document.getElementById('inbox-layout-sel');
+  const prevLayout = c?.dataset.layout;
+  if (c) { c.dataset.view = vSel?.value || 'standard'; c.dataset.size = zSel?.value || 'm'; c.dataset.layout = lSel?.value || 'right'; }
+  if (prevLayout && prevLayout !== c.dataset.layout && c.dataset.layout === 'list') window._irPaneClear();
   _irSchedulePoll();
 };
 
@@ -15501,6 +15659,7 @@ function _renderInboxRow(em, src, idx) {
 
   const wrapper = document.createElement('div');
   wrapper.style.cssText = 'margin-bottom:6px';
+  wrapper.className = 'ir-wrap';
   wrapper.id = 'inbox-row-'+src+'-'+idx;
   wrapper._em = em;
 
@@ -15536,6 +15695,7 @@ function _renderInboxRow(em, src, idx) {
     '</div>';
   // Click meta: toggle checkbox + expand/show email body below the row
   meta.onclick = async () => {
+    if (window._irPaneOn && window._irPaneOn() && wrapper._irOpen) { wrapper._irOpen(); return; }   // reading-pane mode
     cb.checked = !cb.checked;
     cb.onchange();
     // Toggle body preview
@@ -15565,6 +15725,7 @@ function _renderInboxRow(em, src, idx) {
 
   // ── Action buttons ──────────────────────────────────────────────────────
   const actions = document.createElement('div');
+  actions.className = 'ir-actions';
   actions.style.cssText = 'display:flex;gap:4px;flex-shrink:0;align-items:center';
 
   // Reply button
@@ -15784,7 +15945,7 @@ function _renderInboxRow(em, src, idx) {
     const ok = await imapMoveToTrash(em.uid, src);
     if (ok) {
       wrapper.style.opacity = '0.4';
-      setTimeout(() => wrapper.remove(), 600);
+      setTimeout(() => { window._irPaneForget && _irPaneForget(wrapper); wrapper.remove(); }, 600);
     } else {
       trashBtn.disabled = false; trashBtn.textContent = '🗑';
       // error already alerted by imapMoveToTrash
@@ -15795,6 +15956,9 @@ function _renderInboxRow(em, src, idx) {
   row.appendChild(cb);
   row.appendChild(meta);
   row.appendChild(actions);
+  wrapper._actions = actions;
+  wrapper._actionsHome = row;
+  wrapper._irOpen = () => _irPaneOpen(wrapper, { em, subject, sender, emailTo, color });
   row.onmouseover = () => { if (!cb.checked) row.style.background = 'var(--surface2)'; };
   row.onmouseout  = () => { if (!cb.checked) row.style.background = 'var(--surface)'; };
 
@@ -15804,7 +15968,7 @@ function _renderInboxRow(em, src, idx) {
 
 function _showInlineDraft(wrapper, draftText, toEmail, subject, src, idx, resultObj) {
   if (resultObj && resultObj.replyTo) toEmail = resultObj.replyTo;  // website-form lead: send to the customer, not our own site address
-  const existing = wrapper.querySelector('.inline-draft-area');
+  const existing = wrapper.querySelector('.inline-draft-area') || (window._irSelected === wrapper ? document.querySelector('#irp-draft .inline-draft-area') : null);
   if (existing) existing.remove();
 
   const em = wrapper._em || {};
@@ -15901,6 +16065,10 @@ function _showInlineDraft(wrapper, draftText, toEmail, subject, src, idx, result
   btns.append(prevBtn, verLabel, nextBtn, copyBtn, sendBtn, logDraftBtn, regenBtn, closeBtn);
   draftDiv.append(label, ta, btns);
   wrapper.appendChild(draftDiv);
+  if (window._irSelected === wrapper && window._irPaneOn && window._irPaneOn()) {
+    const slot = document.getElementById('irp-draft');
+    if (slot) { slot.innerHTML = ''; slot.appendChild(draftDiv); draftDiv.scrollIntoView({ block: 'nearest' }); }
+  }
 }
 
 function _makeSmallBtn(text, onClick, accentColor) {
