@@ -2117,6 +2117,17 @@
         <div id="qb-lines-empty" style="font-size:0.78rem;color:var(--muted);font-style:italic;padding:6px 0">No items yet — load an Odoo template or click + Add item</div>
       </div>
 
+      <!-- Discount + totals -->
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px">
+        <label style="font-size:0.74rem;color:var(--muted)">Discount</label>
+        <input type="number" id="qb-discount" min="0" step="0.01" placeholder="0" oninput="qbUpdateTotals()" style="width:90px;background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:6px 9px;color:var(--text);font-family:'DM Mono',monospace;font-size:0.82rem;outline:none;text-align:right">
+        <select id="qb-discount-type" onchange="qbUpdateTotals()" style="background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:6px 8px;color:var(--text);font-size:0.8rem;outline:none">
+          <option value="pct">%</option>
+          <option value="amt">$ off</option>
+        </select>
+        <div id="qb-totals" style="font-size:0.8rem;color:var(--muted);margin-left:auto"></div>
+      </div>
+
       <!-- Actions -->
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
         <button onclick="qbPrintQuote()" title="Open print-ready quote — use Print / Save PDF in the new window" class="btn btn-ghost" style="padding:9px 14px;font-size:0.84rem">
@@ -6535,10 +6546,42 @@ function qbRenderLines() {
         <label style="font-size:0.65rem;color:var(--muted)">Qty</label>
         <input type="number" value="${line.qty}" min="1" step="1"
           style="width:54px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 6px;color:var(--text);font-family:'DM Mono',monospace;font-size:0.8rem;outline:none;text-align:center"
-          onchange="_qbLines[${i}].qty=Math.max(1,+this.value)">
+          onchange="_qbLines[${i}].qty=Math.max(1,+this.value);qbUpdateTotals()">
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:1px">
+        <label style="font-size:0.65rem;color:var(--muted)">Price ea.</label>
+        <input type="number" value="${line.price > 0 ? line.price : ''}" min="0" step="0.01" placeholder="0.00"
+          style="width:84px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 6px;color:var(--text);font-family:'DM Mono',monospace;font-size:0.8rem;outline:none;text-align:right"
+          onchange="_qbLines[${i}].price=Math.max(0,+this.value||0);_qbLines[${i}].priceSource='manual';qbUpdateTotals()">
       </div>
       <button onclick="_qbLines.splice(${i},1);qbRenderLines()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.9rem;padding:2px 6px;flex-shrink:0" title="Remove">✕</button>
     </div>`).join('');
+  qbUpdateTotals();
+  // Pull Odoo prices once for lines that don't have one yet, then redraw
+  if (odooUid && _qbLines.some(l => !(l.price > 0) && !l.priceTried)) {
+    _qbLines.forEach(l => { if (!(l.price > 0)) l.priceTried = true; });
+    qbEnsurePrices().then(() => { if (_qbLines.some(l => l.price > 0 && l.priceSource && l.priceSource !== 'manual')) qbRenderLines(); });
+  }
+}
+
+// ── Flat pricing + discount ───────────────────────────────────────────────────
+function qbCalcTotals() {
+  const subtotal = _qbLines.reduce((s,l) => s + (+l.price||0) * (+l.qty||1), 0);
+  const raw  = parseFloat(document.getElementById('qb-discount')?.value) || 0;
+  const type = document.getElementById('qb-discount-type')?.value || 'pct';
+  let discount = type === 'pct' ? subtotal * Math.min(100, Math.max(0, raw)) / 100 : Math.max(0, raw);
+  discount = Math.min(discount, subtotal);
+  const pct = subtotal > 0 ? discount / subtotal * 100 : 0;
+  return { subtotal, discount, pct, total: subtotal - discount };
+}
+function qbUpdateTotals() {
+  const el = document.getElementById('qb-totals');
+  if (!el) return;
+  const t = qbCalcTotals();
+  const f = n => '$' + n.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+  el.innerHTML = _qbLines.length
+    ? 'Subtotal ' + f(t.subtotal) + (t.discount > 0 ? ' &nbsp;·&nbsp; Discount −' + f(t.discount) : '') + ' &nbsp;·&nbsp; <strong style="color:var(--text)">Total ' + f(t.total) + '</strong>'
+    : '';
 }
 
 // ── Contact search ────────────────────────────────────────────────────────────
@@ -6784,22 +6827,30 @@ async function qbCreate() {
     };
     if (fullNote) orderVals.note = fullNote;
 
+    let discPct = 0;
     const orderId = await odooExecute(odooUid,'sale.order','create',[orderVals]);
 
     // Add rental lines with start/return dates
     if (_qbLines.length) {
+      statusEl.textContent = 'Pulling prices…';
+      await qbEnsurePrices();
+      qbRenderLines();
+      discPct = Math.round(qbCalcTotals().pct * 100) / 100;   // $ discounts are spread as an equal % on every line
       statusEl.textContent = 'Adding equipment lines…';
       // Convert datetime-local to Odoo format (YYYY-MM-DD HH:MM:SS)
       const fmtDate = iso => iso.replace('T', ' ') + ':00';
       for (const line of _qbLines) {
-        await odooExecute(odooUid,'sale.order.line','create',[{
+        const lineVals = {
           order_id:        orderId,
           product_id:      line.productId,
           product_uom_qty: line.qty,
           is_rental:       true,
           start_date:      fmtDate(startDate),
           return_date:     fmtDate(returnDate),
-        }]);
+        };
+        if (line.price > 0) lineVals.price_unit = line.price;   // flat price, as shown in the builder
+        if (discPct > 0)    lineVals.discount   = discPct;
+        await odooExecute(odooUid,'sale.order.line','create',[lineVals]);
       }
     }
 
@@ -6812,7 +6863,7 @@ async function qbCreate() {
     statusEl.style.color = 'var(--success)';
     statusEl.innerHTML = '✓ Rental quote <strong>' + escHtml(orderName) + '</strong> created' +
       (deepLink ? ' — <a href="'+deepLink+'" target="_blank" style="color:var(--accent)">Open in Odoo ↗</a>' : '') +
-      ' · Pricing calculated by Odoo rental rules';
+      ' · Flat prices' + (discPct > 0 ? ' with ' + discPct + '% discount' : '') + ' sent to Odoo';
 
   } catch(e) {
     statusEl.style.color = 'var(--danger)';
@@ -6822,6 +6873,7 @@ async function qbCreate() {
 
 function qbClear() {
   _qbLines = [];
+  const dEl = document.getElementById('qb-discount'); if (dEl) dEl.value = '';
   _qbContactId = null;
   ['qb-contact-search','qb-venue','qb-notes','qb-start-date','qb-return-date'].forEach(id => {
     const el = document.getElementById(id);
@@ -10964,31 +11016,109 @@ document.addEventListener('click', function(e) {
 // ── PRINT QUOTE ─────────────────────────────────────────────────────────────
 // ═══════════════════════════════════════════════════════════════════════════
 
-function qbPrintQuote() {
-  if (!_qbLines || !_qbLines.length) { alert('Add items to the quote first'); return; }
+// Rental duration in days from the pickup/return dates (only used to choose among Odoo rental rules)
+function qbRentalDays() {
+  const s = document.getElementById('qb-start-date')?.value;
+  const r = document.getElementById('qb-return-date')?.value;
+  if (s && r) {
+    const ms = new Date(r) - new Date(s);
+    if (ms > 0) return Math.max(1, Math.ceil(ms / 86400000));
+  }
+  return 1;
+}
 
-  const customer  = document.getElementById('qb-customer-name')?.value?.trim() || '';
-  const notes     = document.getElementById('qb-notes')?.value?.trim() || '';
-  const today     = new Date().toLocaleDateString('en-US', {year:'numeric',month:'long',day:'numeric'});
-  const fmt       = n => '$' + (n||0).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
-  const rentDays  = parseInt(document.getElementById('qb-rent-days')?.value) || 1;
+// Fill in flat prices for any line that doesn't have one yet.
+// Uses the Odoo rental rule that fits the rental length (the longest rule that fits, else the shortest), as-is;
+// falls back to the product's list price. Prices stay editable in the builder.
+async function qbEnsurePrices() {
+  const need = _qbLines.filter(l => !(l.price > 0) && l.productId);
+  if (!need.length || !odooUid) return;
+  try {
+    const varIds = [...new Set(need.filter(l => !l.isTmpl).map(l => l.productId))];
+    const tmplOnly = [...new Set(need.filter(l => l.isTmpl).map(l => l.productId))];
+    const tmplOf = {}, listOf = {}, tmplList = {};
+    if (varIds.length) {
+      const prods = await odooExecute(odooUid, 'product.product', 'read', [varIds], { fields: ['id','list_price','product_tmpl_id'] });
+      (prods || []).forEach(p => { tmplOf[p.id] = Array.isArray(p.product_tmpl_id) ? p.product_tmpl_id[0] : null; listOf[p.id] = p.list_price || 0; });
+    }
+    if (tmplOnly.length) {
+      const ts = await odooExecute(odooUid, 'product.template', 'read', [tmplOnly], { fields: ['id','list_price'] });
+      (ts || []).forEach(t => { tmplList[t.id] = t.list_price || 0; });
+    }
+    const allTmpl = [...new Set([...Object.values(tmplOf).filter(Boolean), ...tmplOnly])];
+    const rulePrice = {};
+    if (allTmpl.length) {
+      try {
+        const days = qbRentalDays();
+        const rules = await odooExecute(odooUid, 'product.pricing', 'search_read',
+          [[['product_template_id', 'in', allTmpl]]],
+          { fields: ['product_template_id', 'price', 'recurrence_id'], limit: 1000 });
+        const recIds = [...new Set((rules || []).map(r => Array.isArray(r.recurrence_id) ? r.recurrence_id[0] : null).filter(Boolean))];
+        const recs = {};
+        if (recIds.length) {
+          const rr = await odooExecute(odooUid, 'sale.temporal.recurrence', 'read', [recIds], { fields: ['id','duration','unit'] });
+          (rr || []).forEach(r => { recs[r.id] = r; });
+        }
+        const unitDays = { hour: 1/24, day: 1, week: 7, month: 30, year: 365 };
+        const byTmpl = {};
+        (rules || []).forEach(r => {
+          const t = Array.isArray(r.product_template_id) ? r.product_template_id[0] : null;
+          const rec = Array.isArray(r.recurrence_id) ? recs[r.recurrence_id[0]] : null;
+          if (!t || !(r.price > 0)) return;
+          const span = rec ? (rec.duration || 1) * (unitDays[rec.unit] || 1) : 1;
+          (byTmpl[t] = byTmpl[t] || []).push({ span, price: r.price });
+        });
+        Object.keys(byTmpl).forEach(t => {
+          const list = byTmpl[t].sort((a, b) => a.span - b.span);
+          const fit = list.filter(x => x.span <= days);
+          rulePrice[t] = (fit.length ? fit[fit.length - 1] : list[0]).price;
+        });
+      } catch (e) { console.warn('Rental pricing lookup skipped:', e.message); }
+    }
+    need.forEach(l => {
+      const t = l.isTmpl ? l.productId : tmplOf[l.productId];
+      const rp = rulePrice[t];
+      const lp = l.isTmpl ? tmplList[l.productId] : listOf[l.productId];
+      l.price = rp ? Math.round(rp * 100) / 100 : (lp || 0);
+      l.priceSource = rp ? 'rental' : (lp ? 'list' : 'none');
+    });
+  } catch (e) { console.warn('qbEnsurePrices:', e.message); }
+}
+
+async function qbPrintQuote() {
+  if (!_qbLines || !_qbLines.length) { alert('Add items to the quote first'); return; }
+  const stEl = document.getElementById('qb-status');
+  if (stEl) { stEl.style.color = 'var(--muted)'; stEl.textContent = 'Pulling prices…'; }
+  await qbEnsurePrices();
+  qbRenderLines();
+  const miss = _qbLines.filter(l => !(l.price > 0)).length;
+  if (stEl) {
+    stEl.style.color = miss ? 'var(--warning)' : 'var(--muted)';
+    stEl.textContent = miss ? miss + ' item' + (miss !== 1 ? 's have' : ' has') + ' no price — enter one in the Price ea. field' : '';
+  }
+
+  const customer = document.getElementById('qb-customer-name')?.value?.trim() || document.getElementById('qb-contact-search')?.value?.trim() || '';
+  const notes    = document.getElementById('qb-notes')?.value?.trim() || '';
+  const today    = new Date().toLocaleDateString('en-US', {year:'numeric',month:'long',day:'numeric'});
+  const fmt      = n => '$' + (n||0).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+  const t        = qbCalcTotals();
 
   const lineRows = _qbLines.map(l => {
-    const unitPrice = l.price || 0;
-    const qty       = l.qty   || 1;
-    const days      = l.rentDays || rentDays;
-    const total     = unitPrice * qty * days;
+    const unitPrice = +l.price || 0, qty = +l.qty || 1;
     return '<tr><td style="padding:8px 10px;border-bottom:1px solid #eee">' + escHtml(l.productName||'Item') + '</td>'
       + '<td style="padding:8px 10px;border-bottom:1px solid #eee;text-align:center">' + qty + '</td>'
-      + '<td style="padding:8px 10px;border-bottom:1px solid #eee;text-align:center">' + days + '</td>'
       + '<td style="padding:8px 10px;border-bottom:1px solid #eee;text-align:right">' + fmt(unitPrice) + '</td>'
-      + '<td style="padding:8px 10px;border-bottom:1px solid #eee;text-align:right"><strong>' + fmt(total) + '</strong></td></tr>';
+      + '<td style="padding:8px 10px;border-bottom:1px solid #eee;text-align:right"><strong>' + fmt(unitPrice * qty) + '</strong></td></tr>';
   }).join('');
 
-  const subtotal = _qbLines.reduce((s,l) => s + (l.price||0)*(l.qty||1)*(l.rentDays||rentDays), 0);
+  const discRows = t.discount > 0
+    ? '<tr><td colspan="3" style="text-align:right;padding:8px 10px">Subtotal</td><td style="padding:8px 10px;text-align:right">' + fmt(t.subtotal) + '</td></tr>'
+      + '<tr><td colspan="3" style="text-align:right;padding:8px 10px;color:#b00">Discount' + (t.pct ? ' (' + (Math.round(t.pct*100)/100) + '%)' : '') + '</td><td style="padding:8px 10px;text-align:right;color:#b00">−' + fmt(t.discount) + '</td></tr>'
+    : '';
 
   const pw = window.open('', '_blank');
-  pw.document.write('<!DOCTYPE html><html><head><title>Quote — ' + (customer||'Customer') + '</title>'
+  if (!pw) { alert('Pop-up blocked — allow pop-ups for this page to print the quote'); return; }
+  pw.document.write('<!DOCTYPE html><html><head><title>Quote — ' + escHtml(customer||'Customer') + '</title>'
     + '<style>body{font-family:Arial,sans-serif;padding:40px;color:#111;max-width:800px;margin:0 auto}'
     + 'h1{font-size:22px;margin-bottom:4px}h2{font-size:14px;color:#888;font-weight:normal;margin:0 0 24px}'
     + 'table{width:100%;border-collapse:collapse;margin-top:16px}'
@@ -11005,9 +11135,9 @@ function qbPrintQuote() {
     + '<h1>Rental Quotation</h1>'
     + '<h2>' + (customer ? 'Prepared for: ' + escHtml(customer) : '') + ' &nbsp; Date: ' + today + '</h2>'
     + '<table>'
-    + '<thead><tr><th>Item / Description</th><th class="c">Qty</th><th class="c">Days</th><th class="r">Unit/Day</th><th class="r">Total</th></tr></thead>'
+    + '<thead><tr><th>Item / Description</th><th class="c">Qty</th><th class="r">Price</th><th class="r">Total</th></tr></thead>'
     + '<tbody>' + lineRows + '</tbody>'
-    + '<tfoot><tr class="total-row"><td colspan="4" style="text-align:right;padding:10px;border-top:2px solid #1a1a1a">Total</td><td style="padding:10px;text-align:right;border-top:2px solid #1a1a1a">' + fmt(subtotal) + '</td></tr></tfoot>'
+    + '<tfoot>' + discRows + '<tr class="total-row"><td colspan="3" style="text-align:right;padding:10px;border-top:2px solid #1a1a1a">Total</td><td style="padding:10px;text-align:right;border-top:2px solid #1a1a1a">' + fmt(t.total) + '</td></tr></tfoot>'
     + '</table>'
     + (notes ? '<div class="notes"><strong>Notes:</strong> ' + escHtml(notes) + '</div>' : '')
     + '<div class="footer">This is a quotation only and is subject to availability and confirmation.</div>'
@@ -11978,6 +12108,24 @@ async function oelSendToDesk(info) {
   const rawEl = document.getElementById('qd-raw');
   if (rawEl) rawEl.value = raw;
   await qdExtract();
+}
+
+// Called from an Inbox row: load the email into Smart Builder and run Extract & Match
+async function oelSendToBuilder(info) {
+  const body = String(info.body || '').trim();
+  const isForm = !!lazParseFormNotification(body);
+  const raw = isForm ? body : ('From: ' + (info.sender || info.email || '') + '\nSubject: ' + (info.subject || '') + '\n\n' + body);
+  navTo('smartbuilder');
+  const rawEl = document.getElementById('qsp-raw');
+  if (rawEl) rawEl.value = raw;
+  await qspExtract();
+  // Extraction can miss the sender's address; fall back to the email we already know
+  const emEl = document.getElementById('qsp-email');
+  const addr = (String(info.email || '').match(/[^\s<>"']+@[^\s<>"']+/) || String(info.sender || '').match(/[^\s<>"']+@[^\s<>"']+/) || [''])[0];
+  if (emEl && !emEl.value && addr && !isForm) emEl.value = addr;
+  const nmEl = document.getElementById('qsp-customer');
+  const disp = String(info.sender || '').split('<')[0].replace(/["']/g, '').trim();
+  if (nmEl && !nmEl.value && disp && !/@/.test(disp) && !isForm) nmEl.value = disp;
 }
 
 async function qdDraftResponse(keepHistory) {
@@ -15352,6 +15500,37 @@ function _renderInboxRow(em, src, idx) {
   };
   actions.appendChild(deskBtn);
 
+  // → Builder: hand this email straight to Smart Builder (AI extracts details + equipment, matches catalog)
+  const sbBtn = document.createElement('button');
+  sbBtn.textContent = '\u2192 Builder';
+  sbBtn.title = 'Send to Smart Builder: AI extracts customer, dates and equipment and matches your catalog';
+  sbBtn.style.cssText = draftBtn.style.cssText;
+  sbBtn.onmouseover = () => { sbBtn.style.borderColor=color; sbBtn.style.color=color; };
+  sbBtn.onmouseout  = () => { sbBtn.style.borderColor='var(--border)'; sbBtn.style.color='var(--muted)'; };
+  sbBtn.onclick = async (e) => {
+    e.stopPropagation();
+    sbBtn.textContent = '\u23F3';
+    sbBtn.disabled = true;
+    try {
+      let body = em.body || em.preview || '';
+      if (!body && em.uid && src === 'turbify') {
+        try {
+          const br = await fetch(IMAP_SERVER+'/body', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ config: getImapConfig(), uid: em.uid }),
+            signal: AbortSignal.timeout(15000)
+          });
+          const bd = await br.json();
+          if (bd.body) { body = bd.body; em.body = body; }
+        } catch(_) {}
+      }
+      await oelSendToBuilder({ sender: sender || emailTo, email: emailTo, subject: subject, body: body });
+    } catch(err) {}
+    sbBtn.textContent = '\u2192 Builder';
+    sbBtn.disabled = false;
+  };
+  actions.appendChild(sbBtn);
+
   // Log Note button
   const logBtn = document.createElement('button');
   logBtn.textContent = '📋 Log';
@@ -16425,8 +16604,9 @@ function qbCatalogAddSelected() {
       productId:   p.id,
       productName: p.name,
       qty:         1,
-      price:       p.price,
-      rentDays:    1,
+      price:       0,          // resolved to the Odoo rental rate when printing
+      listPrice:   p.price,
+      isTmpl:      true,
     });
   });
 
