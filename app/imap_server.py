@@ -19,7 +19,7 @@ PORT       = 7843
 PROXY_PORT = 7842
 GROQ_ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions'
 GROQ_MODEL    = 'llama-3.3-70b-versatile'
-BUILD         = '15.57'   # keep equal to <meta name="oel-version"> in index.html
+BUILD         = '15.58'   # keep equal to <meta name="oel-version"> in index.html
 
 # ─── Scan progress (polled via GET /status) ───────────────────────────────────
 
@@ -578,6 +578,29 @@ class IMAPHandler(BaseHTTPRequestHandler):
                     self._json({'error': 'Email not found'})
                     return
                 self._json({'body': body})
+            except Exception as e:
+                self._json({'error': str(e)})
+
+        elif path == '/flag':
+            # Mark one email read/unread on the server (the only endpoint that opens the mailbox read-write)
+            config = data.get('config', {})
+            uid    = str(data.get('uid', '')).strip()
+            seen   = bool(data.get('seen', True))
+            folder = (data.get('folder') or 'INBOX').strip() or 'INBOX'
+            if not config.get('email') or not config.get('password') or not uid.isdigit():
+                self._json({'error': 'Missing params'}, 400)
+                return
+            try:
+                def work(conn):
+                    st, _ = conn.select(folder, readonly=False)
+                    if st != 'OK':
+                        raise RuntimeError('Could not open folder ' + folder)
+                    st, _ = conn.uid('store', uid.encode(), '+FLAGS' if seen else '-FLAGS', '(\\Seen)')
+                    if st != 'OK':
+                        raise RuntimeError('Server refused the flag change')
+                    return True
+                with_conn(config, work)
+                self._json({'ok': True, 'uid': uid, 'seen': seen})
             except Exception as e:
                 self._json({'error': str(e)})
 

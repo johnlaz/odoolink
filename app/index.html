@@ -3,7 +3,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <meta name="oel-version" content="v15.57">
+  <meta name="oel-version" content="v15.58">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="mobile-web-app-capable" content="yes">
@@ -1205,6 +1205,12 @@
                 <option value="s">Small</option>
                 <option value="m">Medium</option>
                 <option value="l">Large</option>
+              </select>
+            </label>
+            <label style="display:flex;align-items:center;gap:5px" title="Marks the email as read on Turbify after you've had it open for a moment (use Mark unread in the reading pane to undo)">Mark as read
+              <select id="inbox-markread-sel" onchange="oelInboxApplyView()" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:3px 6px;color:var(--text);font-size:0.74rem;outline:none">
+                <option value="open">After opening</option>
+                <option value="manual">Manual only</option>
               </select>
             </label>
             <label style="display:flex;align-items:center;gap:5px" title="Checks for new mail in the background while the Inbox is open. It only fetches mail newer than what you already see.">Auto-check
@@ -12073,7 +12079,7 @@ async function qdBuildStatus() {
     const j = await r.json();
     srv = j.build || 'old';
   } catch(e) {}
-  const NEED_MINOR = 57;   // oldest imap_server.py build this page works with (15.57: fast inbox + auto-check)
+  const NEED_MINOR = 58;   // oldest imap_server.py build this page works with (15.58: fast inbox, auto-check, mark read/unread)
   const minor = parseInt(String(srv).split('.')[1] || '0', 10);
   const ok = srv !== 'offline' && srv !== 'old' && minor >= NEED_MINOR;
   el.style.color = ok ? 'var(--muted)' : '#d9a441';
@@ -15553,6 +15559,7 @@ window._irPaneOn = function() { return (document.getElementById('inbox-panels-co
 
 function _irRelease(w) {
   if (!w) return;
+  if (w._irReadTimer) { clearTimeout(w._irReadTimer); w._irReadTimer = null; }
   const slot = document.getElementById('irp-draft');
   const d = slot && slot.querySelector('.inline-draft-area');
   if (d) w.appendChild(d);                                   // park the draft with its email
@@ -15566,6 +15573,55 @@ function _irShowEmpty() {
 }
 window._irPaneClear = function() { _irRelease(window._irSelected); window._irSelected = null; _irShowEmpty(); };
 window._irPaneForget = function(w) { if (window._irSelected === w) { window._irSelected = null; _irShowEmpty(); } };
+
+// ── Read / unread (synced to Turbify) ───────────────────────────────────────
+function _irRowSetUnread(w, unread) {
+  const row = w.firstChild; if (!row) return;
+  row.classList.toggle('ir-unread', unread);
+  const sender = row.querySelector('.ir-sender');
+  const dot = row.querySelector('.ir-dot');
+  if (unread && sender && !dot) { const i = document.createElement('i'); i.className = 'ir-dot'; sender.insertBefore(i, sender.firstChild); }
+  if (!unread && dot) dot.remove();
+}
+function _irUpdateReadBtn(w) {
+  const b = document.getElementById('irp-readbtn');
+  if (!b || window._irSelected !== w) return;
+  b.textContent = w._em && w._em.unread ? '✓ Mark read' : '● Mark unread';
+  b.title = (w._em && w._em.unread ? 'Mark as read' : 'Mark as unread') + ' on Turbify  (shortcut: U)';
+}
+async function _irSetSeen(w, seen) {
+  const em = w._em; if (!em || !em.uid) return false;
+  const statusEl = document.getElementById('turbify-panel-status');
+  const prev = em.unread;
+  em.unread = !seen; _irRowSetUnread(w, em.unread); _irUpdateReadBtn(w);   // update the screen first; roll back if the server says no
+  try {
+    const r = await fetch(IMAP_SERVER + '/flag', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ config: getImapConfig(), uid: em.uid, seen: seen, folder: window._turbifyFolder || 'INBOX' }),
+      signal: AbortSignal.timeout(15000)
+    });
+    if (r.status === 404) throw new Error('imap_server.py is out of date — copy the new one and run start.bat');
+    const d = await r.json();
+    if (d.error) throw new Error(d.error);
+    return true;
+  } catch (e) {
+    em.unread = prev; _irRowSetUnread(w, prev); _irUpdateReadBtn(w);
+    if (statusEl) { statusEl.style.color = 'var(--warning)'; statusEl.textContent = 'Could not mark ' + (seen ? 'read' : 'unread') + ': ' + e.message; }
+    return false;
+  }
+}
+function _irToggleRead(w) {
+  if (!w || !w._em) return;
+  const makeUnread = !w._em.unread;
+  if (makeUnread) { w._irNoAuto = true; if (w._irReadTimer) { clearTimeout(w._irReadTimer); w._irReadTimer = null; } }
+  _irSetSeen(w, !makeUnread);
+}
+function _irScheduleAutoRead(w) {
+  if (w._irReadTimer) { clearTimeout(w._irReadTimer); w._irReadTimer = null; }
+  if (_irGet('oel_inbox_markread', 'open') !== 'open') return;
+  if (!w._em || !w._em.unread || !w._em.uid || w._irNoAuto) return;
+  w._irReadTimer = setTimeout(() => { w._irReadTimer = null; if (window._irSelected === w && w._em.unread && !w._irNoAuto) _irSetSeen(w, true); }, 1200);
+}
 
 async function _irLoadBody(em) {
   let body = em.body || em.preview || '';
@@ -15588,9 +15644,7 @@ async function _irPaneOpen(w, info) {
   window._irSelected = w;
   const em = info.em;
   w.firstChild.classList.add('ir-selected');
-  w.firstChild.classList.remove('ir-unread');
-  const dot = w.querySelector('.ir-dot'); if (dot) dot.remove();
-  em.unread = false;
+  w._irNoAuto = false;
 
   document.getElementById('irp-empty').style.display = 'none';
   document.getElementById('irp-content').style.display = 'flex';
@@ -15603,12 +15657,23 @@ async function _irPaneOpen(w, info) {
 
   const act = document.getElementById('irp-actions');
   act.innerHTML = '';
+  if (info.src === 'turbify' && em.uid) {
+    const rb = document.createElement('button');
+    rb.id = 'irp-readbtn';
+    rb.style.cssText = 'background:none;border:1px solid var(--border);border-radius:5px;padding:3px 9px;font-size:0.71rem;color:var(--muted);cursor:pointer;white-space:nowrap';
+    rb.onmouseover = () => { rb.style.borderColor = 'var(--accent)'; rb.style.color = 'var(--accent)'; };
+    rb.onmouseout  = () => { rb.style.borderColor = 'var(--border)'; rb.style.color = 'var(--muted)'; };
+    rb.onclick = () => _irToggleRead(w);
+    act.appendChild(rb);
+    _irUpdateReadBtn(w);
+  }
   if (w._actions) act.appendChild(w._actions);
   const slot = document.getElementById('irp-draft');
   slot.innerHTML = '';
   const parked = w.querySelector(':scope > .inline-draft-area');
   if (parked) slot.appendChild(parked);
 
+  if (info.src === 'turbify') _irScheduleAutoRead(w);
   const bodyEl = document.getElementById('irp-body');
   bodyEl.textContent = 'Loading…';
   document.getElementById('irp-scroll').scrollTop = 0;
@@ -15697,6 +15762,7 @@ document.addEventListener('keydown', (e) => {
   const t = e.target;
   if (t && (/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName) || t.isContentEditable)) return;
   if (!document.getElementById('panel-inbox')?.classList.contains('active')) return;
+  if ((e.key === 'u' || e.key === 'U') && window._irSelected && window._irSelected._em && window._irSelected._em.uid) { e.preventDefault(); _irToggleRead(window._irSelected); return; }
   const dir = (e.key === 'ArrowDown' || e.key === 'j') ? 1 : (e.key === 'ArrowUp' || e.key === 'k') ? -1 : 0;
   if (!dir) return;
   const rows = Array.from(document.querySelectorAll('#inbox-list-col .ir-wrap')).filter(r => r.offsetParent !== null);
@@ -15766,11 +15832,13 @@ window.oelInboxApplyView = function(init) {
     if (vSel) vSel.value = _irGet('oel_inbox_view', 'standard');
     if (zSel) zSel.value = _irGet('oel_inbox_size', 'm');
     if (aSel) aSel.value = _irGet('oel_inbox_auto', '60');
+    const mSel0 = document.getElementById('inbox-markread-sel'); if (mSel0) mSel0.value = _irGet('oel_inbox_markread', 'open');
   } else {
     const lSel1 = document.getElementById('inbox-layout-sel'); if (lSel1) _irSet('oel_inbox_layout', lSel1.value);
     if (vSel) _irSet('oel_inbox_view', vSel.value);
     if (zSel) _irSet('oel_inbox_size', zSel.value);
     if (aSel) _irSet('oel_inbox_auto', aSel.value);
+    const mSel1 = document.getElementById('inbox-markread-sel'); if (mSel1) _irSet('oel_inbox_markread', mSel1.value);
   }
   const c = document.getElementById('inbox-panels-container');
   const lSel = document.getElementById('inbox-layout-sel');
@@ -16157,7 +16225,7 @@ function _renderInboxRow(em, src, idx) {
   row.appendChild(actions);
   wrapper._actions = actions;
   wrapper._actionsHome = row;
-  wrapper._irOpen = () => _irPaneOpen(wrapper, { em, subject, sender, emailTo, color });
+  wrapper._irOpen = () => _irPaneOpen(wrapper, { em, subject, sender, emailTo, color, src });
   row.onmouseover = () => { if (!cb.checked) row.style.background = 'var(--surface2)'; };
   row.onmouseout  = () => { if (!cb.checked) row.style.background = 'var(--surface)'; };
 
@@ -16863,6 +16931,7 @@ async function _loadTurbifyPanel(listEl, statusEl) {
       statusEl.style.color = 'var(--muted)';
       statusEl.textContent = emails.length+' email'+(emails.length!==1?'s':'') + (data.ms ? ' · loaded in ' + (data.ms/1000).toFixed(1) + 's' : '');
     }
+    if (data.folder) window._turbifyFolder = data.folder;
     window._turbifyMaxUid = flagged ? 0 : emails.reduce((m, e) => Math.max(m, parseInt(e.uid, 10) || 0), 0);
     window._turbifyLastCheck = Date.now();
     if (!emails.length) {
