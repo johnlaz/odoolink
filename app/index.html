@@ -3,7 +3,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <meta name="oel-version" content="v15.59">
+  <meta name="oel-version" content="v15.60">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="mobile-web-app-capable" content="yes">
@@ -12124,6 +12124,7 @@ async function qdRebuildFromRequired() {
     equipment: v('equipment'), goal: '', load_times: v('load_times'), recurring: v('recurring'),
     personal_event: !!document.getElementById('qd-req-personal')?.checked,
     followup_reply: !!prev.followup_reply,
+    profile: prev.profile || '',
     other_questions: prev.other_questions || [],
     first_name: name.trim().split(/\s+/)[0] || '',
   };
@@ -15228,7 +15229,11 @@ const LAZ_PERSONA = `You are a 20-year rental industry veteran — specifically 
 Never mention you are an AI. Draft as if YOU are writing this reply.`;
 
 // Shared intake rules for new rental quote requests (used by Laz draft + Request Desk).
-// Goal: read the email, repeat back what the customer already told us, ask ONLY for what is missing.
+// Goal: read the email, repeat back what the customer already told us, then ask for what we still need to quote it,
+// using the questions that fit THIS kind of event (a conference needs room / audio / video / streaming answers,
+// a wedding needs different ones). Model reply: "Thank you for reaching out regarding your conference in Orlando...
+// I have the following information so far: ... To prepare the most accurate quote and recommendations, could you
+// provide a little more detail on your requirements? ..."
 // ASCII only on purpose (the Laz draft path returns JSON).
 const RENTAL_INTAKE_FIELDS = [
   ['dates',      'Event date(s)'],
@@ -15239,26 +15244,102 @@ const RENTAL_INTAKE_FIELDS = [
   ['load_times', 'Load-in / load-out times'],
   ['recurring',  'Any recurring or upcoming events you would like pricing comparisons for']
 ];
-const RENTAL_INTAKE_RULES = `RENTAL QUOTE INTAKE (applies when the email is a new request for a rental quote, pricing, or availability):
-Total Rental Solutions cannot build a quote until these 7 items are known. Before writing, read the customer's email and fill in each item ONLY from what the customer explicitly wrote in their own message. Do not use their signature or older quoted messages as the source. If an item is not stated, it is UNKNOWN. Never guess or infer.
-  dates      = event date(s)
-  venue      = venue or location
-  attendance = expected attendance
-  event_type = type of event (meeting, conference, performance, etc.)
-  equipment  = equipment they named, OR the goal they described
-  load_times = load-in / load-out times
-  recurring  = recurring or upcoming events they want pricing for
 
-HOW TO WRITE THE REPLY:
-1. Open with "Thank you for contacting Total Rental Solutions." and one short sentence saying you are happy to help make sure they get the right equipment. EXCEPTION: if this email is the customer replying to questions we already sent, do not thank them for contacting us again. Open with "Thanks for the details." instead.
-2. If at least one item is KNOWN, write "Here is what I have so far:" followed by one "- " bullet per KNOWN item, restated briefly with the customer's exact dates, names and numbers. Add nothing they did not say.
-3. Ask ONLY about the UNKNOWN items, as "- " bullets under a line like "To put together an accurate quote, could you share a few details?" NEVER ask about an item that is known. Do not add any other questions, unless something the customer wrote is genuinely unclear (then ask that one thing).
-4. If equipment is unknown, ask for the equipment they know they will need, or tell them to share the goal and you will recommend a setup. If they described only a goal, restate the goal and say you will recommend a setup.
-5. Website form fields (Name, Email, Phone, Event Type, Additional Requirements) are the customer's own answers and count as stated. An Event Type of "Other" means unspecified; if their message says more (for example a wedding), use the message. EXCEPTION for recurring: if the event is a personal one-time event (wedding, birthday, party, anniversary, etc.), recurring does not apply. Leave it out completely, do not list it as missing, and skip the comparison sentence below. Otherwise, if recurring is unknown, include that item as a bullet and add this sentence before the close: "If you prefer, I can also send a comparison quote for recurring rentals or future events so you can plan ahead and see where savings might apply."
-6. Close with "Once I have the details above, I'll send a tailored quote right away." If NOTHING is unknown, ask no questions and close with "I have what I need and will send a tailored quote right away."
-7. If NOTHING is known, skip step 2 and ask about all 7 items.
-8. Never state prices. Never confirm availability. Never promise delivery or installation.
-9. Plain text only: "- " bullets, no markdown, no bold, no emoji.`;
+// Every question the reply can ask. k = key, short = label for the "still needed" note, ask = the bullet text,
+// kw = word the bullet must still contain, field = intake field that makes the question unnecessary when known,
+// have = if the customer's equipment/goal text matches this, that area is already covered, so do not ask.
+const INTAKE_ASKS = {
+  dates:        { k:'dates',        short:'dates',            ask:'Event dates',                                                   kw:/date/i,                        field:'dates' },
+  venue:        { k:'venue',        short:'venue',            ask:'Venue/location',                                                kw:/venue|location/i,              field:'venue' },
+  attendance:   { k:'attendance',   short:'attendance',       ask:'Expected attendance',                                           kw:/attend|guest|head ?count|people/i, field:'attendance' },
+  event_type:   { k:'event_type',   short:'event type',       ask:'Type of event (meeting, conference, performance, etc.)',        kw:/type of event|kind of event/i, field:'event_type' },
+  equipment:    { k:'equipment',    short:'equipment/goal',   ask:"Equipment you know you'll need (or tell me the goal and I'll recommend a setup)", kw:/equipment|goal|setup|set-up/i },
+  load_times:   { k:'load_times',   short:'load-in/out times',ask:'Load-in / load-out times',                                      kw:/load|set ?up|strike|timing|times/i, field:'load_times' },
+  recurring:    { k:'recurring',    short:'recurring events', ask:"Any recurring or upcoming events you'd like pricing comparisons for", kw:/recurring|future|upcoming/i, field:'recurring' },
+  room:         { k:'room',         short:'room size/setup',  ask:'General session room size and setup',                           kw:/room|size|setup|set-up|layout/i },
+  room_social:  { k:'room',         short:'room size/layout', ask:'Room or space size and layout, and whether it is indoor or outdoor', kw:/room|space|layout|indoor|outdoor/i },
+  stage:        { k:'stage',        short:'stage size/location', ask:'Stage or performance area size, and whether it is indoor or outdoor', kw:/stage|performance|indoor|outdoor/i },
+  booth:        { k:'space',        short:'space size/layout', ask:'Booth or exhibit space size and layout',                       kw:/booth|exhibit|space|layout/i },
+  audio:        { k:'audio',        short:'audio',            ask:'Audio requirements (wireless microphones, podium mic, panel discussions, etc.)', kw:/audio|microphone|sound|mic/i,
+                  have:/\b(mics?|microphones?|audio|sound|speakers?|pa|podium|lavs?|lavaliers?|dj)\b/i },
+  audio_perf:   { k:'audio',        short:'audio',            ask:'Audio needs (main PA, monitors, number of mics/inputs, backline, DJ, etc.)', kw:/audio|sound|pa\b|mic/i,
+                  have:/\b(mics?|microphones?|audio|sound|speakers?|pa|dj|backline|monitors?)\b/i },
+  audio_social: { k:'audio',        short:'audio',            ask:'Audio needs (ceremony mics, DJ or band, toasts and speeches, background music)', kw:/audio|sound|mic|music/i,
+                  have:/\b(mics?|microphones?|audio|sound|speakers?|pa|dj|band|music)\b/i },
+  audio_expo:   { k:'audio',        short:'audio',            ask:'Audio needs (presentation mics, background music, etc.)',       kw:/audio|sound|mic|music/i,
+                  have:/\b(mics?|microphones?|audio|sound|speakers?|pa|music)\b/i },
+  video:        { k:'video',        short:'video',            ask:'Video requirements (screens, projectors, LED walls, confidence monitors)', kw:/video|screen|projector|display/i,
+                  have:/\b(screens?|projectors?|projection|led|displays?|tvs?|video|monitors?|imag)\b/i },
+  video_perf:   { k:'video',        short:'video',            ask:'Video needs (LED wall, projection, IMAG screens, etc.)',        kw:/video|screen|projection|led/i,
+                  have:/\b(screens?|projectors?|projection|led|displays?|tvs?|video|imag)\b/i },
+  video_social: { k:'video',        short:'video/displays',   ask:'Video or display needs (projector, screens, slideshow, etc.)',  kw:/video|display|screen|projector/i,
+                  have:/\b(screens?|projectors?|projection|led|displays?|tvs?|video|slideshow)\b/i },
+  video_expo:   { k:'video',        short:'displays',         ask:'Display needs (screens, video walls, projectors)',              kw:/display|screen|video|projector/i,
+                  have:/\b(screens?|projectors?|projection|led|displays?|tvs?|video)\b/i },
+  presentation: { k:'presentation', short:'presentation support', ask:'Presentation support (laptops, slide advancement, video playback)', kw:/presentation|laptop|slide/i,
+                  have:/\b(laptops?|slides?|clickers?|presentation|playback|powerpoint)\b/i },
+  lighting:     { k:'lighting',     short:'lighting',         ask:'Lighting requirements',                                         kw:/light/i,
+                  have:/\blight(s|ing)?\b/i },
+  lighting_perf:{ k:'lighting',     short:'lighting',         ask:'Lighting needs (stage lighting, effects, etc.)',                kw:/light/i,
+                  have:/\blight(s|ing)?\b/i },
+  lighting_social:{ k:'lighting',   short:'lighting',         ask:'Lighting needs (uplighting, dance floor, etc.)',                kw:/light/i,
+                  have:/\blight(s|ing)?\b/i },
+  streaming:    { k:'streaming',    short:'recording/streaming', ask:'Whether you need recording, live streaming, or hybrid event support', kw:/record|stream|hybrid/i,
+                  have:/(stream|record|hybrid|webcast|zoom)/i },
+  times_conf:   { k:'load_times',   short:'setup/teardown times', ask:'Setup and teardown dates/times',                           kw:/set ?up|teardown|tear-down|times/i, field:'load_times' },
+  times_perf:   { k:'load_times',   short:'load-in/out times', ask:'Load-in, sound check and load-out times',                      kw:/load|sound ?check|times/i, field:'load_times' },
+  times_expo:   { k:'load_times',   short:'move-in/out times', ask:'Move-in and move-out dates/times',                             kw:/move|times|dates/i, field:'load_times' }
+};
+
+// Event profiles: which kind of event this is decides which scope questions we ask. Detected from the event type the
+// customer gave, or from the words in their message. No match = generic (equipment / load times / recurring).
+// words = keywords that vote for the profile, nouns = how we name the event in the opener, asks = INTAKE_ASKS keys.
+const INTAKE_PROFILES = {
+  conference: {
+    support: 'production and AV needs',
+    nouns: ['conference','convention','summit','seminar','symposium','workshop','retreat','meeting','forum','training','town hall','assembly'],
+    words: ['corporate','annual','keynote','general session','breakout','webinar','hybrid'],
+    asks:  ['room','audio','video','presentation','lighting','streaming','times_conf']
+  },
+  expo: {
+    support: 'AV and display needs',
+    nouns: ['trade show','tradeshow','expo','exhibition','product launch','job fair','career fair'],
+    words: ['exhibit','booth','showcase','vendor fair'],
+    asks:  ['booth','video_expo','audio_expo','lighting','times_expo']
+  },
+  performance: {
+    support: 'sound, lighting and production needs',
+    nouns: ['concert','festival','performance','recital'],
+    words: ['band','live music','dj','musical','gig','tour','live show'],
+    asks:  ['stage','audio_perf','lighting_perf','video_perf','streaming','times_perf']
+  },
+  social: {
+    support: 'audio, lighting and event technology needs',
+    nouns: ['wedding','reception','birthday party','birthday','party','anniversary','banquet','gala','fundraiser','graduation','prom','celebration','reunion'],
+    words: ['bridal','baby shower','quincea','mitzvah','homecoming','ceremony','married','marriage'],
+    asks:  ['room_social','audio_social','lighting_social','video_social','times_conf']
+  }
+};
+
+const RENTAL_INTAKE_RULES = `RENTAL QUOTE INTAKE (applies when the email is a new request for a rental quote, pricing, or availability):
+Total Rental Solutions cannot build an accurate quote until it understands the event. Before writing, read the customer's email and sort what they wrote into KNOWN and UNKNOWN. Use ONLY what the customer explicitly wrote in their own message (website form answers count). Do not use their signature or older quoted messages as the source. Never guess or infer.
+Core items: event dates, venue/location, expected attendance, type of event.
+Then ask about the scope for THIS kind of event. Never ask about anything that is already known:
+  conference / meeting / seminar: general session room size and setup; audio (wireless microphones, podium mic, panel discussions); video (screens, projectors, LED walls, confidence monitors); presentation support (laptops, slide advancement, video playback); lighting; recording, live streaming or hybrid support; setup and teardown dates/times.
+  concert / performance / festival: stage size and indoor or outdoor; audio (main PA, monitors, mic and input count, backline); lighting; video (LED wall, projection, IMAG); recording or streaming; load-in, sound check and load-out times.
+  wedding / party / social event: room or space size and layout, indoor or outdoor; audio (ceremony mics, DJ or band, toasts, background music); lighting (uplighting, dance floor); video or displays; setup and teardown times.
+  trade show / expo: booth or space size and layout; displays; audio; lighting; move-in and move-out times.
+  anything else: equipment they know they need (or their goal, and you will recommend a setup); load-in / load-out times; recurring or upcoming events they would like pricing comparisons for (skip recurring for personal one-time events).
+
+HOW TO WRITE THE REPLY (match this structure and tone):
+1. "Hi <first name>,"
+2. One or two warm sentences that name their event and its city when known. Example: "Thank you for reaching out regarding your conference in Orlando. It sounds like a great event, and we'd be happy to explore how we can support your production and AV needs." EXCEPTION: if this email is the customer replying to questions we already sent, open with "Thanks for the details." instead.
+3. "I have the following information so far:" then one "- " bullet per KNOWN item (for example Event Dates, Attendance, Venue), using the customer's exact dates, names and numbers. Add nothing they did not say. Skip this part if nothing is known.
+4. "To prepare the most accurate quote and recommendations, could you provide a little more detail on your requirements?" then one "- " bullet per UNKNOWN item from the list above. Do not add other questions, unless something the customer wrote is genuinely unclear.
+5. Close with "Once we have a better understanding of the scope, we'll put together options that fit your event and budget." and then "I look forward to hearing more about your <event>." If NOTHING is unknown, ask no questions and say you have what you need and will put together options.
+6. Sign off with "Best regards," and the sender name.
+7. Never state prices. Never confirm availability. Never promise delivery or installation.
+8. Plain text only: "- " bullets, no markdown, no bold, no emoji.`;
 
 // ── Unlock ────────────────────────────────────────────────
 
@@ -17622,7 +17703,7 @@ Return exactly these keys, using only standard ASCII characters:
   "dates": "event date(s) as written",
   "venue": "venue or location",
   "attendance": "expected attendance or headcount",
-  "event_type": "kind of event, e.g. wedding, conference, meeting",
+  "event_type": "kind of event, e.g. wedding, conference, meeting. If a form Event Type says Other but the message names the kind of event, use what the message says",
   "equipment": "equipment items they named",
   "goal": "what they want to achieve, ONLY if they named no equipment",
   "load_times": "load-in / load-out / setup / strike times",
@@ -17654,33 +17735,93 @@ function lazGrounded(val, bodyLower) {
   return toks.length ? toks.some(t => bodyLower.includes(t)) : false;
 }
 
+// Work out what kind of event this is. Returns { key, noun }; key '' = generic.
+// An event type the customer gave counts triple; each keyword found in their message counts once.
+function lazIntakeProfile(eventType, text, fallbackKey) {
+  const et = String(eventType || '').toLowerCase();
+  const tx = String(text || '').toLowerCase();
+  const hit = (w, s) => !!s && new RegExp('\\b' + w.replace(/ /g, '[ -]?') + (w.length <= 4 ? '\\b' : '')).test(s);   // short words must match whole words (band, not bandwidth)
+  let bestKey = '', bestScore = 0;
+  Object.keys(INTAKE_PROFILES).forEach(key => {
+    const p = INTAKE_PROFILES[key];
+    let score = 0;
+    p.nouns.concat(p.words).forEach(w => { if (hit(w, et)) score += 3; else if (hit(w, tx)) score += 1; });
+    if (score > bestScore) { bestScore = score; bestKey = key; }
+  });
+  if (!bestKey && fallbackKey && INTAKE_PROFILES[fallbackKey]) bestKey = fallbackKey;
+  let noun = '';
+  if (bestKey) noun = INTAKE_PROFILES[bestKey].nouns.find(w => hit(w, et)) || INTAKE_PROFILES[bestKey].nouns.find(w => hit(w, tx)) || '';
+  return { key: bestKey, noun };
+}
+
+// "your <noun>" for the opener: drop articles, skip junk and long names, lowercase ordinary words.
+function lazIntakeNoun(s) {
+  let n = String(s || '').trim().replace(/^(a|an|the|our|my)\s+/i, '').replace(/[.\s]+$/, '');
+  if (!n || n.length > 40 || n.split(/\s+/).length > 4 || /^(other|n\/a|none|unknown|unspecified)$/i.test(n)) return '';
+  if (/^[A-Z][a-z]/.test(n)) n = n.charAt(0).toLowerCase() + n.slice(1);
+  return n;
+}
+
+// City for "your conference in Orlando", only when the venue reads like "..., Orlando, FL ...".
+function lazIntakeCity(venue) {
+  const m = String(venue || '').match(/(?:^|,\s*)([A-Za-z][A-Za-z .'\-]{1,30}),\s*[A-Z]{2}\b/);
+  return m ? m[1].trim() : '';
+}
+
+// "600-650 people" -> "Approximately 600-650 attendees". Anything more complicated is left exactly as written.
+function lazIntakeAttendance(s) {
+  const t = String(s || '').trim();
+  if (!t || t.length > 60 || /\+|plus|over|more than|at least|up to|under|max|min|seated|standing/i.test(t)) return t;
+  const m = t.match(/^\D{0,20}?(\d[\d,]*)(?:\s*(?:-|–|to|and)\s*(\d[\d,]*))?\s*(?:people|persons|guests|attendees|attendance|participants|ppl|pax)?\W*$/i);
+  return m ? 'Approximately ' + m[1] + (m[2] ? '-' + m[2] : '') + ' attendees' : t;
+}
+
 // Build the quote-request reply in code from John's standard template, so we never ask for what the customer already gave.
-function lazBuildIntakeReply(x, bodyLower, em, trusted) {
+// Shape follows John's model reply: warm opener naming the event, "I have the following information so far:" recap,
+// questions fitted to the kind of event, then a short close.
+function lazBuildIntakeReply(x, bodyLower, em, trusted, classText) {
   const g = k => { const v = String(x[k] || '').trim(); return v && (trusted || lazGrounded(v, bodyLower)) ? v : ''; };
   const known = { dates: g('dates'), venue: g('venue'), attendance: g('attendance'), event_type: g('event_type'),
                   equipment: g('equipment'), load_times: g('load_times'), recurring: g('recurring') };
   const goal = known.equipment ? '' : g('goal');
   const personal = x.personal_event === true;
+  const equipText = ((known.equipment || '') + ' ' + (goal || '')).toLowerCase();
 
+  // What kind of event is it? Decides the scope questions below.
+  const pr = lazIntakeProfile(known.event_type, [classText || '', equipText].join(' '), x.profile);
+  const prof = pr.key ? INTAKE_PROFILES[pr.key] : null;                       // null = generic event
+  const noun = lazIntakeNoun(known.event_type) || (prof ? lazIntakeNoun(pr.noun) : '');
+  const city = lazIntakeCity(known.venue);
+
+  // What we already know (recap)
   const knownLines = [];
-  if (known.event_type) knownLines.push('Type of event: ' + known.event_type);
-  if (known.dates)      knownLines.push('Event date(s): ' + known.dates);
-  if (known.venue)      knownLines.push('Venue/location: ' + known.venue);
-  if (known.attendance) knownLines.push('Expected attendance: ' + known.attendance);
+  if (!prof && known.event_type) knownLines.push('Event Type: ' + known.event_type);   // a recognised event type is named in the opener instead
+  if (known.dates)      knownLines.push('Event Dates: ' + known.dates);
+  if (known.attendance) knownLines.push('Attendance: ' + lazIntakeAttendance(known.attendance));
+  if (known.venue)      knownLines.push('Venue: ' + known.venue);
   if (known.equipment)  knownLines.push('Equipment: ' + known.equipment);
   else if (goal)        knownLines.push('Goal: ' + goal);
-  if (known.load_times) knownLines.push('Load-in / load-out: ' + known.load_times);
-  if (known.recurring && !personal) knownLines.push('Recurring / upcoming events: ' + known.recurring);
+  if (known.load_times) knownLines.push('Load-in / Load-out: ' + known.load_times);
+  if (known.recurring && !personal) knownLines.push('Recurring / Upcoming Events: ' + known.recurring);
 
-  const ask = []; const missing = [];
-  if (!known.dates)      { ask.push('Event date(s)'); missing.push('dates'); }
-  if (!known.venue)      { ask.push('Venue/location'); missing.push('venue'); }
-  if (!known.attendance) { ask.push('Expected attendance'); missing.push('attendance'); }
-  if (!known.event_type) { ask.push('Type of event (meeting, conference, performance, etc.)'); missing.push('event_type'); }
-  if (!known.equipment && !goal) { ask.push("Equipment you know you'll need (or tell me the goal and I'll recommend a setup)"); missing.push('equipment'); }
-  if (!known.load_times) { ask.push('Load-in / load-out times'); missing.push('load_times'); }
-  const askRecurring = !known.recurring && !personal;
-  if (askRecurring)      { ask.push("Any recurring or upcoming events you'd like pricing comparisons for"); missing.push('recurring'); }
+  // What we still need: core items first, then the questions that fit this kind of event
+  const A = INTAKE_ASKS;
+  const defs = [];
+  if (!known.dates)      defs.push(A.dates);
+  if (!known.venue)      defs.push(A.venue);
+  if (!known.attendance) defs.push(A.attendance);
+  if (!prof && !known.event_type) defs.push(A.event_type);
+  (prof ? prof.asks : ['equipment', 'load_times', 'recurring']).forEach(key => {
+    const d = A[key];
+    if (key === 'equipment' && (known.equipment || goal)) return;
+    if (d.field && known[d.field]) return;
+    if (key === 'recurring' && personal) return;
+    if (d.have && d.have.test(equipText)) return;                              // they already told us about this area
+    defs.push(d);
+  });
+  const ask = defs.map(d => d.ask);
+  const missing = defs.map(d => d.k);
+  const askRecurring = defs.some(d => d.k === 'recurring');
 
   const _un = (document.getElementById('odoo-user')?.value?.split('@')[0] || '').split(/[._\-]/)[0].toLowerCase();
   const isMe = n => !!n && (n.toLowerCase() === _un || n.toLowerCase() === 'john');   // never greet the customer with our own name
@@ -17692,49 +17833,39 @@ function lazBuildIntakeReply(x, bodyLower, em, trusted) {
     if (disp && !/@|total rental|trsav/i.test(disp) && !isMe(df)) first = df;
   }
 
+  const support = prof ? prof.support : 'AV and event needs';
   const out = [];
   out.push(first ? `Hi ${first},` : 'Hi,');
-  out.push(x.followup_reply === true
-    ? 'Thanks for the details.'
-    : "Thank you for contacting Total Rental Solutions. I'd be happy to help with your upcoming rental needs and make sure you get the right equipment for your event.");
-  if (knownLines.length) out.push("Here's what I have so far:\n" + knownLines.map(l => '- ' + l).join('\n'));
+  if (x.followup_reply === true) out.push('Thanks for the details.');
+  else if (noun) out.push(`Thank you for reaching out regarding your ${noun}${city ? ' in ' + city : ''}. It sounds like a great event, and we'd be happy to explore how we can support your ${support}.`);
+  else out.push(`Thank you for reaching out to Total Rental Solutions. We'd be happy to explore how we can support your ${support}.`);
+  if (knownLines.length) out.push('I have the following information so far:\n' + knownLines.map(l => '- ' + l).join('\n'));
   if (goal && !known.equipment) out.push("I'll recommend a setup based on that.");
-  if (ask.length) out.push('To put together an accurate quote, could you share a few details?\n' + ask.map(l => '- ' + l).join('\n'));
+  if (ask.length) out.push('To prepare the most accurate quote and recommendations, could you provide a little more detail on your requirements?\n' + ask.map(l => '- ' + l).join('\n'));
   if (askRecurring) out.push('If you prefer, I can also send a comparison quote for recurring rentals or future events so you can plan ahead and see where savings might apply.');
   const qs = (Array.isArray(x.other_questions) ? x.other_questions : []).map(q => String(q || '').trim()).filter(Boolean);
   if (qs.length) out.push(qs.map(q => '[ANSWER BEFORE SENDING: ' + q + ']').join('\n'));
-  out.push(ask.length ? "Once I have the details above, I'll send a tailored quote right away." : 'I have what I need and will send a tailored quote right away.');
-  out.push('Warm regards,\n{{my_name}}');
-  return { text: out.join('\n\n'), missing, known, goal, personal, first };
+  out.push(ask.length ? "Once we have a better understanding of the scope, we'll put together options that fit your event and budget."
+                      : "I have what I need and will put together options that fit your event and budget.");
+  if (ask.length) out.push('I look forward to hearing more about your ' + (noun || 'event') + '.');
+  out.push('Best regards,\n{{my_name}}');
+  return { text: out.join('\n\n'), missing, askDefs: defs, known, goal, personal, first, profile: pr.key, noun };
 }
 
-// Warm, natural rewrite of the safe template draft. Falls back to the template (returns null) if the rewrite
-// drops a required question, loses a date/answer placeholder, mentions a price, or fails to parse.
+// Light polish of the template draft. The draft is already in John's format, so the rewrite may only warm up the
+// opening and closing lines. Falls back to the template (returns null) if the rewrite changes a question or a fact,
+// loses a placeholder, mentions a price, grows too long, or fails to parse.
 async function lazPolishIntake(built, x, em, isForm, groqKey, model) {
-  const L = { dates:'event date(s)', venue:'venue/location', attendance:'expected attendance', event_type:'type of event',
-              equipment:'equipment they need (or the goal, and you will recommend a setup)', load_times:'load-in / load-out times',
-              recurring:'recurring or upcoming events they want pricing comparisons for' };
-  const K = { dates:'dates', venue:'venue', attendance:'attendance', event_type:'event type', equipment:'equipment', load_times:'load times', recurring:'recurring events' };
-  const factLines = Object.keys(built.known).filter(k => built.known[k]).map(k => '- ' + K[k] + ': ' + built.known[k]);
-  if (built.goal) factLines.push('- goal: ' + built.goal);
-  const askLines = built.missing.map(k => '- ' + L[k]);
-  const prompt = `Rewrite the DRAFT below as a warm, natural reply from John at Total Rental Solutions (AV and event equipment rental) to a customer.
-
-FACTS THE CUSTOMER ALREADY GAVE (never ask about these):
-${factLines.join('\n') || '(none)'}
-
-STILL NEEDED (ask these, and only these, as "- " bullets):
-${askLines.join('\n') || '(nothing)'}
+  const prompt = `You are lightly polishing a reply email from John at Total Rental Solutions (AV and event equipment rental) to a customer. The DRAFT is already in John's preferred format. Keep that format.
 
 RULES:
-- Keep the greeting line and the sign-off exactly as in the draft (sign-off is "Warm regards," then "{{my_name}}").
-- Thank them for contacting Total Rental Solutions. If it is a personal event such as a wedding or birthday, add one short warm line about it (congratulations).
-- Mention what they told you in a natural sentence, using their exact dates, names and numbers. Do not add details they did not give.
-- You may add at most 2 short extra bullets that are specific to the equipment they named (for example for a projector: what they will display, indoor or outdoor), but never about anything listed under FACTS.
-- Do not state prices. Do not promise availability. Do not describe equipment or services we did not mention.
+- Keep the structure exactly: greeting, opening, the "I have the following information so far:" list, the question lead-in and its list, the closing lines, and the sign-off ("Best regards," then "{{my_name}}").
+- Keep every line that starts with "- " exactly as written: same wording, same order, same count. Do not add, remove, merge or reword bullets, and do not add any new questions.
+- Keep the two lines "I have the following information so far:" and "To prepare the most accurate quote and recommendations, could you provide a little more detail on your requirements?" word for word when they appear.
+- You may adjust the opening and closing sentences for a more natural, warm tone, but keep them short. If it is a personal event such as a wedding or birthday, you may add one brief congratulations phrase to the opening.
+- Do not state prices. Do not promise availability. Do not describe equipment or services that are not mentioned in the draft.
 - Keep every line that starts with [ANSWER BEFORE SENDING: word for word, on its own line.
-- Keep the closing promise to send a tailored quote.
-- Plain text, no markdown, no emoji. Use only standard ASCII characters. Under 170 words.
+- Plain text, no markdown, no emoji. Use only standard ASCII characters. Do not make the email more than about 15 percent longer than the draft.
 
 DRAFT:
 ${built.text}
@@ -17744,7 +17875,7 @@ Return raw JSON only: {"subject": "short friendly subject line", "draft": "the f
     const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${groqKey}` },
-      body: JSON.stringify({ model, reasoning_effort:'none', reasoning_format:'hidden', max_tokens: 900, temperature: 0.4,
+      body: JSON.stringify({ model, reasoning_effort:'none', reasoning_format:'hidden', max_tokens: 900, temperature: 0.3,
         messages: [{ role: 'user', content: prompt }] }),
       signal: AbortSignal.timeout(30000)
     });
@@ -17755,20 +17886,17 @@ Return raw JSON only: {"subject": "short friendly subject line", "draft": "the f
     if (!m) return null;
     const j = JSON.parse(m[0]);
     let d = String(j.draft || '').trim();
-    if (!d || d.length > built.text.length * 2.2) return null;
+    if (!d || d.length > built.text.length * 1.2) return null;
     if (!d.includes('{{my_name}}')) return null;
     if (/\$\s?\d|\bper (day|hour)\b/i.test(d)) return null;                        // no prices
     if (/[“”‘’]/.test(d)) d = d.replace(/[“”]/g,'"').replace(/[‘’]/g,"'");
     // every answer placeholder must survive
     const ph = built.text.match(/\[ANSWER BEFORE SENDING:[^\]]*\]/g) || [];
     if (ph.some(p => !d.includes(p))) return null;
-    // a known date must still be in there
-    const dt = String(built.known.dates || '').match(/[A-Za-z0-9\/]+/g);
-    if (dt && dt.length && !d.includes(dt[0])) return null;
-    // every missing item must still be asked about
-    const KW = { dates:/date/i, venue:/venue|location/i, attendance:/attend|guest|head ?count|people/i, event_type:/type of event|kind of event/i,
-                 equipment:/equipment|goal|setup|set-up/i, load_times:/load|set ?up|pick ?up|strike|timing|times/i, recurring:/recurring|future|upcoming/i };
-    if (built.missing.some(k => !KW[k].test(d))) return null;
+    // every recap and question bullet, and both lead-in lines, must survive word for word
+    const lines = built.text.split('\n');
+    if (lines.some(l => l.startsWith('- ') && !d.includes(l))) return null;
+    if (lines.some(l => /^(I have the following information so far:|To prepare the most accurate quote)/.test(l) && !d.includes(l))) return null;
     return { draft: d, subject: String(j.subject || '').trim() };
   } catch(e) { return null; }
 }
@@ -17825,9 +17953,8 @@ async function lazGenerateDraft(em, body) {
   // Every submission from our website rental form is an inquiry; if the read failed, still use the standard template
   if (form) { x = x || {}; x.quote_request = true; }
   if (x && x.quote_request === true) {
-    const built = lazBuildIntakeReply(x, bodyLower, em);
-    const labels = { dates:'dates', venue:'venue', attendance:'attendance', event_type:'event type',
-                     equipment:'equipment/goal', load_times:'load-in/out times', recurring:'recurring events' };
+    const built = lazBuildIntakeReply(x, bodyLower, em, false, form ? cleanBody : bodyLower);   // form title is only a website label, so classify from the message alone
+    const labels = {}; (built.askDefs || []).forEach(d => { labels[d.k] = d.short; });
     const bullets = (Array.isArray(x.bullets) ? x.bullets.filter(Boolean).slice(0, 3) : []);
     bullets.push(built.missing.length ? 'Still needed from customer: ' + built.missing.map(k => labels[k]).join(', ')
                                       : 'All intake details provided - ready to quote');
@@ -17842,7 +17969,7 @@ async function lazGenerateDraft(em, body) {
       subject: subj,
       draft: lazFillVariables(pol ? pol.draft : built.text, em),
       alt: pol ? lazFillVariables(built.text, em) : '',   // plain template version, offered as version 2
-      intake: { dates: built.known.dates, venue: built.known.venue, attendance: built.known.attendance, event_type: built.known.event_type,
+      intake: { dates: built.known.dates, venue: built.known.venue, attendance: built.known.attendance, event_type: built.known.event_type || built.noun || '', profile: built.profile || '',
                 equipment: built.known.equipment, goal: built.goal, load_times: built.known.load_times, recurring: built.known.recurring,
                 personal_event: built.personal, followup_reply: x.followup_reply === true,
                 other_questions: Array.isArray(x.other_questions) ? x.other_questions : [] },
@@ -17860,7 +17987,7 @@ async function lazGenerateDraft(em, body) {
 
 YOUR ROLE: You work for Total Rental Solutions (TRSAV), an AV, staging and event equipment rental company. The email below was sent TO us by a customer, vendor or contact. It may be a website contact-form notification: in that case the sender's name, phone, email and message are written inside the BODY. You are REPLYING to that person as our staff. Never pitch our services as if we were the ones reaching out, and never invent anything that is not written in the email.
 GREETING: "Hi <first name>," using the name from the body or sender. If there is no name anywhere, just "Hi,".
-SIGN-OFF: end the draft exactly with "Best,\\n{{my_name}}". Never put an email address in the sign-off.
+SIGN-OFF: end the draft exactly with "Best regards,\\n{{my_name}}". Never put an email address in the sign-off.
 
 Email received:
 FROM: ${em.sender}${form ? '\n(Website form submission. The FROM above is the customer who filled it in' + (form.phone ? ', phone ' + form.phone : '') + '. Reply to them.)' : ''}
