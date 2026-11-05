@@ -3,7 +3,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <meta name="oel-version" content="v15.60">
+  <meta name="oel-version" content="v15.63">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="mobile-web-app-capable" content="yes">
@@ -12124,7 +12124,7 @@ async function qdRebuildFromRequired() {
     equipment: v('equipment'), goal: '', load_times: v('load_times'), recurring: v('recurring'),
     personal_event: !!document.getElementById('qd-req-personal')?.checked,
     followup_reply: !!prev.followup_reply,
-    profile: prev.profile || '',
+    profile: prev.profile || '', room: prev.room || '', streaming: prev.streaming || '',
     other_questions: prev.other_questions || [],
     first_name: name.trim().split(/\s+/)[0] || '',
   };
@@ -12202,7 +12202,8 @@ async function qdDraftResponse(keepHistory) {
   const company = document.getElementById('qd-company')?.value || '';
   const raw     = document.getElementById('qd-raw')?.value     || '';
   const qdEmail = document.getElementById('qd-email')?.value   || '';
-  const customPrompt = (localStorage.getItem('oel_qd_prompt') || '').trim();
+  // A saved custom prompt used to bypass the whole read-the-email pipeline. It now only applies if oel_qd_prompt_force is set to '1'.
+  const customPrompt = (localStorage.getItem('oel_qd_prompt_force') === '1' ? (localStorage.getItem('oel_qd_prompt') || '') : '').trim();
 
   // Default path: same read-the-email pipeline as the Inbox draft. Fix the Name/Email fields above and hit Regenerate to correct a misread.
   if (!customPrompt) {
@@ -15228,6 +15229,24 @@ const LAZ_PERSONA = `You are a 20-year rental industry veteran — specifically 
 - Signs off with first name only.
 Never mention you are an AI. Draft as if YOU are writing this reply.`;
 
+// Writing standard for replies drafted from a real email (Inbox draft, internal replies). Grounding rules come first.
+const LAZ_REPLY_STANDARD = `You are writing an email reply as John Lazzaro, owner of Total Rental Solutions (TRS), an AV, staging and event equipment rental company. Write the way an experienced business owner writes: plain, direct, helpful and honest. You are a trusted advisor first and a vendor second.
+
+HARD RULES (these matter more than style):
+- Use ONLY facts written in the email you are replying to. Never invent quote or job numbers, deadlines, purchase orders, equipment, crew, availability, prices, past conversations or commitments. If the email does not say it, you do not know it.
+- Do not refer to earlier conversations, holds, reservations or confirmations unless the email itself mentions them. Do not write "following up" unless the customer is the one following up.
+- Never promise availability or pricing, and never say gear is held or confirmed. If John must decide or confirm something before sending, write a line like [CONFIRM BEFORE SENDING: ...] instead of guessing.
+- Only mention equipment that appears in the email. Do not add rigging, truss, backline, consoles or other gear nobody asked about.
+- Greet the person who wrote to you, using the name in their From line or signature. The name the email is addressed to is us, not them. If you cannot tell who wrote it, use "Hi,".
+- Never mention you are an AI.
+
+HOW JOHN WRITES:
+- Acknowledge what they asked, give practical guidance, state the next step. Keep it short, usually under 150 words.
+- Ask only for information that is genuinely needed, and say why when it is not obvious.
+- If they are comparing bids or setting a budget before the scope is defined, explain politely why scope drives price. Never criticize competitors.
+- Keep the door open. Never pushy, never desperate, never guilt-tripping.
+- No hype or buzzwords. Never use "hope this email finds you well", "just checking in", "circle back", "touch base", "leverage", "world-class" or "industry-leading".`;
+
 // Shared intake rules for new rental quote requests (used by Laz draft + Request Desk).
 // Goal: read the email, repeat back what the customer already told us, then ask for what we still need to quote it,
 // using the questions that fit THIS kind of event (a conference needs room / audio / video / streaming answers,
@@ -15256,8 +15275,14 @@ const INTAKE_ASKS = {
   equipment:    { k:'equipment',    short:'equipment/goal',   ask:"Equipment you know you'll need (or tell me the goal and I'll recommend a setup)", kw:/equipment|goal|setup|set-up/i },
   load_times:   { k:'load_times',   short:'load-in/out times',ask:'Load-in / load-out times',                                      kw:/load|set ?up|strike|timing|times/i, field:'load_times' },
   recurring:    { k:'recurring',    short:'recurring events', ask:"Any recurring or upcoming events you'd like pricing comparisons for", kw:/recurring|future|upcoming/i, field:'recurring' },
-  room:         { k:'room',         short:'room size/setup',  ask:'General session room size and setup',                           kw:/room|size|setup|set-up|layout/i },
-  room_social:  { k:'room',         short:'room size/layout', ask:'Room or space size and layout, and whether it is indoor or outdoor', kw:/room|space|layout|indoor|outdoor/i },
+  room:         { k:'room',         short:'room size/setup',  ask:'General session room size and setup',                           kw:/room|size|setup|set-up|layout/i, field:'room',
+                  have:/\b\d+\s*['\u2032]?\s*x\s*\d+|sq\.?\s?ft|square f(?:ee|oo)t|theat(?:er|re)[- ]style|classroom style/i },
+  room_social:  { k:'room',         short:'room size/layout', ask:'Room or space size and layout, and whether it is indoor or outdoor', kw:/room|space|layout|indoor|outdoor/i, field:'room',
+                  have:/\b\d+\s*['\u2032]?\s*x\s*\d+|sq\.?\s?ft|square f(?:ee|oo)t/i },
+  tech:         { k:'tech',        short:'on-site tech support', ask:'Will you need an on-site technician, or are you planning a self-operated setup?', kw:/technician|tech|operated/i,
+                  have:/\b(technicians?|tech support|on-?site (tech|support)|self[- ]operated|operators?|a\/?v tech|crew)\b/i },
+  room_name:    { k:'room_name',   short:'which room',       ask:'Which meeting room or ballroom you will be using at the venue',    kw:/room|ballroom/i,
+                  have:/\b(salon [a-z0-9]+|hall [a-z]\b|hall \d+|room \d+[a-z]?\b)/i },
   stage:        { k:'stage',        short:'stage size/location', ask:'Stage or performance area size, and whether it is indoor or outdoor', kw:/stage|performance|indoor|outdoor/i },
   booth:        { k:'space',        short:'space size/layout', ask:'Booth or exhibit space size and layout',                       kw:/booth|exhibit|space|layout/i },
   audio:        { k:'audio',        short:'audio',            ask:'Audio requirements (wireless microphones, podium mic, panel discussions, etc.)', kw:/audio|microphone|sound|mic/i,
@@ -15284,7 +15309,7 @@ const INTAKE_ASKS = {
                   have:/\blight(s|ing)?\b/i },
   lighting_social:{ k:'lighting',   short:'lighting',         ask:'Lighting needs (uplighting, dance floor, etc.)',                kw:/light/i,
                   have:/\blight(s|ing)?\b/i },
-  streaming:    { k:'streaming',    short:'recording/streaming', ask:'Whether you need recording, live streaming, or hybrid event support', kw:/record|stream|hybrid/i,
+  streaming:    { k:'streaming',    short:'recording/streaming', ask:'Whether you need recording, live streaming, or hybrid event support', kw:/record|stream|hybrid/i, field:'streaming',
                   have:/(stream|record|hybrid|webcast|zoom)/i },
   times_conf:   { k:'load_times',   short:'setup/teardown times', ask:'Setup and teardown dates/times',                           kw:/set ?up|teardown|tear-down|times/i, field:'load_times' },
   times_perf:   { k:'load_times',   short:'load-in/out times', ask:'Load-in, sound check and load-out times',                      kw:/load|sound ?check|times/i, field:'load_times' },
@@ -15299,7 +15324,7 @@ const INTAKE_PROFILES = {
     support: 'production and AV needs',
     nouns: ['conference','convention','summit','seminar','symposium','workshop','retreat','meeting','forum','training','town hall','assembly'],
     words: ['corporate','annual','keynote','general session','breakout','webinar','hybrid'],
-    asks:  ['room','audio','video','presentation','lighting','streaming','times_conf']
+    asks:  ['room','room_name','audio','video','presentation','lighting','streaming','tech','times_conf']
   },
   expo: {
     support: 'AV and display needs',
@@ -16091,9 +16116,20 @@ function _renderInboxRow(em, src, idx) {
     replyBtn.style.cssText = 'background:none;border:1px solid var(--border);border-radius:5px;padding:3px 8px;font-size:0.71rem;color:var(--muted);cursor:pointer;white-space:nowrap';
     replyBtn.onmouseover = () => { replyBtn.style.borderColor='var(--accent)'; replyBtn.style.color='var(--accent)'; };
     replyBtn.onmouseout  = () => { replyBtn.style.borderColor='var(--border)'; replyBtn.style.color='var(--muted)'; };
-    replyBtn.onclick = (e) => {
+    replyBtn.onclick = async (e) => {
       e.stopPropagation();
-      if (window.openQuickCompose) openQuickCompose({ to: emailTo, subject: 'Re: '+subject });
+      let body = em.body || '';
+      if (!body && em.uid && src === 'turbify') {
+        try {
+          const br = await fetch(IMAP_SERVER+'/body', { method:'POST', headers:{ 'Content-Type':'application/json' },
+            body: JSON.stringify({ config: getImapConfig(), uid: em.uid }), signal: AbortSignal.timeout(15000) });
+          const bd = await br.json();
+          if (bd.body) { body = bd.body; em.body = body; }
+        } catch(_) {}
+      }
+      const form = lazParseFormNotification(body);      // website form: reply to the customer, not the no-reply address
+      if (window.openQuickCompose) openQuickCompose({ to: form ? form.email : emailTo, subject: 'Re: '+subject,
+        original: { sender: emailTo || sender, subject: subject, date: em.date || '', body: body } });
     };
     actions.appendChild(replyBtn);
   }
@@ -17669,7 +17705,9 @@ async function lazDraftSelected() {
 function lazParseFormNotification(body) {
   const lines = String(body || '').split(/\r?\n/).map(l => l.trim()).filter(Boolean);
   const grab = label => {
-    const i = lines.findIndex(l => l.toLowerCase().replace(/[:*]/g, '').trim() === label);
+    const rx = new RegExp('^[*_\\s]*' + label + '[*_\\s]*:\\s*(\\S.*)$', 'i');            // "name: Katy Knapp" on one line
+    for (const l of lines) { const m = l.match(rx); if (m) return m[1].trim(); }
+    const i = lines.findIndex(l => l.toLowerCase().replace(/[:*]/g, '').trim() === label);       // label on one line, value on the next
     return i >= 0 && lines[i + 1] ? lines[i + 1] : '';
   };
   const email = grab('email');
@@ -17699,6 +17737,7 @@ Return exactly these keys, using only standard ASCII characters:
   "quote_request": true or false  (true if the customer is asking for a rental quote, pricing, availability or equipment, new or ongoing; false for billing, support, vendors, thanks, pickups, anything else),
   "followup_reply": true or false  (true only if the customer is answering questions we sent earlier),
   "personal_event": true or false  (true if it is a one-time personal event: wedding, birthday, party, anniversary),
+  "partner_request": true or false  (true if the sender is an agency, event planner, reseller, sourcing platform or sales team asking US, as a vendor, for availability, pricing or input on a gear list or event for THEIR client, e.g. "my sales team is working to get a competitive quote together"; false if a customer is asking us directly for their own event),
   "first_name": "first name of the person who SENT this email (from the sender name or their signature), never the person it is addressed to; empty if unknown",
   "dates": "event date(s) as written",
   "venue": "venue or location",
@@ -17707,6 +17746,8 @@ Return exactly these keys, using only standard ASCII characters:
   "equipment": "equipment items they named",
   "goal": "what they want to achieve, ONLY if they named no equipment",
   "load_times": "load-in / load-out / setup / strike times",
+  "room_setup": "room size, dimensions, layout or seating, only if stated",
+  "streaming": "recording, live streaming or hybrid needs, only if stated (a clear 'no live streaming' counts)",
   "recurring": "recurring or future events they want pricing for",
   "other_questions": ["specific questions they asked that are not about the items above"],
   "subject": "Re: subject line"
@@ -17715,11 +17756,12 @@ Return exactly these keys, using only standard ASCII characters:
     const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${groqKey}` },
-      body: JSON.stringify({ model, reasoning_effort:'none', reasoning_format:'hidden', max_tokens: 700, temperature: 0,
-        messages: [{ role: 'user', content: prompt }] }),
+      body: JSON.stringify(Object.assign({ model, max_tokens: lazMaxTokens(model, 700), temperature: 0,
+        messages: [{ role: 'user', content: prompt }] }, lazModelParams(model))),
       signal: AbortSignal.timeout(30000)
     });
     const data = await r.json();
+    if (data.error) { window._lazLastErr = data.error.message || 'model error'; return null; }
     let raw = (data.choices?.[0]?.message?.content || '').trim()
       .replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'').replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g,'');
     const m = raw.match(/\{[\s\S]*\}/);
@@ -17758,14 +17800,14 @@ function lazIntakeProfile(eventType, text, fallbackKey) {
 function lazIntakeNoun(s) {
   let n = String(s || '').trim().replace(/^(a|an|the|our|my)\s+/i, '').replace(/[.\s]+$/, '');
   if (!n || n.length > 40 || n.split(/\s+/).length > 4 || /^(other|n\/a|none|unknown|unspecified)$/i.test(n)) return '';
-  if (/^[A-Z][a-z]/.test(n)) n = n.charAt(0).toLowerCase() + n.slice(1);
+  n = n.split(' ').map(w => /^[A-Z][a-z]+$/.test(w) ? w.toLowerCase() : w).join(' ');   // "Corporate Annual Event" -> "corporate annual event", acronyms untouched
   return n;
 }
 
 // City for "your conference in Orlando", only when the venue reads like "..., Orlando, FL ...".
 function lazIntakeCity(venue) {
   const m = String(venue || '').match(/(?:^|,\s*)([A-Za-z][A-Za-z .'\-]{1,30}),\s*[A-Z]{2}\b/);
-  return m ? m[1].trim() : '';
+  return m ? m[1].trim().split(/\s+[-\u2013]\s+/).pop() : '';   // "Mission Bay Resort - San Diego" -> "San Diego"
 }
 
 // "600-650 people" -> "Approximately 600-650 attendees". Anything more complicated is left exactly as written.
@@ -17782,10 +17824,13 @@ function lazIntakeAttendance(s) {
 function lazBuildIntakeReply(x, bodyLower, em, trusted, classText) {
   const g = k => { const v = String(x[k] || '').trim(); return v && (trusted || lazGrounded(v, bodyLower)) ? v : ''; };
   const known = { dates: g('dates'), venue: g('venue'), attendance: g('attendance'), event_type: g('event_type'),
-                  equipment: g('equipment'), load_times: g('load_times'), recurring: g('recurring') };
+                  equipment: g('equipment'), load_times: g('load_times'), recurring: g('recurring'),
+                  room: g('room_setup') || g('room'), streaming: g('streaming') };
   const goal = known.equipment ? '' : g('goal');
   const personal = x.personal_event === true;
   const equipText = ((known.equipment || '') + ' ' + (goal || '')).toLowerCase();
+  // Anything the customer said anywhere in their message counts as already answered (mics, projector, laptop, "no streaming", room size...)
+  const haveText = equipText + ' ' + String(classText || '').toLowerCase();
 
   // What kind of event is it? Decides the scope questions below.
   const pr = lazIntakeProfile(known.event_type, [classText || '', equipText].join(' '), x.profile);
@@ -17799,8 +17844,10 @@ function lazBuildIntakeReply(x, bodyLower, em, trusted, classText) {
   if (known.dates)      knownLines.push('Event Dates: ' + known.dates);
   if (known.attendance) knownLines.push('Attendance: ' + lazIntakeAttendance(known.attendance));
   if (known.venue)      knownLines.push('Venue: ' + known.venue);
+  if (known.room)       knownLines.push('Room: ' + known.room);
   if (known.equipment)  knownLines.push('Equipment: ' + known.equipment);
   else if (goal)        knownLines.push('Goal: ' + goal);
+  if (known.streaming)  knownLines.push('Recording / Streaming: ' + known.streaming);
   if (known.load_times) knownLines.push('Load-in / Load-out: ' + known.load_times);
   if (known.recurring && !personal) knownLines.push('Recurring / Upcoming Events: ' + known.recurring);
 
@@ -17814,9 +17861,14 @@ function lazBuildIntakeReply(x, bodyLower, em, trusted, classText) {
   (prof ? prof.asks : ['equipment', 'load_times', 'recurring']).forEach(key => {
     const d = A[key];
     if (key === 'equipment' && (known.equipment || goal)) return;
+    if (key === 'room_name' && !known.room) return;                           // only worth asking once we know the room size
+    if (key === 'tech' && !known.equipment) return;                           // only once they have defined what gear they want
+    if (prof && d.k === 'load_times' && known.equipment) return;              // gear list given: scope is defined, times can follow in the quote
     if (d.field && known[d.field]) return;
     if (key === 'recurring' && personal) return;
-    if (d.have && d.have.test(equipText)) return;                              // they already told us about this area
+    if (d.have && d.have.test(haveText)) return;
+    // They listed specific gear, so the scope is defined. Anything not on their list is not wanted, so do not ask about it.
+    if (known.equipment && ['audio', 'video', 'presentation', 'lighting', 'streaming'].includes(d.k)) return;                              // they already told us about this area
     defs.push(d);
   });
   const ask = defs.map(d => d.ask);
@@ -17836,18 +17888,24 @@ function lazBuildIntakeReply(x, bodyLower, em, trusted, classText) {
   const support = prof ? prof.support : 'AV and event needs';
   const out = [];
   out.push(first ? `Hi ${first},` : 'Hi,');
+  const factCount = [known.dates, known.venue, known.attendance, known.equipment || goal, known.room].filter(Boolean).length;
   if (x.followup_reply === true) out.push('Thanks for the details.');
+  else if (noun && factCount >= 4) out.push(`Thank you for reaching out regarding your ${noun}${city ? ' in ' + city : ''}, and for providing so much detail up front. That gives me a good picture of what you are looking to accomplish.`);
   else if (noun) out.push(`Thank you for reaching out regarding your ${noun}${city ? ' in ' + city : ''}. It sounds like a great event, and we'd be happy to explore how we can support your ${support}.`);
   else out.push(`Thank you for reaching out to Total Rental Solutions. We'd be happy to explore how we can support your ${support}.`);
   if (knownLines.length) out.push('I have the following information so far:\n' + knownLines.map(l => '- ' + l).join('\n'));
   if (goal && !known.equipment) out.push("I'll recommend a setup based on that.");
-  if (ask.length) out.push('To prepare the most accurate quote and recommendations, could you provide a little more detail on your requirements?\n' + ask.map(l => '- ' + l).join('\n'));
+  const detailed = !!known.equipment && ask.length <= 4;
+  if (ask.length) out.push((detailed ? 'Before I prepare pricing, could you help me with just a couple of details?' : 'To prepare the most accurate quote and recommendations, could you provide a little more detail on your requirements?') + '\n' + ask.map(l => '- ' + l).join('\n'));
   if (askRecurring) out.push('If you prefer, I can also send a comparison quote for recurring rentals or future events so you can plan ahead and see where savings might apply.');
   const qs = (Array.isArray(x.other_questions) ? x.other_questions : []).map(q => String(q || '').trim()).filter(Boolean);
   if (qs.length) out.push(qs.map(q => '[ANSWER BEFORE SENDING: ' + q + ']').join('\n'));
-  out.push(ask.length ? "Once we have a better understanding of the scope, we'll put together options that fit your event and budget."
-                      : "I have what I need and will put together options that fit your event and budget.");
-  if (ask.length) out.push('I look forward to hearing more about your ' + (noun || 'event') + '.');
+  if (detailed && ask.length) out.push("Once I have those details, I'll put together a proposal.\n\nI look forward to hearing back from you.");
+  else {
+    out.push(ask.length ? "Once we have a better understanding of the scope, we'll put together options that fit your event and budget."
+                        : "I have what I need and will put together options that fit your event and budget.");
+    if (ask.length) out.push('I look forward to hearing more about your ' + (noun || 'event') + '.');
+  }
   out.push('Best regards,\n{{my_name}}');
   return { text: out.join('\n\n'), missing, askDefs: defs, known, goal, personal, first, profile: pr.key, noun };
 }
@@ -17875,8 +17933,8 @@ Return raw JSON only: {"subject": "short friendly subject line", "draft": "the f
     const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${groqKey}` },
-      body: JSON.stringify({ model, reasoning_effort:'none', reasoning_format:'hidden', max_tokens: 900, temperature: 0.3,
-        messages: [{ role: 'user', content: prompt }] }),
+      body: JSON.stringify(Object.assign({ model, max_tokens: lazMaxTokens(model, 900), temperature: 0.3,
+        messages: [{ role: 'user', content: prompt }] }, lazModelParams(model))),
       signal: AbortSignal.timeout(30000)
     });
     const data = await r.json();
@@ -17915,6 +17973,129 @@ async function lazDraftFromIntake(intake, em) {
   };
 }
 
+
+// ── Partner / agency requests ("my sales team is working on a quote, please send availability") ──
+// These are not customer inquiries and not follow-ups. Build a short, factual reply in code: restate what they sent,
+// leave John's decisions as placeholders, ask only logistics we truly need. Nothing is invented.
+function lazGrabSection(body, header) {
+  const lines = String(body || '').split('\n').map(l => l.trim());
+  const i = lines.findIndex(l => l.toLowerCase().replace(/[*_]/g, '').startsWith(header));
+  if (i < 0) return [];
+  const out = [];
+  const same = lines[i].replace(/^[^:]*:/, '').trim();
+  if (same) out.push(same);
+  for (let j = i + 1; j < lines.length && out.length < 15; j++) {
+    const l = lines[j];
+    if (!l) { if (out.length) break; else continue; }
+    if (/^\*/.test(l) || /^[A-Za-z][A-Za-z /]*:\s*$/.test(l)) break;
+    out.push(l);
+  }
+  return out;
+}
+
+function lazLooksLikePartnerRequest(cleanBody) {
+  return /\bgear list\b/i.test(cleanBody) && /\b(availability|competitive quote|sales team|our client|the client|my client)\b/i.test(cleanBody);
+}
+
+function lazFirstNameOf(x, bodyLower, em) {
+  const _un = (document.getElementById('odoo-user')?.value?.split('@')[0] || '').split(/[._\-]/)[0].toLowerCase();
+  const isMe = n => !!n && (n.toLowerCase() === _un || n.toLowerCase() === 'john');
+  let first = String(x.first_name || '').trim().split(/\s+/)[0];
+  if (!lazGrounded(first, ((em.sender || '') + ' ' + bodyLower).toLowerCase()) || isMe(first)) first = '';
+  if (!first) {
+    const disp = (em.sender || '').split('<')[0].replace(/["']/g, '').trim();
+    const df = disp.split(/\s+/)[0];
+    if (disp && !/@|no-?reply|total rental|trsav/i.test(disp) && !isMe(df)) first = df;
+  }
+  return first;
+}
+
+function lazBuildPartnerReply(x, cleanBody, bodyLower, em) {
+  const fromModel = v => (Array.isArray(v) ? v : []).map(t => String(t || '').trim()).filter(t => t && lazGrounded(t, bodyLower)).slice(0, 12);
+  const gear  = lazGrabSection(cleanBody, 'gear list');
+  const sched = lazGrabSection(cleanBody, 'currently anticipated');
+  const loc   = lazGrabSection(cleanBody, 'event location')[0] || (lazGrounded(x.venue, bodyLower) ? String(x.venue).trim() : '');
+  const gearL  = gear.length  ? gear  : fromModel(x.gear_list);
+  const schedL = sched.length ? sched : fromModel(x.schedule);
+  const first = lazFirstNameOf(x, bodyLower, em);
+
+  const out = [first ? `Hi ${first},` : 'Hi,'];
+  out.push('Thank you for sending this over. Here is what I have so far:');
+  const recap = [];
+  if (loc)           recap.push('Location: ' + loc);
+  schedL.forEach(l => recap.push(l));
+  if (gearL.length)  { recap.push('Gear:'); gearL.forEach(l => recap.push('- ' + l.replace(/^[-*•]\s*/, '').replace(/\s+-\s+includes\b.*$/i, '').replace(/(\.)\s.*$/, '$1'))); }
+  if (recap.length) out.push(recap.join('\n'));
+  out.push('[CONFIRM BEFORE SENDING: availability for these dates, whether the times work as listed, and any insight you want to share on the venue or equipment]');
+
+  // Only ask logistics that matter for the gear listed and that the email has not already answered
+  const asks = [];
+  if (!/\b(dock|elevator|load-?in (access|details)|ground[- ]level|loading)\b/i.test(bodyLower))
+    asks.push('Venue name and load-in details (dock or ground-level access, elevators, distance from the loading area to the room)');
+  const hasDisplays = /\b(monitor|screen|display|projector|led wall|tv)\b/i.test(gearL.join(' ') + ' ' + bodyLower);
+  if (hasDisplays && !/\b(laptop|media player|source|playback|content)\b/i.test(bodyLower))
+    asks.push('What will be feeding the displays (laptop, media player, or another source)');
+  if (asks.length) out.push('To quote this accurately, could you confirm:\n' + asks.map(a => '- ' + a).join('\n'));
+  out.push(asks.length ? "Once I have those, I'll get back to you with availability and pricing." : "I'll get back to you with availability and pricing.");
+  out.push('Best regards,\n{{my_name}}');
+  return out.join('\n\n');
+}
+
+// Safety nets for any AI-written reply: flag specifics that are not in the email, and never greet with an invented name.
+function lazUngroundedFlags(draft, bodyLower) {
+  const found = new Set();
+  const d = String(draft || '');
+  (d.match(/\b[A-Z]{1,3}-?\d{4,}\b|\$\s?\d[\d,]*(?:\.\d+)?|\b\d{1,2}\/\d{1,2}(?:\/\d{2,4})?\b/g) || [])
+    .forEach(t => { if (!bodyLower.includes(t.toLowerCase())) found.add(t); });
+  (d.match(/\b(PO|purchase order|rigging points?|backline|FOH|truss|staging crew|lighting console|load-in sheet|signed|confirmed availability|availability is confirmed|have confirmed|valid until|formal quote|holding your|we are holding|secured)\b/gi) || [])
+    .forEach(t => { if (!bodyLower.includes(t.toLowerCase())) found.add(t); });
+  return Array.from(found).slice(0, 6);
+}
+// An email address is never a sign-off: swap a trailing address for John's first name.
+function lazFixSignoff(draft) {
+  const _un = (document.getElementById('odoo-user')?.value?.split('@')[0] || 'Laz').split(/[._\-]/)[0];
+  const myName = _un.charAt(0).toUpperCase() + _un.slice(1);
+  return String(draft || '').replace(/\n[ \t]*[\w.+-]+@[\w-]+(?:\.[\w-]+)+[ \t]*\s*$/, '\n' + myName);
+}
+function lazFixGreeting(draft, em, bodyLower) {
+  const d = String(draft || '');
+  const m = d.match(/^\s*(?:Hi|Hello|Hey|Dear)\s+([A-Za-z][A-Za-z'\-]*)\s*,/);
+  if (!m) return d;
+  const name = m[1].toLowerCase();
+  const _un = (document.getElementById('odoo-user')?.value?.split('@')[0] || '').split(/[._\-]/)[0].toLowerCase();
+  const stripped = String(bodyLower || '').replace(new RegExp('\\b(hi|hello|hey|dear)\\s+' + name + '\\b', 'g'), '');
+  const ok = name !== 'john' && name !== _un && ((em.sender || '').toLowerCase().includes(name) || stripped.includes(name));
+  return ok ? d : d.replace(/^\s*(?:Hi|Hello|Hey|Dear)\s+[A-Za-z][A-Za-z'\-]*\s*,/, 'Hi,');
+}
+
+
+// Backstop for the model's quote_request flag: an obvious rental request (gear + need/event words) is a quote request,
+// unless it reads like support or billing.
+function lazLooksLikeQuoteRequest(t, subject) {
+  t = String(t || '');
+  if (/^\s*(re|fwd?)\s*:/i.test(String(subject || ''))) return false;                 // a reply in an existing thread is not a new order request
+  if (/\b(not working|broken|stopped working|invoice|billing|refund|overcharged|returned the|pick ?up (is|was)|damaged)\b/i.test(t)) return false;
+  return /\b(projector|screens?|microphones?|mics?|lavaliers?|speakers?|led wall|lighting|staging|truss|sound system)\b/i.test(t) &&
+         /\b(we('| wi)?ll need|we need|i need|looking for|looking to rent|need to rent|would like to rent|require)\b/i.test(t);
+}
+
+
+// Per-model request settings for Groq. Qwen3 takes reasoning_effort 'none'; gpt-oss only accepts low/medium/high and needs more
+// output tokens because reasoning counts against them; other models must not be sent reasoning settings at all.
+function lazModelParams(model) {
+  const m = String(model || '').toLowerCase();
+  if (/gpt-oss/.test(m)) return { reasoning_effort: 'low', include_reasoning: false };
+  if (/qwen/.test(m))    return { reasoning_effort: 'none', reasoning_format: 'hidden' };
+  return {};
+}
+function lazMaxTokens(model, n) { return /gpt-oss/i.test(String(model || '')) ? n * 4 : n; }
+
+// One-line summary of what the AI was actually given, shown with each draft so a bad draft can be traced.
+function lazDebugLine(cleanBody, extra) {
+  const ver = document.querySelector('meta[name="oel-version"]')?.content || '?';
+  const start = String(cleanBody || '').replace(/\s+/g, ' ').trim().slice(0, 140);
+  return '[debug] build ' + ver + ' | email text ' + String(cleanBody || '').length + ' chars | starts: "' + start + '"' + (extra ? ' | ' + extra : '');
+}
 async function lazGenerateDraft(em, body) {
   // If this is a website-form notification, the real customer is inside the body: reply to THEM, not to our own site address
   const form = lazParseFormNotification(body);
@@ -17950,12 +18131,29 @@ async function lazGenerateDraft(em, body) {
 
   // Step 1: strict read of the email (classify + facts). Quote requests are then built in code from the standard template.
   let x = await lazExtractIntake(emModel, cleanBody, groqKey, model);
+  if (!x) x = await lazExtractIntake(emModel, cleanBody, groqKey, model);   // one retry: a failed read is the main way a clear request ends up with a generic reply
+  if (x && x.quote_request !== true && x.partner_request !== true && lazLooksLikeQuoteRequest(cleanBody, em.subject)) x.quote_request = true;
   // Every submission from our website rental form is an inquiry; if the read failed, still use the standard template
   if (form) { x = x || {}; x.quote_request = true; }
+  // Agency / partner asking us for availability on a gear list: not a customer inquiry, not a follow-up
+  if (!form && ((x && x.partner_request === true) || lazLooksLikePartnerRequest(cleanBody))) {
+    const px = x || {};
+    const text = lazBuildPartnerReply(px, cleanBody, bodyLower, em);
+    return {
+      email: em, body: body,
+      bullets: ['[route] partner request (built from the email, no AI writing)', lazDebugLine(cleanBody),
+                'A partner or agency is asking for availability and pricing input on a gear list for their client.',
+                'Draft restates only what the email says. Fill in the [CONFIRM BEFORE SENDING] line before it goes out.'],
+      subject: `Re: ${em.subject||''}`,
+      draft: lazFillVariables(text, em),
+      templateId: null, replyTo: '',
+    };
+  }
   if (x && x.quote_request === true) {
     const built = lazBuildIntakeReply(x, bodyLower, em, false, form ? cleanBody : bodyLower);   // form title is only a website label, so classify from the message alone
     const labels = {}; (built.askDefs || []).forEach(d => { labels[d.k] = d.short; });
     const bullets = (Array.isArray(x.bullets) ? x.bullets.filter(Boolean).slice(0, 3) : []);
+    bullets.unshift('[route] quote intake (template: recap + questions that fit the event)', lazDebugLine(cleanBody, 'read: ' + JSON.stringify({ d: x.dates, v: x.venue, a: x.attendance, t: x.event_type, e: x.equipment, r: x.room_setup, s: x.streaming }).slice(0, 360)));
     bullets.push(built.missing.length ? 'Still needed from customer: ' + built.missing.map(k => labels[k]).join(', ')
                                       : 'All intake details provided - ready to quote');
     const qs = (Array.isArray(x.other_questions) ? x.other_questions : []).filter(q => q && String(q).trim());
@@ -17963,13 +18161,19 @@ async function lazGenerateDraft(em, body) {
     // Warm rewrite on top of the safe draft; keep the template draft if the rewrite fails any check
     const pol = await lazPolishIntake(built, x, em, !!form, groqKey, model);
     let subj = (x.subject && /^re:/i.test(x.subject)) ? x.subject : `Re: ${em.subject||''}`;
-    if (form) subj = (pol && pol.subject && pol.subject.length <= 90) ? pol.subject : 'Your rental request - Total Rental Solutions';  // form leads have no thread to keep
+    if (form) {                                                                  // form leads have no thread to keep
+      const kn = built.known;
+      const venueShort = String(kn.venue || '').split(/\s+[-\u2013]\s+|,/)[0].trim();
+      const evWord = built.noun ? (built.noun.charAt(0).toUpperCase() + built.noun.slice(1)) : 'Event';
+      subj = (kn.dates && venueShort) ? `Re: AV Requirements for ${kn.dates} ${evWord} at ${venueShort}`
+           : (pol && pol.subject && pol.subject.length <= 90) ? pol.subject : 'Your rental request - Total Rental Solutions';
+    }
     return {
       email: em, body: body, bullets,
       subject: subj,
       draft: lazFillVariables(pol ? pol.draft : built.text, em),
       alt: pol ? lazFillVariables(built.text, em) : '',   // plain template version, offered as version 2
-      intake: { dates: built.known.dates, venue: built.known.venue, attendance: built.known.attendance, event_type: built.known.event_type || built.noun || '', profile: built.profile || '',
+      intake: { dates: built.known.dates, venue: built.known.venue, attendance: built.known.attendance, event_type: built.known.event_type || built.noun || '', profile: built.profile || '', room: built.known.room, streaming: built.known.streaming,
                 equipment: built.known.equipment, goal: built.goal, load_times: built.known.load_times, recurring: built.known.recurring,
                 personal_event: built.personal, followup_reply: x.followup_reply === true,
                 other_questions: Array.isArray(x.other_questions) ? x.other_questions : [] },
@@ -17983,7 +18187,7 @@ async function lazGenerateDraft(em, body) {
   const tmplBody = tmpl ? tmpl.body : '';
   const readFailed = !x;
 
-  const prompt = `${LAZ_PERSONA}
+  const prompt = `${LAZ_REPLY_STANDARD}
 
 YOUR ROLE: You work for Total Rental Solutions (TRSAV), an AV, staging and event equipment rental company. The email below was sent TO us by a customer, vendor or contact. It may be a website contact-form notification: in that case the sender's name, phone, email and message are written inside the BODY. You are REPLYING to that person as our staff. Never pitch our services as if we were the ones reaching out, and never invent anything that is not written in the email.
 GREETING: "Hi <first name>," using the name from the body or sender. If there is no name anywhere, just "Hi,".
@@ -18011,12 +18215,13 @@ IMPORTANT: Return raw JSON only. No markdown fences. No special characters outsi
     const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${groqKey}` },
-      body: JSON.stringify({ model, reasoning_effort:'none', reasoning_format:'hidden', max_tokens: 1000, temperature: 0.3,
+      body: JSON.stringify(Object.assign({ model, max_tokens: lazMaxTokens(model, 1000), temperature: 0.3,
         messages: [{ role: 'user', content: prompt }]
-      }),
+      }, lazModelParams(model))),
       signal: AbortSignal.timeout(30000)
     });
     const data = await r.json();
+    if (data.error) throw new Error(data.error.message || 'model error');
     let raw = data.choices?.[0]?.message?.content?.trim() || '{}';
     raw = raw.replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'').trim();
     raw = raw.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '');
@@ -18035,11 +18240,15 @@ IMPORTANT: Return raw JSON only. No markdown fences. No special characters outsi
       };
     }
 
-    const filled = lazFillVariables(parsed.draft||'', em);
+    const filled = lazFixSignoff(lazFixGreeting(lazFillVariables(parsed.draft||'', em), em, bodyLower));
+    const flags = lazUngroundedFlags(filled, bodyLower);
+    let fbBullets = Array.isArray(parsed.bullets) ? parsed.bullets : (x && Array.isArray(x.bullets) ? x.bullets : []);
+    fbBullets = ['[route] AI fallback (email not recognised as a quote or partner request)', lazDebugLine(cleanBody, 'template: ' + (tmpl ? tmpl.name : 'none') + ' | read ' + (x ? 'ok' : 'FAILED') + (x ? ', quote_request=' + x.quote_request : (window._lazLastErr ? ': ' + window._lazLastErr : '')))].concat(fbBullets);
+    if (flags.length) fbBullets = ['CHECK BEFORE SENDING: the draft mentions ' + flags.join(', ') + ', which is not in the email. Remove or correct it.'].concat(fbBullets);
     return {
       email:      em,
       body:       body,
-      bullets:    Array.isArray(parsed.bullets) ? parsed.bullets : (x && Array.isArray(x.bullets) ? x.bullets : []),
+      bullets:    fbBullets,
       subject:    parsed.subject || `Re: ${em.subject||''}`,
       draft:      filled || `Hi,\n\nThanks for reaching out.\n\nBest,\n{{my_name}}`,
       templateId: tmpl?.id || null,
@@ -18048,7 +18257,7 @@ IMPORTANT: Return raw JSON only. No markdown fences. No special characters outsi
   } catch(e) {
     return {
       email: em, body,
-      bullets: ['Could not generate summary — check Groq key or try Regenerate'],
+      bullets: ['Could not generate summary — ' + (e && e.message ? e.message : 'check Groq key or try Regenerate')],
       subject: `Re: ${em.subject||''}`,
       draft: `Hi {{customer_name}},\n\nThanks for your email.\n\n[Add your reply here]\n\nBest,\n{{my_name}}`,
       templateId: null,
@@ -22004,6 +22213,7 @@ async function supportGenerateDraft(em, body) {
   const groqKey = document.getElementById('gemini-key')?.value?.trim() || '';
   const model   = document.getElementById('gemini-model')?.value || 'qwen/qwen3.8-27b';
   const tmpl    = supportMatchTemplate((em.subject||'') + ' ' + body);
+  const form    = lazParseFormNotification(body);
 
   const cleanBody = (body||'').replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g,'')
     .replace(/\r\n/g,'\n').replace(/\r/g,'\n').slice(0,4000);
@@ -24749,7 +24959,9 @@ function rebuildContactPickers() {
   });
 }
 
+let _qcOriginal = null;   // the email being replied to (so AI draft can read it)
 function openQuickCompose(opts = {}) {
+  _qcOriginal = opts.original || null;
   loadQCContacts();
   loadLazTemplates();
 
@@ -24767,7 +24979,11 @@ function openQuickCompose(opts = {}) {
 
   // Context hint
   const ctxEl = document.getElementById('qc-ai-context');
-  if (opts.context) {
+  if (_qcOriginal && String(_qcOriginal.body || '').trim()) {
+    _qcContext = null;
+    ctxEl.style.display = 'block';
+    ctxEl.textContent = 'AI draft will read this email (' + String(_qcOriginal.body).length + ' characters)';
+  } else if (opts.context) {
     _qcContext = opts.context;
     ctxEl.style.display = 'block';
     ctxEl.textContent = 'AI context: ' + opts.context.slice(0, 120) + (opts.context.length > 120 ? '…' : '');
@@ -24839,6 +25055,31 @@ async function qcAIDraft() {
   const model   = document.getElementById('gemini-model')?.value || 'qwen/qwen3.8-27b';
   const myName  = document.getElementById('qc-from-name').value.trim() || 'me';
 
+  // Replying to a real email: use the same read-the-email drafting as the inbox Draft button
+  if (_qcOriginal && String(_qcOriginal.body || '').trim()) {
+    const st = document.getElementById('qc-toolbar-status'), ctxEl = document.getElementById('qc-ai-context');
+    st.style.color = 'var(--muted)';
+    st.innerHTML = '<div class="dot spin" style="display:inline-block;margin-right:4px"></div> Reading the email and drafting…';
+    try {
+      const res = await lazGenerateDraft({ sender: _qcOriginal.sender, subject: _qcOriginal.subject, date: _qcOriginal.date }, _qcOriginal.body);
+      document.getElementById('qc-body').value = res.draft || '';
+      if (res.replyTo) {                                    // website form: customer's address and a proper subject
+        document.getElementById('qc-to').value = res.replyTo;
+        if (res.subject) document.getElementById('qc-subject').value = res.subject;
+      }
+      const notes = (res.bullets || []).filter(b => /^(\[route\]|\[debug\]|CHECK)/.test(b));
+      if (ctxEl) { ctxEl.style.display = 'block'; ctxEl.textContent = notes.join('   |   '); }
+      st.textContent = '';
+    } catch(e) { st.style.color = 'var(--danger)'; st.textContent = '✗ ' + e.message; }
+    return;
+  }
+  if (!_qcContext && !document.getElementById('qc-body').value.trim() && /^re:/i.test(subject)) {
+    const st = document.getElementById('qc-toolbar-status');
+    st.style.color = 'var(--danger)';
+    st.textContent = 'AI needs the email text. Use Reply on the inbox row, or type a few notes in the body first.';
+    return;
+  }
+
   document.getElementById('qc-toolbar-status').style.color = 'var(--muted)';
   document.getElementById('qc-toolbar-status').innerHTML = '<div class="dot spin" style="display:inline-block;margin-right:4px"></div> Drafting…';
 
@@ -24858,10 +25099,11 @@ Keep it concise and on-brand. Sign with: ${myName}`;
     const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${groqKey}` },
-      body: JSON.stringify({ model, reasoning_effort:'none', reasoning_format:'hidden', max_tokens: 500, temperature: 0.5, messages: [{ role: 'user', content: prompt }] }),
+      body: JSON.stringify(Object.assign({ model, max_tokens: lazMaxTokens(model, 500), temperature: 0.5, messages: [{ role: 'user', content: prompt }] }, lazModelParams(model))),
       signal: AbortSignal.timeout(25000)
     });
     const data = await r.json();
+    if (data.error) throw new Error(data.error.message || 'model error');
     const text = data.choices?.[0]?.message?.content?.trim() || '';
     document.getElementById('qc-body').value = text;
     document.getElementById('qc-toolbar-status').textContent = '';
