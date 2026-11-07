@@ -3,7 +3,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <meta name="oel-version" content="v15.63">
+  <meta name="oel-version" content="v15.65">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="mobile-web-app-capable" content="yes">
@@ -6347,10 +6347,27 @@ if ('serviceWorker' in navigator) {
 (function() {
   function goHash() {
     const h = (location.hash || '').slice(1);
-    if (h && typeof NAV_PANELS !== 'undefined' && NAV_PANELS[h] && typeof navTo === 'function') navTo(h);
+    if (h && typeof navTo === 'function') navTo(h); // navTo ignores unknown sections itself
   }
   window.addEventListener('load', () => setTimeout(goHash, 0));
   window.addEventListener('hashchange', goHash);
+})();
+
+// Screen shortcuts (Ctrl+Alt+key) so a LazDeck / Stream Deck key can jump straight to a screen
+(function() {
+  const MAP = {Digit1:'inbox', Digit2:'activities', Digit3:'smartbuilder', Digit4:'quotes', Digit5:'emailstudio',
+    Digit6:'finreports', Digit7:'reports', Digit8:'leads', Digit9:'quotedesk', Digit0:'templates',
+    KeyM:'massmail', KeyI:'arfollowup'};
+  document.addEventListener('keydown', function(e) {
+    if (!e.ctrlKey || !e.altKey || e.shiftKey || e.metaKey) return;
+    // LazDeck sends virtual-key codes with no scan code, so e.code can be empty: fall back to keyCode
+    const kc = e.keyCode;
+    const code = (kc >= 48 && kc <= 57) ? 'Digit' + (kc - 48) : kc === 77 ? 'KeyM' : kc === 73 ? 'KeyI' : e.code;
+    const sec = MAP[code];
+    if (!sec || typeof navTo !== 'function') return;
+    e.preventDefault();
+    navTo(sec);
+  });
 })();
 
 // Sync version stamps from meta tag
