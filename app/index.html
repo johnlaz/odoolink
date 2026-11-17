@@ -3,7 +3,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <meta name="oel-version" content="v15.65">
+  <meta name="oel-version" content="v15.66">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="mobile-web-app-capable" content="yes">
@@ -2131,6 +2131,29 @@
           <button onclick="document.getElementById('qb-local-template-panel').style.display='none'" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem">✕</button>
         </div>
         <div id="qb-local-template-list" style="display:flex;flex-direction:column;gap:6px"></div>
+      </div>
+
+      <!-- Merge two orders -->
+      <div id="mo-card" style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;margin-bottom:12px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);font-weight:500">Merge two orders</div>
+          <div style="flex:1"></div>
+          <button id="mo-toggle-btn" onclick="moToggle()" class="btn btn-ghost" style="padding:5px 12px;font-size:0.76rem">Open</button>
+        </div>
+        <div id="mo-panel" style="display:none;margin-top:12px">
+          <div style="font-size:0.74rem;color:var(--muted);margin-bottom:8px">Tick exactly 2 orders. A new order is created with every line and note from both. The originals are not changed.</div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px">
+            <input id="mo-search" type="text" placeholder="Search order # or customer…" onkeydown="if(event.key==='Enter')moLoad()" style="flex:1;min-width:180px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:7px 11px;color:var(--text);font-size:0.82rem;outline:none">
+            <label style="font-size:0.76rem;color:var(--muted);display:flex;gap:5px;align-items:center;cursor:pointer"><input type="checkbox" id="mo-rental-only" checked onchange="moLoad()"> Rental only</label>
+            <button onclick="moLoad()" class="btn btn-ghost" style="padding:6px 12px;font-size:0.78rem">Search</button>
+          </div>
+          <div id="mo-list" style="max-height:260px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;background:var(--surface)"></div>
+          <div style="display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap">
+            <button id="mo-merge-btn" onclick="moPreview()" disabled class="btn btn-primary" style="padding:7px 18px;font-size:0.82rem">Review merge</button>
+            <div id="mo-status" style="font-size:0.78rem;flex:1;min-width:0"></div>
+          </div>
+          <div id="mo-preview" style="margin-top:12px"></div>
+        </div>
       </div>
 
       <!-- Customer -->
@@ -6952,6 +6975,262 @@ async function qbCreate() {
     statusEl.style.color = 'var(--danger)';
     statusEl.textContent = '✗ '+e.message;
   }
+}
+
+// ═══ MERGE TWO ORDERS ═══════════════════════════════════════════════════════
+// Pick 2 sale orders, copy every line + header note + internal chatter note into a
+// brand-new order. Sources are never modified (apart from an optional "merged into" note).
+let _moSel = [];          // selected order ids (max 2, in click order)
+let _moData = null;       // loaded detail for the preview
+let _moFields = null;     // cached fields_get for sale.order / sale.order.line
+let _moBusy = false;
+
+function moStatus(msg, color) {
+  const el = document.getElementById('mo-status');
+  if (el) { el.style.color = color || 'var(--muted)'; el.innerHTML = msg; }
+}
+
+function moToggle() {
+  const p = document.getElementById('mo-panel'), b = document.getElementById('mo-toggle-btn');
+  if (!p) return;
+  const open = p.style.display === 'none';
+  p.style.display = open ? 'block' : 'none';
+  if (b) b.textContent = open ? 'Close' : 'Open';
+  if (open) moLoad();
+}
+
+async function moLoad() {
+  const list = document.getElementById('mo-list');
+  if (!list) return;
+  if (!odooUid) { list.innerHTML = '<div style="padding:12px;font-size:0.8rem;color:var(--muted)">Connect to Odoo first.</div>'; return; }
+  list.innerHTML = '<div style="padding:12px;font-size:0.8rem;color:var(--muted)">Loading…</div>';
+  const q = (document.getElementById('mo-search')?.value || '').trim();
+  const rentalOnly = document.getElementById('mo-rental-only')?.checked;
+  const domain = [['state','!=','cancel']];
+  if (rentalOnly) domain.push(['is_rental_order','=',true]);
+  if (q) { domain.push('|'); domain.push(['name','ilike',q]); domain.push(['partner_id.name','ilike',q]); }
+  try {
+    const orders = await odooExecute(odooUid, 'sale.order', 'search_read', [domain],
+      { fields: ['name','partner_id','state','amount_total','date_order'], limit: 40, order: 'id desc' });
+    if (!orders || !orders.length) { list.innerHTML = '<div style="padding:12px;font-size:0.8rem;color:var(--muted)">No orders found.</div>'; return; }
+    const stateLbl = { draft:'Quotation', sent:'Sent', sale:'Confirmed', done:'Locked' };
+    list.innerHTML = orders.map(function(o) {
+      const cust = Array.isArray(o.partner_id) ? o.partner_id[1] : '';
+      const chk = _moSel.indexOf(o.id) !== -1 ? ' checked' : '';
+      return '<label style="display:flex;gap:10px;align-items:center;padding:8px 12px;border-bottom:1px solid var(--border);cursor:pointer;font-size:0.8rem">'
+        + '<input type="checkbox" value="' + o.id + '"' + chk + ' onchange="moCheck(' + o.id + ', this)">'
+        + '<span style="font-weight:600;color:var(--text);min-width:76px">' + escHtml(o.name) + '</span>'
+        + '<span style="flex:1;color:var(--text);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + escHtml(cust) + '</span>'
+        + '<span style="color:var(--muted);font-size:0.72rem">' + escHtml(stateLbl[o.state] || o.state) + '</span>'
+        + '<span style="color:var(--muted);min-width:70px;text-align:right">$' + (o.amount_total || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '</span>'
+        + '</label>';
+    }).join('');
+  } catch (e) { list.innerHTML = '<div style="padding:12px;font-size:0.8rem;color:var(--danger)">' + escHtml(e.message) + '</div>'; }
+}
+
+function moCheck(id, cb) {
+  if (cb.checked) {
+    if (_moSel.length >= 2) { cb.checked = false; moStatus('Only 2 orders can be merged at a time — untick one first.', 'var(--warning, var(--danger))'); return; }
+    _moSel.push(id);
+  } else {
+    _moSel = _moSel.filter(function(x) { return x !== id; });
+  }
+  const btn = document.getElementById('mo-merge-btn');
+  if (btn) btn.disabled = _moSel.length !== 2;
+  document.getElementById('mo-preview').innerHTML = '';
+  _moData = null;
+  moStatus(_moSel.length === 2 ? '' : _moSel.length + ' of 2 selected', 'var(--muted)');
+}
+
+async function moGetFields() {
+  if (_moFields) return _moFields;
+  const [so, sol] = await Promise.all([
+    odooExecute(odooUid, 'sale.order', 'fields_get', [], { attributes: ['type','readonly'] }),
+    odooExecute(odooUid, 'sale.order.line', 'fields_get', [], { attributes: ['type','readonly'] })
+  ]);
+  _moFields = { so: so || {}, sol: sol || {} };
+  return _moFields;
+}
+
+async function moPreview() {
+  if (_moBusy || _moSel.length !== 2 || !odooUid) return;
+  _moBusy = true;
+  const btn = document.getElementById('mo-merge-btn'); if (btn) btn.disabled = true;
+  moStatus('<div class="dot spin" style="display:inline-block;margin-right:5px"></div> Reading both orders…');
+  try {
+    const F = await moGetFields();
+    const hdr = ['name','partner_id','partner_invoice_id','partner_shipping_id','user_id','client_order_ref','pricelist_id',
+                 'payment_term_id','team_id','origin','commitment_date','note','state','amount_total','is_rental_order']
+                .filter(function(f) { return F.so[f]; });
+    const orders = await odooExecute(odooUid, 'sale.order', 'read', [_moSel.slice()], { fields: hdr });
+    orders.sort(function(a, b) { return _moSel.indexOf(a.id) - _moSel.indexOf(b.id); });
+
+    const taxF = F.sol.tax_ids ? 'tax_ids' : (F.sol.tax_id ? 'tax_id' : null);
+    const uomF = F.sol.product_uom_id ? 'product_uom_id' : (F.sol.product_uom ? 'product_uom' : null);
+    const lineFields = ['order_id','sequence','display_type','name','product_id','product_uom_qty','price_unit','discount',
+                        'is_rental','start_date','return_date', taxF, uomF].filter(function(f) { return f && F.sol[f]; });
+    const lines = await odooExecute(odooUid, 'sale.order.line', 'search_read', [[['order_id','in',_moSel]]],
+      { fields: lineFields, order: 'sequence asc, id asc', limit: 2000 });
+
+    // Internal notes from the chatter
+    let notes = [];
+    try {
+      const nt = await odooExecute(odooUid, 'ir.model.data', 'search_read', [[['module','=','mail'],['name','=','mt_note']]], { fields: ['res_id'], limit: 1 });
+      const noteSub = nt && nt[0] ? nt[0].res_id : null;
+      if (noteSub) {
+        notes = await odooExecute(odooUid, 'mail.message', 'search_read',
+          [[['model','=','sale.order'],['res_id','in',_moSel],['message_type','=','comment'],['subtype_id','=',noteSub]]],
+          { fields: ['res_id','body','author_id','date'], order: 'date asc, id asc', limit: 500 });
+      }
+    } catch (e) { console.warn('Chatter notes not read:', e.message); }
+
+    _moData = { orders: orders, lines: lines || [], notes: notes || [], taxF: taxF, uomF: uomF };
+    moRenderPreview();
+    moStatus('');
+  } catch (e) {
+    moStatus('✗ ' + escHtml(e.message), 'var(--danger)');
+  }
+  _moBusy = false;
+  if (btn) btn.disabled = _moSel.length !== 2;
+}
+
+function moRenderPreview() {
+  const d = _moData, box = document.getElementById('mo-preview');
+  if (!d || !box) return;
+  const pid = function(o) { return Array.isArray(o.partner_id) ? o.partner_id[0] : o.partner_id; };
+  const mismatch = pid(d.orders[0]) !== pid(d.orders[1]);
+  const strip = function(h) { return String(h || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim(); };
+  const cards = d.orders.map(function(o, i) {
+    const n = d.lines.filter(function(l) { return (Array.isArray(l.order_id) ? l.order_id[0] : l.order_id) === o.id; });
+    const prod = n.filter(function(l) { return !l.display_type; }).length;
+    const cn = d.notes.filter(function(m) { return m.res_id === o.id; }).length;
+    const hn = strip(o.note);
+    return '<label style="flex:1;min-width:230px;border:1px solid var(--border);border-radius:8px;padding:10px 12px;background:var(--surface);cursor:pointer;font-size:0.78rem">'
+      + '<div style="display:flex;gap:6px;align-items:center;margin-bottom:4px"><input type="radio" name="mo-base" value="' + i + '"' + (i === 0 ? ' checked' : '') + '>'
+      + '<strong style="color:var(--text)">' + escHtml(o.name) + '</strong></div>'
+      + '<div style="color:var(--text)">' + escHtml(Array.isArray(o.partner_id) ? o.partner_id[1] : '') + '</div>'
+      + '<div style="color:var(--muted);margin-top:3px">' + prod + ' item line' + (prod !== 1 ? 's' : '') + (n.length > prod ? ' + ' + (n.length - prod) + ' section/note line(s)' : '')
+      + ' · $' + (o.amount_total || 0).toFixed(2) + '</div>'
+      + '<div style="color:var(--muted);margin-top:3px">Order note: ' + (hn ? escHtml(hn.slice(0, 90)) + (hn.length > 90 ? '…' : '') : '—') + '</div>'
+      + '<div style="color:var(--muted)">Internal chatter notes: ' + cn + '</div></label>';
+  }).join('');
+  box.innerHTML = (mismatch ? '<div style="font-size:0.78rem;color:var(--danger);margin-bottom:8px">⚠ These two orders are for different customers. The new order uses the customer, terms and salesperson of the order selected below.</div>' : '')
+    + '<div style="font-size:0.72rem;color:var(--muted);margin-bottom:6px">Use customer &amp; terms from:</div>'
+    + '<div style="display:flex;gap:8px;flex-wrap:wrap">' + cards + '</div>'
+    + '<div style="display:flex;flex-direction:column;gap:5px;margin-top:10px;font-size:0.76rem;color:var(--muted)">'
+    + '<label style="cursor:pointer"><input type="checkbox" id="mo-sections"> Add a section heading above each order\'s lines (shows which order they came from)</label>'
+    + '<label style="cursor:pointer"><input type="checkbox" id="mo-stamp" checked> Post a "merged into" note on both original orders</label></div>'
+    + '<div style="margin-top:10px"><button class="btn btn-primary" onclick="moCreate()" id="mo-create-btn" style="padding:8px 20px;font-size:0.83rem">Create merged order</button></div>';
+}
+
+async function moCreate() {
+  if (_moBusy || !_moData) return;
+  _moBusy = true;
+  const cbtn = document.getElementById('mo-create-btn'); if (cbtn) cbtn.disabled = true;
+  const d = _moData, F = _moFields;
+  const baseIdx = parseInt((document.querySelector('input[name="mo-base"]:checked') || {}).value || '0', 10);
+  const base = d.orders[baseIdx], other = d.orders[1 - baseIdx];
+  const withSections = document.getElementById('mo-sections')?.checked;
+  const stamp = document.getElementById('mo-stamp')?.checked;
+  const m2o = function(v) { return Array.isArray(v) ? v[0] : v; };
+  const isHtml = F.so.note && F.so.note.type === 'html';
+  try {
+    moStatus('<div class="dot spin" style="display:inline-block;margin-right:5px"></div> Creating merged order…');
+    // Header: take everything from the chosen base order; ordered as picked so notes read in click order.
+    const vals = {};
+    ['partner_id','partner_invoice_id','partner_shipping_id','user_id','pricelist_id','payment_term_id','team_id'].forEach(function(f) {
+      if (F.so[f] && base[f]) vals[f] = m2o(base[f]);
+    });
+    if (F.so.is_rental_order) vals.is_rental_order = !!(base.is_rental_order || other.is_rental_order);
+    if (F.so.commitment_date && base.commitment_date) vals.commitment_date = base.commitment_date;
+    const refs = d.orders.map(function(o) { return o.client_order_ref; }).filter(Boolean);
+    if (F.so.client_order_ref && refs.length) vals.client_order_ref = Array.from(new Set(refs)).join(' / ');
+    vals.origin = 'Merged: ' + d.orders.map(function(o) { return o.name; }).join(' + ');
+
+    // Header notes — each labelled with its source order
+    const noteParts = d.orders.filter(function(o) { return o.note && String(o.note).replace(/<[^>]+>/g, '').trim(); }).map(function(o) {
+      return isHtml ? '<p><strong>— From ' + escHtml(o.name) + ' —</strong></p>' + o.note
+                    : '— From ' + o.name + ' —\n' + o.note;
+    });
+    if (noteParts.length) vals.note = noteParts.join(isHtml ? '' : '\n\n');
+
+    const newId = await odooExecute(odooUid, 'sale.order', 'create', [vals]);
+
+    // Lines — keep each order's own sequence; first-picked order first
+    moStatus('Copying lines…');
+    let seq = 10;
+    for (const o of d.orders) {
+      const ol = d.lines.filter(function(l) { return m2o(l.order_id) === o.id; });
+      if (withSections) {
+        await odooExecute(odooUid, 'sale.order.line', 'create', [{ order_id: newId, display_type: 'line_section', name: 'From ' + o.name, sequence: seq++ }]);
+      }
+      for (const l of ol) {
+        const lv = { order_id: newId, sequence: seq++, name: l.name || '' };
+        if (l.display_type) { lv.display_type = l.display_type; }
+        else {
+          lv.product_id = m2o(l.product_id);
+          lv.product_uom_qty = l.product_uom_qty;
+          lv.price_unit = l.price_unit;
+          lv.discount = l.discount || 0;
+          if (d.uomF && l[d.uomF]) lv[d.uomF] = m2o(l[d.uomF]);
+          if (d.taxF && Array.isArray(l[d.taxF])) lv[d.taxF] = [[6, 0, l[d.taxF]]];
+          if (F.sol.is_rental && l.is_rental) {
+            lv.is_rental = true;
+            if (l.start_date)  lv.start_date  = l.start_date;
+            if (l.return_date) lv.return_date = l.return_date;
+          }
+        }
+        await odooExecute(odooUid, 'sale.order.line', 'create', [lv]);
+      }
+    }
+
+    // Internal chatter notes, copied with attribution
+    moStatus('Copying notes…');
+    const fmt = function(dt) { return String(dt || '').slice(0, 16); };
+    for (const o of d.orders) {
+      for (const m of d.notes.filter(function(x) { return x.res_id === o.id; })) {
+        const who = Array.isArray(m.author_id) ? m.author_id[1] : '';
+        await odooExecute(odooUid, 'sale.order', 'message_post', [[newId]], {
+          body: '<p><em>Note from ' + escHtml(o.name) + (who ? ' · ' + escHtml(who) : '') + ' · ' + escHtml(fmt(m.date)) + '</em></p>' + (m.body || ''),
+          message_type: 'comment', subtype_xmlid: 'mail.mt_note'
+        });
+      }
+    }
+    await odooExecute(odooUid, 'sale.order', 'message_post', [[newId]], {
+      body: '<p>Merged from ' + escHtml(d.orders[0].name) + ' + ' + escHtml(d.orders[1].name) + ' using OdooLink.</p>',
+      message_type: 'comment', subtype_xmlid: 'mail.mt_note'
+    });
+
+    const created = await odooExecute(odooUid, 'sale.order', 'read', [[newId]], { fields: ['name','amount_total','is_rental_order'] });
+    const nw = created[0];
+    if (stamp) {
+      for (const o of d.orders) {
+        try {
+          await odooExecute(odooUid, 'sale.order', 'message_post', [[o.id]], {
+            body: '<p>Merged into <strong>' + escHtml(nw.name) + '</strong> (copy — this order was not changed).</p>',
+            message_type: 'comment', subtype_xmlid: 'mail.mt_note'
+          });
+        } catch (e) {}
+      }
+    }
+
+    const expected = d.orders.reduce(function(s, o) { return s + (o.amount_total || 0); }, 0);
+    const diff = Math.abs((nw.amount_total || 0) - expected) > 0.01;
+    const base0 = (odooConfig && odooConfig.url ? odooConfig.url : '').replace(/\/+$/, '');
+    const link = base0 ? (nw.is_rental_order ? base0 + '/odoo/rental/' + newId : base0 + '/web#id=' + newId + '&model=sale.order&view_type=form') : '';
+    moStatus('✓ Created <strong>' + escHtml(nw.name) + '</strong> · $' + (nw.amount_total || 0).toFixed(2)
+      + (link ? ' — <a href="' + link + '" target="_blank" style="color:var(--accent)">Open in Odoo ↗</a>' : '')
+      + (diff ? '<div style="color:var(--danger);margin-top:4px">⚠ Sources total $' + expected.toFixed(2) + ' but the merged total is $' + (nw.amount_total || 0).toFixed(2) + ' — check taxes/discounts in Odoo.</div>' : ''),
+      'var(--success)');
+    document.getElementById('mo-preview').innerHTML = '';
+    _moSel = []; _moData = null;
+    document.getElementById('mo-merge-btn').disabled = true;
+    moLoad();
+  } catch (e) {
+    moStatus('✗ ' + escHtml(e.message) + ' — a partial merged order may exist in Odoo; check before retrying.', 'var(--danger)');
+    if (cbtn) cbtn.disabled = false;
+  }
+  _moBusy = false;
 }
 
 function qbClear() {
