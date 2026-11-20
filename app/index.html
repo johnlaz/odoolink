@@ -3,7 +3,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <meta name="oel-version" content="v15.67">
+  <meta name="oel-version" content="v15.68">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="mobile-web-app-capable" content="yes">
@@ -17235,7 +17235,9 @@ async function _openScheduleActivityModal({ em, emailTo, subject, sender, src, i
 
   const defType = (activityTypes.find(t => t.category === 'default') || activityTypes[0] || {}).id;
   const typeOpts = activityTypes.map(t => '<option value="'+t.id+'"'+(t.id===defType?' selected':'')+'>'+escHtml(t.name)+'</option>').join('') || '<option value="">-- none --</option>';
-  const repOpts  = reps.map(r => '<option value="'+r.id+'"'+(r.id===odooUid?' selected':'')+'>'+escHtml(r.name)+(r.id===odooUid?' (me)':'')+'</option>').join('') || '<option value="">-- none --</option>';
+  const repChecks = reps.slice().sort((a,b) => (b.id===odooUid) - (a.id===odooUid) || a.name.localeCompare(b.name)).map(r =>
+    '<label style="display:flex;align-items:center;gap:7px;padding:3px 2px;font-size:0.78rem;color:var(--text);cursor:pointer"><input type="checkbox" class="sam-rep-cb" value="'+r.id+'"'+(r.id===odooUid?' checked':'')+'> '+escHtml(r.name)+(r.id===odooUid?' (me)':'')+'</label>'
+  ).join('') || '<div style="font-size:0.76rem;color:var(--muted);padding:4px">No users found</div>';
 
   ov.innerHTML = '';
   const modal = document.createElement('div');
@@ -17265,8 +17267,8 @@ async function _openScheduleActivityModal({ em, emailTo, subject, sender, src, i
       '<div><label style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;font-weight:500;display:block;margin-bottom:4px">Due Date</label>' +
         '<input id="sam-date" type="date" value="' + defaultDate + '" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:var(--text);font-size:0.78rem;box-sizing:border-box"></div>' +
     '</div>' +
-    '<div style="margin-bottom:10px"><label style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;font-weight:500;display:block;margin-bottom:4px">Assign To (Rep)</label>' +
-      '<select id="sam-rep" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:var(--text);font-size:0.78rem">' + repOpts + '</select></div>' +
+    '<div style="margin-bottom:10px"><label style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;font-weight:500;display:block;margin-bottom:4px">Assign To (tick one or more &mdash; one activity is created per person)</label>' +
+      '<div id="sam-rep-list" style="max-height:120px;overflow-y:auto;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 6px">' + repChecks + '</div></div>' +
     '<div style="margin-bottom:10px"><label style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;font-weight:500;display:block;margin-bottom:4px">Summary</label>' +
       '<input id="sam-summary" type="text" placeholder="Activity summary&#8230;" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-size:0.79rem;outline:none;box-sizing:border-box"></div>' +
     '<div style="margin-bottom:12px"><label style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;font-weight:500;display:block;margin-bottom:4px">Notes</label>' +
@@ -17330,7 +17332,8 @@ async function _openScheduleActivityModal({ em, emailTo, subject, sender, src, i
     window._samOverridePartner = null; // reset for next open
     const typeId  = parseInt((document.getElementById('sam-type')||{}).value)||null;
     const dueDate = (document.getElementById('sam-date')||{}).value||'';
-    const repId   = parseInt((document.getElementById('sam-rep')||{}).value)||odooUid;
+    let repIds = Array.from(document.querySelectorAll('.sam-rep-cb:checked')).map(c => parseInt(c.value)).filter(Boolean);
+    if (!repIds.length) repIds = [odooUid];
     const summary = ((document.getElementById('sam-summary')||{}).value||'').trim();
     const notes   = ((document.getElementById('sam-notes')||{}).value||'').trim();
     const resultEl = document.getElementById('sam-result');
@@ -17340,36 +17343,42 @@ async function _openScheduleActivityModal({ em, emailTo, subject, sender, src, i
     resultEl.style.display = 'none';
     try {
       const targets = isBatch ? batchEntries : [[null, em]];
-      let ok = 0; const fails = []; let last = null;
+      let ok = 0; const fails = []; let last = null; const whos = [];
       for (const [, bEm] of targets) {
         const bEmail = (bEm && (bEm.email_from || bEm.sender_email || bEm.sender)) || lookupEmail;
+        let partner, tgt;
         try {
-          const partner = isBatch ? await _findPartnerByEmail(bEmail) : resolvedPartner;
+          partner = isBatch ? await _findPartnerByEmail(bEmail) : resolvedPartner;
           if (!partner) { fails.push(bEmail + ': no Odoo contact'); continue; }
-          const tgt = isBatch ? { model:'res.partner', id:partner.id, label:'Contact — ' + partner.name } : _oelPickTarget('sam', partner);
-          const vals = {
-            res_model: tgt.model,
-            res_id: tgt.id,
-            summary: summary || 'Follow up re: ' + ((bEm && bEm.subject) || subject),
-            note: notes ? escHtml(notes) : '',
-            date_deadline: dueDate,
-            user_id: repId,
-          };
-          if (typeId) vals.activity_type_id = typeId;
-          let newId = await odooExecute(odooUid, 'mail.activity', 'create', [vals]);
-          if (Array.isArray(newId)) newId = newId[0];
-          if (!newId || typeof newId !== 'number') throw new Error('Odoo returned no activity id (' + JSON.stringify(newId) + ')');
-          // read it back so "Scheduled" always means it really exists, and say who it is assigned to
-          const chk = await odooExecute(odooUid, 'mail.activity', 'read', [[newId]], { fields: ['user_id', 'date_deadline', 'res_name'] });
-          if (!chk || !chk.length) throw new Error('Activity #' + newId + ' was created but could not be read back');
-          ok++; last = { tgt, who: chk[0].user_id && chk[0].user_id[1], due: chk[0].date_deadline };
-        } catch(err) { fails.push(bEmail + ': ' + (err && err.message ? err.message.slice(0, 140) : err)); }
+          tgt = isBatch ? { model:'res.partner', id:partner.id, label:'Contact — ' + partner.name } : _oelPickTarget('sam', partner);
+        } catch(err) { fails.push(bEmail + ': ' + (err && err.message ? err.message.slice(0, 140) : err)); continue; }
+        for (const repId of repIds) {   // Odoo activities have one assignee, so one activity per person
+          try {
+            const vals = {
+              res_model: tgt.model,
+              res_id: tgt.id,
+              summary: summary || 'Follow up re: ' + ((bEm && bEm.subject) || subject),
+              note: notes ? escHtml(notes) : '',
+              date_deadline: dueDate,
+              user_id: repId,
+            };
+            if (typeId) vals.activity_type_id = typeId;
+            let newId = await odooExecute(odooUid, 'mail.activity', 'create', [vals]);
+            if (Array.isArray(newId)) newId = newId[0];
+            if (!newId || typeof newId !== 'number') throw new Error('Odoo returned no activity id (' + JSON.stringify(newId) + ')');
+            // read it back so "Scheduled" always means it really exists, and say who it is assigned to
+            const chk = await odooExecute(odooUid, 'mail.activity', 'read', [[newId]], { fields: ['user_id', 'date_deadline', 'res_name'] });
+            if (!chk || !chk.length) throw new Error('Activity #' + newId + ' was created but could not be read back');
+            ok++; last = { tgt, due: chk[0].date_deadline };
+            const w = chk[0].user_id && chk[0].user_id[1]; if (w && whos.indexOf(w) < 0) whos.push(w);
+          } catch(err) { fails.push(bEmail + ' (user ' + repId + '): ' + (err && err.message ? err.message.slice(0, 140) : err)); }
+        }
       }
       if (!ok) throw new Error(fails[0] || 'No activity was created');
       resultEl.style.display = 'block';
       resultEl.style.background = 'rgba(91,141,217,0.12)';
       resultEl.style.color = '#5b8dd9';
-      resultEl.innerHTML = '&#10003; Scheduled ' + (isBatch ? ok + ' activities' : 'on <strong>' + escHtml(last.tgt.label) + '</strong> &middot; due ' + escHtml(last.due || dueDate) + ' &middot; assigned to <strong>' + escHtml(last.who || 'unknown') + '</strong>' + _oelOpenLink(last.tgt.model, last.tgt.id)) +
+      resultEl.innerHTML = '&#10003; Scheduled ' + ok + ' activit' + (ok===1?'y':'ies') + (isBatch ? '' : ' on <strong>' + escHtml(last.tgt.label) + '</strong> &middot; due ' + escHtml(last.due || dueDate) + _oelOpenLink(last.tgt.model, last.tgt.id)) + ' &middot; assigned to <strong>' + escHtml(whos.join(', ') || 'unknown') + '</strong>' +
         (fails.length ? '<br><span style="color:var(--warning)">' + fails.length + ' failed: ' + escHtml(fails.join(' | ')) + '</span>' : '');
       submitBtn.textContent = '✓ Done';
       if (actBtn) { actBtn._scheduled=true; actBtn.textContent='✓ Activity'; actBtn.style.color='#5b8dd9'; actBtn.style.borderColor='#5b8dd9'; }
