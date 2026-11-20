@@ -3,7 +3,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <meta name="oel-version" content="v15.66">
+  <meta name="oel-version" content="v15.67">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="mobile-web-app-capable" content="yes">
@@ -14728,6 +14728,7 @@ function samPickContact(i) {
   if (resultsEl) resultsEl.style.display = 'none';
   if (searchEl)  searchEl.value = '';
   if (submitBtn) { submitBtn.disabled = false; submitBtn.style.opacity = '1'; }
+  _oelFillTargets('sam', p, false);
 }
 
 async function samCreateContact() {
@@ -14745,6 +14746,7 @@ async function samCreateContact() {
     if (statusEl) statusEl.innerHTML = '<span style="color:var(--success)">✓ Created &amp; selected: <strong>' + escHtml(name) + '</strong></span>';
     const submitBtn = document.getElementById('sam-submit');
     if (submitBtn) { submitBtn.disabled = false; submitBtn.style.opacity = '1'; }
+    _oelFillTargets('sam', { id, name, email }, false);
   } catch(e) { alert('Error creating contact: ' + e.message); }
 }
 
@@ -16926,10 +16928,100 @@ function _ensureModalOverlay() {
     ov = document.createElement('div');
     ov.id = 'inbox-action-overlay';
     ov.style.cssText = 'display:none;position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,0.55);align-items:center;justify-content:center';
-    ov.onclick = (e) => { if (e.target === ov) _closeInboxModal(); };
+    // Composer popups (Log Note / Schedule Activity) close ONLY via the X or Cancel button,
+    // so an accidental click outside never throws away what you were typing.
     document.body.appendChild(ov);
   }
   return ov;
+}
+
+// ── Shared helpers for the Log Note / Schedule Activity composers ───────────
+function _oelRecordUrl(model, id) {
+  const base = (typeof odooConfig !== 'undefined' && odooConfig && odooConfig.url ? odooConfig.url : '').replace(/\/+$/, '');
+  return base && id ? base + '/web#id=' + id + '&model=' + model + '&view_type=form' : '';
+}
+function _oelOpenLink(model, id) {
+  const u = _oelRecordUrl(model, id);
+  return u ? ' <a href="' + u + '" target="_blank" style="color:inherit;text-decoration:underline">Open in Odoo &#8599;</a>' : '';
+}
+
+// Turns whatever is in the note box into clean chatter HTML: a bold label line,
+// one From/To line, then the message as normal paragraphs (no <pre>, no raw headers,
+// no quoted reply chain, no leftover placeholder).
+function _oelBuildNoteHtml(typeLabel, subject, noteText) {
+  let t = String(noteText || '').replace(/\r\n?/g, '\n').trim();
+  const meta = [];
+  const grab = (re, label) => { const m = t.match(re); if (m) { meta.push([label, m[1].trim()]); t = t.replace(m[0], ''); } };
+  grab(/^\s*(?:Email\s+)?From:\s*(.+)$/im, 'From');
+  grab(/^\s*To:\s*(.+)$/im, 'To');
+  let subj = subject || '';
+  const ms = t.match(/^\s*Subject:\s*(.+)$/im);
+  if (ms) { if (!subj) subj = ms[1].trim(); t = t.replace(ms[0], ''); }
+  t = t.replace(/^\s*-{2,}\s*Email body\s*-{2,}\s*$/im, '').replace(/\[Add note here\]/g, '');
+  // drop quoted reply history
+  const cut = t.search(/^\s*(On .{5,200} wrote:|-{2,}\s*Original Message\s*-{2,}|From:\s.+\n\s*(Sent|Date):)/im);
+  if (cut > 0) t = t.slice(0, cut);
+  t = t.replace(/^\s*>.*$/gm, '').replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+  const paras = t ? t.split(/\n{2,}/).map(p => '<p>' + escHtml(p.trim()).replace(/\n/g, '<br>') + '</p>').join('') : '';
+  const metaHtml = meta.map(([k, v]) => '<em>' + k + ':</em> ' + escHtml(v)).join(' &nbsp;&middot;&nbsp; ');
+  return '<p><strong>' + escHtml(typeLabel) + '</strong>' + (subj ? ' &mdash; ' + escHtml(subj.replace(/^\s*(re|fw|fwd):\s*/i, '')) : '') + '</p>' +
+         (metaHtml ? '<p>' + metaHtml + '</p>' : '') + paras;
+}
+
+// Where can this note / activity go? Contact (default), its company, and the contact's
+// open opportunities and quotes / rental orders. Fails soft: contact-only on any error.
+async function _oelLoadTargets(partner) {
+  const out = [{ model: 'res.partner', id: partner.id, label: 'Contact — ' + partner.name }];
+  try {
+    const pr = await odooExecute(odooUid, 'res.partner', 'read', [[partner.id]], { fields: ['parent_id', 'commercial_partner_id'] });
+    const par = pr && pr[0] && pr[0].parent_id;
+    const ids = [partner.id];
+    if (par && par[0]) { out.push({ model: 'res.partner', id: par[0], label: 'Company — ' + par[1] }); ids.push(par[0]); }
+    try {
+      const leads = await odooExecute(odooUid, 'crm.lead', 'search_read',
+        [[['partner_id', 'in', ids], ['active', '=', true], ['probability', '<', 100]]],
+        { fields: ['name'], limit: 5, order: 'write_date desc' });
+      (leads || []).forEach(l => out.push({ model: 'crm.lead', id: l.id, label: 'Opportunity — ' + l.name }));
+    } catch (_) {}
+    try {
+      let orders;
+      try {
+        orders = await odooExecute(odooUid, 'sale.order', 'search_read',
+          [[['partner_id', 'in', ids], ['state', 'in', ['draft', 'sent', 'sale']]]],
+          { fields: ['name', 'is_rental_order'], limit: 5, order: 'date_order desc' });
+      } catch (_) {
+        orders = await odooExecute(odooUid, 'sale.order', 'search_read',
+          [[['partner_id', 'in', ids], ['state', 'in', ['draft', 'sent', 'sale']]]],
+          { fields: ['name'], limit: 5, order: 'date_order desc' });
+      }
+      (orders || []).forEach(o => out.push({ model: 'sale.order', id: o.id, label: (o.is_rental_order ? 'Rental order — ' : 'Quote/Order — ') + o.name }));
+    } catch (_) {}
+  } catch (_) {}
+  return out;
+}
+function _oelTargetBoxHtml(prefix, verb) {
+  return '<div id="' + prefix + '-target-wrap" style="margin-bottom:12px;display:none">' +
+    '<label style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;font-weight:500;display:block;margin-bottom:4px">' + verb + ' on</label>' +
+    '<select id="' + prefix + '-target" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:var(--text);font-size:0.78rem"></select>' +
+    '<div style="font-size:0.7rem;color:var(--muted);margin-top:4px;line-height:1.4">Shows in that record\'s Chatter in Odoo. Contact is the default; pick a company, opportunity or rental order to put it there instead.</div></div>';
+}
+async function _oelFillTargets(prefix, partner, isBatch) {
+  const wrap = document.getElementById(prefix + '-target-wrap');
+  const sel = document.getElementById(prefix + '-target');
+  if (!wrap || !sel || isBatch || !partner) return;
+  window['_' + prefix + 'Targets'] = [];   // never reuse a previous contact's targets
+  wrap.style.display = 'none';
+  const targets = await _oelLoadTargets(partner);
+  if (document.getElementById(prefix + '-target') !== sel) return;  // modal closed/reopened meanwhile
+  window['_' + prefix + 'Targets'] = targets;
+  sel.innerHTML = targets.map((t, i) => '<option value="' + i + '">' + escHtml(t.label) + '</option>').join('');
+  wrap.style.display = 'block';
+}
+function _oelPickTarget(prefix, partner) {
+  const sel = document.getElementById(prefix + '-target');
+  const list = window['_' + prefix + 'Targets'] || [];
+  const t = sel && list[parseInt(sel.value)];
+  return (t && t.id) ? t : { model: 'res.partner', id: partner.id, label: 'Contact — ' + partner.name };
 }
 
 function _closeInboxModal() {
@@ -16973,6 +17065,7 @@ async function _openLogNoteModal({ em, emailTo, subject, sender, src, idx, wrapp
       '</div>' +
       '<div id="lnm-search-results" style="display:none;margin-top:4px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;max-height:140px;overflow-y:auto"></div>' +
     '</div>' +
+    _oelTargetBoxHtml('lnm', 'Log note') +
     '<div style="margin-bottom:10px">' +
       '<label style="font-size:0.7rem;color:var(--muted);letter-spacing:0.07em;text-transform:uppercase;font-weight:500;display:block;margin-bottom:4px">Note</label>' +
       '<textarea id="lnm-note" style="width:100%;min-height:100px;background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:9px 11px;color:var(--text);font-size:0.8rem;line-height:1.5;resize:vertical;outline:none;box-sizing:border-box"></textarea>' +
@@ -17016,6 +17109,7 @@ async function _openLogNoteModal({ em, emailTo, subject, sender, src, idx, wrapp
       statusEl.innerHTML = '<span style="color:var(--success)">&#10003; Found: <strong>' + escHtml(resolvedPartner.name) + '</strong> &mdash; ' + escHtml(resolvedPartner.email||'') + '</span>';
       submitBtn.disabled = false;
       submitBtn.style.opacity = '1';
+      _oelFillTargets('lnm', resolvedPartner, isBatch);
     } else {
       statusEl.innerHTML = '<span style="color:var(--warning)">&#9888; No Odoo contact found for <em>' + escHtml(lookupEmail) + '</em></span>';
     }
@@ -17031,33 +17125,34 @@ async function _openLogNoteModal({ em, emailTo, subject, sender, src, idx, wrapp
     if (!noteText.trim()) { alert('Add a note before logging.'); return; }
     const resultEl = document.getElementById('lnm-result');
     submitBtn.disabled = true;
-    submitBtn.textContent = '&#8987;';
+    submitBtn.textContent = '⏳';
     resultEl.style.display = 'none';
     const typeLabel = { note:'Internal Note', bounce:'Bounce/No Delivery', reply:'Customer Reply', auto:'Auto-Generated Reply' }[noteType] || 'Note';
-    const htmlBody = '<p><strong>[' + typeLabel + ']</strong> ' +
-      (isBatch ? count + ' emails' : 'Re: ' + escHtml(subject)) +
-      '</p><pre style="white-space:pre-wrap;font-size:0.85em">' + escHtml(noteText.trim()) + '</pre>';
     try {
       const targets = isBatch ? batchEntries : [[null, em]];
-      let ok = 0, fail = 0;
+      let ok = 0; const fails = []; let lastLabel = '', lastModel = '', lastId = 0;
       for (const [, bEm] of targets) {
+        const bSubject = isBatch ? ((bEm && bEm.subject) || subject) : subject;
+        const bEmail = (bEm && (bEm.email_from || bEm.sender_email || bEm.sender)) || lookupEmail;
         try {
-          const bEmail = (bEm && (bEm.email_from || bEm.sender_email || bEm.sender)) || lookupEmail;
-          let partner = isBatch ? await _findPartnerByEmail(bEmail) : resolvedPartner;
-          if (!partner) { fail++; continue; }
-          await odooExecute(odooUid, 'res.partner', 'message_post', [[partner.id]], {
-            body: htmlBody, message_type: 'comment', subtype_xmlid: 'mail.mt_note'
-          });
-          ok++;
-        } catch(_) { fail++; }
+          const partner = isBatch ? await _findPartnerByEmail(bEmail) : resolvedPartner;
+          if (!partner) { fails.push(bEmail + ': no Odoo contact'); continue; }
+          const tgt = isBatch ? { model:'res.partner', id:partner.id, label:'Contact — ' + partner.name } : _oelPickTarget('lnm', partner);
+          const htmlBody = _oelBuildNoteHtml(typeLabel, bSubject, isBatch ? noteText.replace(/Subject:.*\n?/i, '') : noteText);
+          await postVerifiedNote(tgt.model, tgt.id, htmlBody);
+          ok++; lastLabel = tgt.label; lastModel = tgt.model; lastId = tgt.id;
+        } catch(err) { fails.push(bEmail + ': ' + (err && err.message ? err.message.slice(0, 140) : err)); }
       }
+      if (!ok) throw new Error(fails[0] || 'Nothing was logged');
       resultEl.style.display = 'block';
       resultEl.style.background = 'rgba(0,200,100,0.1)';
       resultEl.style.color = 'var(--success)';
-      resultEl.textContent = '&#10003; Logged ' + ok + ' note' + (ok!==1?'s':'') + (fail?' ('+fail+' not found)':'');
-      submitBtn.textContent = '&#10003; Done';
-      if (logBtn) { logBtn._logged=true; logBtn.textContent='&#10003; Logged'; logBtn.style.color='#c9a84c'; logBtn.style.borderColor='#c9a84c'; }
-      setTimeout(() => _closeInboxModal(), 1800);
+      resultEl.innerHTML = '&#10003; Logged ' + (isBatch ? ok + ' notes' : 'to <strong>' + escHtml(lastLabel) + '</strong>') +
+        (isBatch ? '' : _oelOpenLink(lastModel, lastId)) +
+        (fails.length ? '<br><span style="color:var(--warning)">' + fails.length + ' failed: ' + escHtml(fails.join(' | ')) + '</span>' : '');
+      submitBtn.textContent = '✓ Done';
+      if (logBtn) { logBtn._logged=true; logBtn.textContent='✓ Logged'; logBtn.style.color='#c9a84c'; logBtn.style.borderColor='#c9a84c'; }
+      setTimeout(() => _closeInboxModal(), 3500);
     } catch(e) {
       resultEl.style.display = 'block';
       resultEl.style.background = 'rgba(220,50,50,0.1)';
@@ -17116,6 +17211,7 @@ function lnmSelectContact(id, name, email) {
   const resultsEl = document.getElementById('lnm-search-results');
   if (statusEl) statusEl.innerHTML = '<span style="color:var(--success)">&#10003; Selected: <strong>' + escHtml(name) + '</strong>' + (email ? ' &mdash; ' + escHtml(email) : '') + '</span>';
   if (submitBtn) { submitBtn.disabled = false; submitBtn.style.opacity = '1'; }
+  _oelFillTargets('lnm', { id: id, name: name, email: email }, false);
   if (searchEl)  searchEl.value = '';
   if (resultsEl) resultsEl.style.display = 'none';
 }
@@ -17132,13 +17228,14 @@ async function _openScheduleActivityModal({ em, emailTo, subject, sender, src, i
   let activityTypes = [], reps = [];
   try {
     [activityTypes, reps] = await Promise.all([
-      odooExecute(odooUid, 'mail.activity.type', 'search_read', [[]], { fields: ['id','name'], limit: 20 }),
+      odooExecute(odooUid, 'mail.activity.type', 'search_read', [[]], { fields: ['id','name','category'], limit: 30 }),
       odooExecute(odooUid, 'res.users', 'search_read', [[['active','=',true]]], { fields: ['id','name'], limit: 60 })
     ]);
   } catch(e) {}
 
-  const typeOpts = activityTypes.map(t => '<option value="'+t.id+'">'+escHtml(t.name)+'</option>').join('') || '<option value="">-- none --</option>';
-  const repOpts  = reps.map(r => '<option value="'+r.id+'">'+escHtml(r.name)+'</option>').join('') || '<option value="">-- none --</option>';
+  const defType = (activityTypes.find(t => t.category === 'default') || activityTypes[0] || {}).id;
+  const typeOpts = activityTypes.map(t => '<option value="'+t.id+'"'+(t.id===defType?' selected':'')+'>'+escHtml(t.name)+'</option>').join('') || '<option value="">-- none --</option>';
+  const repOpts  = reps.map(r => '<option value="'+r.id+'"'+(r.id===odooUid?' selected':'')+'>'+escHtml(r.name)+(r.id===odooUid?' (me)':'')+'</option>').join('') || '<option value="">-- none --</option>';
 
   ov.innerHTML = '';
   const modal = document.createElement('div');
@@ -17161,6 +17258,7 @@ async function _openScheduleActivityModal({ em, emailTo, subject, sender, src, i
       '</div>' +
       '<div id="sam-contact-results" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:6px;max-height:110px;overflow-y:auto"></div>' +
     '</div>' +
+    _oelTargetBoxHtml('sam', 'Schedule') +
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">' +
       '<div><label style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;font-weight:500;display:block;margin-bottom:4px">Activity Type</label>' +
         '<select id="sam-type" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:var(--text);font-size:0.78rem">' + typeOpts + '</select></div>' +
@@ -17200,6 +17298,7 @@ async function _openScheduleActivityModal({ em, emailTo, subject, sender, src, i
       statusEl.innerHTML = '<span style="color:var(--success)">&#10003; Found: <strong>' + escHtml(resolvedPartner.name) + '</strong> &mdash; ' + escHtml(resolvedPartner.email||'') + '</span>';
       submitBtn.disabled = false;
       submitBtn.style.opacity = '1';
+      _oelFillTargets('sam', resolvedPartner, isBatch);
     } else {
       statusEl.innerHTML = '<span style="color:var(--warning)">&#9888; No Odoo contact found for <em>' + escHtml(lookupEmail) + '</em></span>';
     }
@@ -17231,42 +17330,50 @@ async function _openScheduleActivityModal({ em, emailTo, subject, sender, src, i
     window._samOverridePartner = null; // reset for next open
     const typeId  = parseInt((document.getElementById('sam-type')||{}).value)||null;
     const dueDate = (document.getElementById('sam-date')||{}).value||'';
-    const repId   = parseInt((document.getElementById('sam-rep')||{}).value)||null;
+    const repId   = parseInt((document.getElementById('sam-rep')||{}).value)||odooUid;
     const summary = ((document.getElementById('sam-summary')||{}).value||'').trim();
     const notes   = ((document.getElementById('sam-notes')||{}).value||'').trim();
     const resultEl = document.getElementById('sam-result');
     if (!dueDate) { alert('Set a due date.'); return; }
     submitBtn.disabled = true;
-    submitBtn.textContent = '&#8987;';
+    submitBtn.textContent = '⏳';
     resultEl.style.display = 'none';
     try {
       const targets = isBatch ? batchEntries : [[null, em]];
-      let ok = 0, fail = 0;
+      let ok = 0; const fails = []; let last = null;
       for (const [, bEm] of targets) {
+        const bEmail = (bEm && (bEm.email_from || bEm.sender_email || bEm.sender)) || lookupEmail;
         try {
-          const bEmail = (bEm && (bEm.email_from || bEm.sender_email || bEm.sender)) || lookupEmail;
-          let partner = isBatch ? await _findPartnerByEmail(bEmail) : resolvedPartner;
-          if (!partner) { fail++; continue; }
+          const partner = isBatch ? await _findPartnerByEmail(bEmail) : resolvedPartner;
+          if (!partner) { fails.push(bEmail + ': no Odoo contact'); continue; }
+          const tgt = isBatch ? { model:'res.partner', id:partner.id, label:'Contact — ' + partner.name } : _oelPickTarget('sam', partner);
           const vals = {
-            res_model: 'res.partner',
-            res_id: partner.id,
+            res_model: tgt.model,
+            res_id: tgt.id,
             summary: summary || 'Follow up re: ' + ((bEm && bEm.subject) || subject),
             note: notes ? escHtml(notes) : '',
             date_deadline: dueDate,
+            user_id: repId,
           };
           if (typeId) vals.activity_type_id = typeId;
-          if (repId)  vals.user_id = repId;
-          await odooExecute(odooUid, 'mail.activity', 'create', [vals]);
-          ok++;
-        } catch(_) { fail++; }
+          let newId = await odooExecute(odooUid, 'mail.activity', 'create', [vals]);
+          if (Array.isArray(newId)) newId = newId[0];
+          if (!newId || typeof newId !== 'number') throw new Error('Odoo returned no activity id (' + JSON.stringify(newId) + ')');
+          // read it back so "Scheduled" always means it really exists, and say who it is assigned to
+          const chk = await odooExecute(odooUid, 'mail.activity', 'read', [[newId]], { fields: ['user_id', 'date_deadline', 'res_name'] });
+          if (!chk || !chk.length) throw new Error('Activity #' + newId + ' was created but could not be read back');
+          ok++; last = { tgt, who: chk[0].user_id && chk[0].user_id[1], due: chk[0].date_deadline };
+        } catch(err) { fails.push(bEmail + ': ' + (err && err.message ? err.message.slice(0, 140) : err)); }
       }
+      if (!ok) throw new Error(fails[0] || 'No activity was created');
       resultEl.style.display = 'block';
       resultEl.style.background = 'rgba(91,141,217,0.12)';
       resultEl.style.color = '#5b8dd9';
-      resultEl.textContent = '&#10003; Scheduled ' + ok + ' activit' + (ok!==1?'ies':'y') + (fail?' ('+fail+' not found)':'');
-      submitBtn.textContent = '&#10003; Done';
-      if (actBtn) { actBtn._scheduled=true; actBtn.textContent='&#10003; Activity'; actBtn.style.color='#5b8dd9'; actBtn.style.borderColor='#5b8dd9'; }
-      setTimeout(() => _closeInboxModal(), 1800);
+      resultEl.innerHTML = '&#10003; Scheduled ' + (isBatch ? ok + ' activities' : 'on <strong>' + escHtml(last.tgt.label) + '</strong> &middot; due ' + escHtml(last.due || dueDate) + ' &middot; assigned to <strong>' + escHtml(last.who || 'unknown') + '</strong>' + _oelOpenLink(last.tgt.model, last.tgt.id)) +
+        (fails.length ? '<br><span style="color:var(--warning)">' + fails.length + ' failed: ' + escHtml(fails.join(' | ')) + '</span>' : '');
+      submitBtn.textContent = '✓ Done';
+      if (actBtn) { actBtn._scheduled=true; actBtn.textContent='✓ Activity'; actBtn.style.color='#5b8dd9'; actBtn.style.borderColor='#5b8dd9'; }
+      setTimeout(() => _closeInboxModal(), 3500);
     } catch(e) {
       resultEl.style.display = 'block';
       resultEl.style.background = 'rgba(220,50,50,0.1)';
