@@ -3,7 +3,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <meta name="oel-version" content="v15.69">
+  <meta name="oel-version" content="v15.70">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="mobile-web-app-capable" content="yes">
@@ -883,6 +883,12 @@
       </div>
       <span class="sb-item-label">Activities</span>
       <span class="sb-badge" id="badge-activities"></span>
+    </div>
+
+    <div class="sb-item" id="nav-pipehealth" onclick="navTo('pipehealth')" title="Pipeline Health — overdue activities, stale quotes and idle leads in one place, with bulk fixes and export">
+      <div class="sb-item-icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 7.5h2.5l1.5-4 2.5 8 2-6 1 2H13" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <span class="sb-item-label">Pipeline Health</span>
+      <span class="sb-badge" id="badge-pipehealth"></span>
     </div>
 
     <div class="sb-divider"></div>
@@ -2188,6 +2194,22 @@
         <div style="margin-top:10px">
           <label style="font-size:0.74rem;color:var(--muted);display:block;margin-bottom:4px">Notes</label>
           <textarea id="qb-notes" rows="2" placeholder="Setup requirements, special instructions, event details…" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:7px 10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.82rem;outline:none;resize:none;line-height:1.5"></textarea>
+        </div>
+        <div style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div>
+            <label style="font-size:0.74rem;color:var(--muted);display:block;margin-bottom:4px" title="Which CRM opportunity this quote belongs to. Auto reuses the contact's latest open one, or creates one if there isn't any.">Opportunity</label>
+            <select id="qb-opp" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:7px 10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.8rem;outline:none">
+              <option value="auto">Auto — latest open one, else create</option>
+              <option value="new">Create a new opportunity</option>
+              <option value="none">Don't link to an opportunity</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:0.74rem;color:var(--muted);display:block;margin-bottom:4px">Payment terms</label>
+            <select id="qb-payterm" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:7px 10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.8rem;outline:none">
+              <option value="">Contact's default</option>
+            </select>
+          </div>
         </div>
       </div>
 
@@ -3940,6 +3962,8 @@ Support Team"></textarea>
             </select>
             <div style="flex:1"></div>
             <div id="ar-status-line" style="font-size:0.78rem;color:var(--muted)"></div>
+            <select id="ar-act-user" title="Who gets the to-dos" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.78rem;outline:none;max-width:150px"></select>
+            <button class="btn btn-ghost" onclick="arCreateActivities()" title="Create one 'collect payment' to-do per overdue invoice (skips invoices that already have one and ones that look paid by a deposit)" style="padding:6px 12px;font-size:0.78rem">📌 To-dos for overdue</button>
             <button class="btn btn-ghost" data-oelx-btn="1" onclick="oelxMenu(this)" title="Print this screen or export to HTML / Excel / CSV" style="padding:6px 12px;font-size:0.78rem">⤓ Export / Print</button>
           </div>
           <details id="ar-pay-settings" style="margin-top:12px">
@@ -3980,6 +4004,71 @@ Support Team"></textarea>
           <div id="ar-credits"></div>
         </div>
 
+      </div>
+    </div>
+
+    <!-- ── PIPELINE HEALTH ──────────────────────────────────────────────── -->
+    <div class="section-panel" id="panel-pipehealth">
+      <div class="section-scroll">
+        <style>
+          .ph-tbl{width:100%;border-collapse:collapse;font-size:0.78rem}
+          .ph-tbl th{position:sticky;top:0;background:var(--surface2);text-align:left;padding:6px 8px;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);font-weight:500;border-bottom:1px solid var(--border);white-space:nowrap}
+          .ph-tbl td{padding:6px 8px;border-bottom:1px solid var(--border);vertical-align:top}
+          .ph-tbl tr:hover td{background:var(--surface2)}
+          .ph-tblwrap{max-height:340px;overflow:auto;border:1px solid var(--border);border-radius:8px}
+          .ph-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:10px 0}
+          .ph-bar select,.ph-bar input[type=date],.ph-bar input[type=number]{background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:5px 8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.78rem;outline:none}
+          .ph-st{font-size:0.76rem;color:var(--muted);min-height:16px}
+          .ph-over{color:var(--danger);font-weight:500}
+          .ph-tile{background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:10px 12px}
+          .ph-tile b{display:block;font-size:1.3rem;font-family:'DM Mono',monospace}
+          .ph-tile span{font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em}
+        </style>
+        <div class="card" style="margin-bottom:14px">
+          <div class="card-title">🩺 Pipeline Health</div>
+          <div class="card-subtitle">What is slipping, in one place: overdue activities, quotes that are stale or not tied to an opportunity, and leads nobody is working. Tick rows, then fix them in bulk. Export gives a sortable HTML page, Excel or CSV.</div>
+          <div class="ph-bar">
+            <button class="btn btn-primary" onclick="phLoad()" style="padding:6px 14px;font-size:0.8rem">↻ Refresh</button>
+            <label style="font-size:0.76rem;color:var(--muted)">Stale quote after <input type="number" id="ph-stale" value="30" min="1" style="width:56px"> days</label>
+            <label style="font-size:0.76rem;color:var(--muted)">Idle lead after <input type="number" id="ph-idle" value="14" min="1" style="width:56px"> days</label>
+            <div style="flex:1"></div>
+            <span class="ph-st" id="ph-load-st"></span>
+            <button class="btn btn-ghost" data-oelx-btn="1" onclick="oelxMenu(this)" title="Export / print: sortable HTML, Excel or CSV" style="padding:6px 12px;font-size:0.78rem">⤓ Export / Print</button>
+          </div>
+        </div>
+        <div id="ph-summary" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-bottom:14px"></div>
+
+        <div class="card" style="margin-bottom:14px">
+          <div style="font-size:0.9rem;font-weight:500">⏰ Overdue activities</div>
+          <div class="ph-bar" id="ph-bar-act">
+            <select id="ph-act-user"></select><button class="btn btn-ghost" onclick="phActReassign()" style="padding:5px 10px;font-size:0.76rem">Reassign selected</button>
+            <input type="date" id="ph-act-date"><button class="btn btn-ghost" onclick="phActReschedule()" style="padding:5px 10px;font-size:0.76rem">Reschedule selected</button>
+            <button class="btn btn-ghost" onclick="phActDone()" style="padding:5px 10px;font-size:0.76rem">Mark selected done</button>
+          </div>
+          <div class="ph-st" id="ph-st-act"></div>
+          <div class="ph-tblwrap"><table class="ph-tbl" id="ph-t-act"></table></div>
+        </div>
+
+        <div class="card" style="margin-bottom:14px">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><div style="font-size:0.9rem;font-weight:500">📄 Quotes &amp; orders</div>
+            <select id="ph-q-mode" onchange="phRender()" style="background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:4px 8px;color:var(--text);font-size:0.78rem">
+              <option value="stale">Stale drafts / sent (older than the limit)</option>
+              <option value="noopp">Any open or confirmed order with no opportunity</option>
+            </select></div>
+          <div class="ph-bar"><button class="btn btn-ghost" onclick="phQuoteLink()" title="Attach each selected quote to the contact's latest open opportunity, or create one" style="padding:5px 10px;font-size:0.76rem">Link selected to opportunity (auto)</button></div>
+          <div class="ph-st" id="ph-st-q"></div>
+          <div class="ph-tblwrap"><table class="ph-tbl" id="ph-t-q"></table></div>
+        </div>
+
+        <div class="card" style="margin-bottom:14px">
+          <div style="font-size:0.9rem;font-weight:500">🎯 Idle leads &amp; opportunities</div>
+          <div class="ph-bar">
+            <select id="ph-l-user"></select><input type="date" id="ph-l-date"><button class="btn btn-ghost" onclick="phLeadSchedule()" style="padding:5px 10px;font-size:0.76rem">Schedule follow-up on selected</button>
+            <select id="ph-l-lost"></select><button class="btn btn-ghost" onclick="phLeadLost()" style="padding:5px 10px;font-size:0.76rem;color:var(--danger)">Mark selected lost</button>
+          </div>
+          <div class="ph-st" id="ph-st-l"></div>
+          <div class="ph-tblwrap"><table class="ph-tbl" id="ph-t-l"></table></div>
+        </div>
       </div>
     </div>
 
@@ -6711,6 +6800,25 @@ async function qbContactSearch(q) {
   } catch(e) { results.style.display = 'none'; }
 }
 
+// Fill the Opportunity / Payment-terms dropdowns for the picked contact (defaults stay editable)
+async function _qbFillSelects(partnerId) {
+  const oppSel = document.getElementById('qb-opp'), ptSel = document.getElementById('qb-payterm');
+  try {
+    if (ptSel && ptSel.options.length <= 1) {
+      if (!window._oelPayTerms) window._oelPayTerms = await odooExecute(odooUid, 'account.payment.term', 'search_read', [[]], { fields: ['name'], order: 'sequence, id', limit: 50 });
+      (window._oelPayTerms || []).forEach(t => { const o = document.createElement('option'); o.value = t.id; o.textContent = t.name; ptSel.appendChild(o); });
+    }
+  } catch (e) {}
+  try {
+    if (!oppSel) return;
+    const pr = await odooExecute(odooUid, 'res.partner', 'read', [[partnerId]], { fields: ['parent_id'] });
+    const ids = [partnerId]; if (pr && pr[0] && pr[0].parent_id) ids.push(pr[0].parent_id[0]);
+    const open = await odooExecute(odooUid, 'crm.lead', 'search_read', [[['partner_id', 'in', ids], ['active', '=', true], ['probability', '<', 100], ['stage_id.name', '!=', 'Lost']]], { fields: ['name', 'stage_id'], limit: 8, order: 'write_date desc' });
+    oppSel.innerHTML = '<option value="auto">Auto — latest open one' + (open && open.length ? ' (' + escHtml(open[0].name) + ')' : ', else create') + '</option>' +
+      '<option value="new">Create a new opportunity</option><option value="none">Don\'t link to an opportunity</option>' +
+      (open || []).map(o => '<option value="' + o.id + '">Link to: ' + escHtml(o.name) + (o.stage_id ? ' [' + escHtml(o.stage_id[1]) + ']' : '') + '</option>').join('');
+  } catch (e) {}
+}
 async function qbPickContact(id, name, email, phone) {
   _qbContactId = id;
   document.getElementById('qb-contact-search').value = name;
@@ -6718,6 +6826,7 @@ async function qbPickContact(id, name, email, phone) {
   document.getElementById('qb-contact-results').style.display = 'none';
   const info = document.getElementById('qb-contact-info');
   info.textContent = 'Loading context…';
+  _qbFillSelects(id);
   try {
     const [opps, msgs] = await Promise.all([
       odooExecute(odooUid,'crm.lead','search_read',
@@ -6933,6 +7042,16 @@ async function qbCreate() {
     };
     if (fullNote) orderVals.note = fullNote;
 
+    // Opportunity (default Auto, editable) and payment terms (default = contact's own)
+    let oppInfo = null, oppWarn = '';
+    try {
+      const oppMode = (document.getElementById('qb-opp') || {}).value || 'auto';
+      oppInfo = await _oelEnsureOpportunity(partnerId, { mode: oppMode, name: 'Rental \u2014 ' + (venue || (document.getElementById('qb-contact-search') || {}).value || 'quote') });
+      if (oppInfo) orderVals.opportunity_id = oppInfo.id;
+    } catch (oe) { oppWarn = ' \u26a0 Could not link an opportunity: ' + oe.message; }
+    const ptVal = parseInt((document.getElementById('qb-payterm') || {}).value);
+    if (ptVal) orderVals.payment_term_id = ptVal;
+
     let discPct = 0;
     const orderId = await odooExecute(odooUid,'sale.order','create',[orderVals]);
 
@@ -6961,15 +7080,20 @@ async function qbCreate() {
     }
 
     // Fetch order name for the success message
-    const order = await odooExecute(odooUid,'sale.order','read',[[orderId]],{fields:['name']});
+    const order = await odooExecute(odooUid,'sale.order','read',[[orderId]],{fields:['name','amount_total']});
     const orderName = order?.[0]?.name || 'RO'+orderId;
+    // keep the opportunity's expected revenue in step with the quote
+    if (oppInfo && (oppInfo.created || !oppInfo.revenue) && order?.[0]?.amount_total) {
+      try { await odooExecute(odooUid,'crm.lead','write',[[oppInfo.id],{expected_revenue: order[0].amount_total}]); } catch (re) {}
+    }
     const odooUrl   = (document.getElementById('odoo-url')?.value||'').replace(/\/+$/,'');
     const deepLink  = odooUrl ? odooUrl+'/odoo/rental/'+orderId : '';
 
     statusEl.style.color = 'var(--success)';
     statusEl.innerHTML = '✓ Rental quote <strong>' + escHtml(orderName) + '</strong> created' +
       (deepLink ? ' — <a href="'+deepLink+'" target="_blank" style="color:var(--accent)">Open in Odoo ↗</a>' : '') +
-      ' · Flat prices' + (discPct > 0 ? ' with ' + discPct + '% discount' : '') + ' sent to Odoo';
+      ' · Flat prices' + (discPct > 0 ? ' with ' + discPct + '% discount' : '') + ' sent to Odoo' +
+      (oppInfo ? ' · ' + (oppInfo.created ? 'new opportunity created' : 'linked to opportunity') + (oppInfo.name ? ' <strong>' + escHtml(oppInfo.name) + '</strong>' : '') + _oelOpenLink('crm.lead', oppInfo.id) : '') + escHtml(oppWarn);
 
   } catch(e) {
     statusEl.style.color = 'var(--danger)';
@@ -7242,6 +7366,8 @@ function qbClear() {
     if (el) el.value = '';
   });
   document.getElementById('qb-contact-id').value = '';
+  const _o = document.getElementById('qb-opp'); if (_o) { _o.innerHTML = '<option value="auto">Auto \u2014 latest open one, else create</option><option value="new">Create a new opportunity</option><option value="none">Don\'t link to an opportunity</option>'; }
+  const _pt = document.getElementById('qb-payterm'); if (_pt) _pt.value = '';
   document.getElementById('qb-contact-info').textContent = '';
   document.getElementById('qb-duration-display').textContent = '';
   document.getElementById('qb-status').textContent = '';
@@ -7918,7 +8044,54 @@ async function odooAuthenticate() {
   return uid;
 }
 
+// ── Shared CRM helpers ──────────────────────────────────────────────────────
+const _oelCache = {};
+// Find (or create once) a utm.source by name — lets every lead the app creates carry a source.
+async function _oelSourceId(name) {
+  if (_oelCache['src:' + name]) return _oelCache['src:' + name];
+  let r = await odooExecute(odooUid, 'utm.source', 'search_read', [[['name', '=', name]]], { fields: ['id'], limit: 1 });
+  let id = r && r[0] && r[0].id;
+  if (!id) id = await odooExecute(odooUid, 'utm.source', 'create', [{ name: name }]);
+  if (Array.isArray(id)) id = id[0];
+  return (_oelCache['src:' + name] = id);
+}
+// "Follow-up: x" without ever stacking "Follow-up: Follow-up: x"
+function _oelFu(x) {
+  const t = String(x == null ? '' : x).replace(/^(\s*follow[\s-]*up\s*:\s*)+/i, '').trim();
+  return t ? 'Follow-up: ' + t : 'Follow-up';
+}
+// Default activity type (To-Do, else first general "default" type) — cached.
+async function _oelDefaultActTypeId() {
+  if (_oelCache.actType) return _oelCache.actType;
+  const t = await odooExecute(odooUid, 'mail.activity.type', 'search_read', [[['res_model', '=', false]]], { fields: ['id', 'name', 'category'], order: 'sequence, id', limit: 30 });
+  const pick = (t || []).find(x => /^to-?do$/i.test(x.name)) || (t || []).find(x => x.category === 'default') || (t || [])[0];
+  return (_oelCache.actType = pick ? pick.id : null);
+}
+// Opportunity for a contact. mode: 'auto' (latest open one for the contact/company, else create), 'new', 'none', or an id.
+async function _oelEnsureOpportunity(partnerId, o) {
+  o = o || {};
+  const mode = o.mode == null ? 'auto' : o.mode;
+  if (mode === 'none') return null;
+  if (/^\d+$/.test(String(mode))) return { id: parseInt(mode), created: false };
+  const pr = await odooExecute(odooUid, 'res.partner', 'read', [[partnerId]], { fields: ['name', 'parent_id'] });
+  const partner = pr && pr[0] || { name: '' };
+  if (mode === 'auto') {
+    const ids = [partnerId]; if (partner.parent_id && partner.parent_id[0]) ids.push(partner.parent_id[0]);
+    const f = await odooExecute(odooUid, 'crm.lead', 'search_read', [[['partner_id', 'in', ids], ['active', '=', true], ['probability', '<', 100], ['stage_id.name', '!=', 'Lost']]], { fields: ['name', 'expected_revenue'], limit: 1, order: 'write_date desc' });
+    if (f && f.length) return { id: f[0].id, name: f[0].name, created: false, revenue: f[0].expected_revenue };
+  }
+  const vals = { name: o.name || ('Quote — ' + (partner.parent_id ? partner.parent_id[1] : partner.name)), type: 'opportunity', partner_id: partnerId, user_id: odooUid, description: o.desc || '' };
+  if (o.revenue) vals.expected_revenue = o.revenue;
+  let id = await odooExecute(odooUid, 'crm.lead', 'create', [vals]);
+  if (Array.isArray(id)) id = id[0];
+  return { id: id, name: vals.name, created: true };
+}
+
 async function odooExecute(uid, model, method, args, kwargs) {
+  // Every lead the app creates gets a Source unless the caller already set one
+  if (model === 'crm.lead' && method === 'create' && Array.isArray(args) && args[0] && typeof args[0] === 'object' && !Array.isArray(args[0]) && !args[0].source_id) {
+    try { args[0].source_id = await _oelSourceId('OdooLink'); } catch (e) { /* source is nice-to-have */ }
+  }
   return xmlrpcCall('/xmlrpc/2/object', 'execute_kw', [
     odooConfig.database, uid, odooConfig.api_key,
     model, method, args || [], kwargs || {}
@@ -9051,7 +9224,7 @@ async function logToOdoo(em, subject, body, attachFile, assignUserId, assignImme
     res_id: em.res_id,
     user_id: odooUid,
     date_deadline: deadline,
-    summary: `Follow-up: ${em.activity_summary}`,
+    summary: _oelFu(em.activity_summary),
     note: `Auto-scheduled after email sent on ${new Date().toISOString().split('T')[0]}.\nPrevious subject: ${subject}`
   };
   if (activityTypeId) vals.activity_type_id = activityTypeId;
@@ -11037,6 +11210,7 @@ const OEL_SEARCH_INDEX = [
   { id:'bounces',      label:'Bounce Manager',    keywords:'undeliverable bounced email list clear reschedule activities bad email address' },
   { id:'expenses',     label:'Expenses',          keywords:'expense report receipts approve refuse reimburse employee spend payment approval queue reporting by category vendor bills accounts payable ap invoice validate post new bills' },
   { id:'reconcile',    label:'Reconciliation',    keywords:'bank credit card reconcile reconciliation coding code transaction partner account assign missing uncoded deviation scan check accounting cleanup bookkeeping' },
+  { id:'pipehealth',   label:'Pipeline Health',   keywords:'overdue activities stale quotes old drafts idle leads cleanup bulk reassign close reschedule link opportunity lost reason health audit export' },
   { id:'arfollowup',   label:'Invoice Follow-up', keywords:'accounts receivable ar invoice payment link send reminder overdue customer collections dunning first notice follow up unpaid outstanding balance due deposit stripe fees payout match reconcile payment received bank credit sort' },
   { id:'finreports',   label:'Financial Reports', keywords:'trial balance balance sheet profit loss pl income statement aged payable receivable ap ar xlsx export download report collection financial statements general ledger' },
   { id:'salestargeting', label:'Sales Targeting', keywords:'historical sales lookup quickbooks quarterly target list rep focus lapsed dormant customers reactivate prospecting quarter' },
@@ -17015,6 +17189,8 @@ async function _oelFillTargets(prefix, partner, isBatch) {
   if (document.getElementById(prefix + '-target') !== sel) return;  // modal closed/reopened meanwhile
   window['_' + prefix + 'Targets'] = targets;
   sel.innerHTML = targets.map((t, i) => '<option value="' + i + '">' + escHtml(t.label) + '</option>').join('');
+  // Follow-ups belong on the deal when there is one (notes stay on the contact). Still editable.
+  if (prefix === 'sam') { const k = targets.findIndex(t => t.model === 'crm.lead'); if (k >= 0) sel.value = String(k); }
   wrap.style.display = 'block';
 }
 function _oelPickTarget(prefix, partner) {
@@ -21472,7 +21648,7 @@ async function batchPush() {
       if (!partnerId) { const pv = {name: name||'Unknown'}; if (emailV) pv.email=emailV; if (phone) pv.phone=phone; partnerId = await odooExecute(odooUid,'res.partner','create',[pv]); }
 
       // Lead
-      const lv = { name: `Follow-up: ${name}`, type:'opportunity', partner_id:partnerId, user_id:userId, description:notes };
+      const lv = { name: _oelFu(name), type:'opportunity', partner_id:partnerId, user_id:userId, description:notes };
       if (emailV) lv.email_from = emailV;
       if (phone)  lv.phone = phone;
       const leadId = await odooExecute(odooUid,'crm.lead','create',[lv]);
@@ -21638,7 +21814,7 @@ async function scheduleLeadActivityConfirm(idx) {
       // Create a minimal lead to attach the activity to
       const partnerId = null;
       const leadVals = {
-        name: `Follow-up: ${name}`,
+        name: _oelFu(name),
         type: 'opportunity',
         user_id: odooUid,
         description: note || `Scheduled via OEL from lead capture`,
@@ -21656,7 +21832,7 @@ async function scheduleLeadActivityConfirm(idx) {
       res_id:        leadOdooId,
       user_id:       odooUid,
       date_deadline: date,
-      summary:       `Follow-up: ${name}`,
+      summary:       _oelFu(name),
       note:          note || `Scheduled via Odoo Email Link`,
     };
     if (typeId) {
@@ -21764,7 +21940,7 @@ async function scheduleLeadActivityConfirmFor(lead, idx, typeId, date, note) {
   const name = lead.fields?.customer_name || lead.subject || 'Lead';
 
   if (!leadOdooId) {
-    const leadVals = { name:`Follow-up: ${name}`, type:'opportunity', user_id:odooUid, description:note||'' };
+    const leadVals = { name:_oelFu(name), type:'opportunity', user_id:odooUid, description:note||'' };
     if (lead.fields?.email) leadVals.email_from = lead.fields.email;
     if (lead.fields?.phone) leadVals.phone = lead.fields.phone;
     leadOdooId = await odooExecute(odooUid, 'crm.lead', 'create', [leadVals]);
@@ -21774,7 +21950,7 @@ async function scheduleLeadActivityConfirmFor(lead, idx, typeId, date, note) {
 
   const modelIds = await odooExecute(odooUid, 'ir.model', 'search', [[['model','=','crm.lead']]]);
   const actVals = { res_model_id:modelIds[0], res_id:leadOdooId, user_id:odooUid,
-    date_deadline:date, summary:`Follow-up: ${name}`, note:note||'Scheduled via OEL' };
+    date_deadline:date, summary:_oelFu(name), note:note||'Scheduled via OEL' };
   if (typeId) {
     actVals.activity_type_id = typeId;
   } else {
@@ -22095,7 +22271,7 @@ async function pushLeadToOdoo() {
     // 2. Create crm.lead (opportunity)
     logEl.innerHTML = '<div class="dot spin"></div> Creating lead…';
     const leadVals = {
-      name:        name ? `Follow-up: ${name}` : 'New Lead via OEL',
+      name:        name ? _oelFu(name) : 'New Lead via OEL',
       type:        'opportunity',
       partner_id:  partnerId,
       user_id:     userId,
@@ -28108,7 +28284,7 @@ window.inboxTab = function(tab) {
   var LEGACY_KEY = 'oel_sidebar_order'; // old item-level format — no longer compatible, cleaned up below
 
   var SECTIONS = [
-    { key:'daily',    label:'DAILY',        items:['nav-inbox','nav-leads','nav-activities'] },
+    { key:'daily',    label:'DAILY',        items:['nav-inbox','nav-leads','nav-activities','nav-pipehealth'] },
     { key:'quoting',  label:'QUOTING',      items:['nav-quotedesk','nav-smartbuilder','nav-quotes','nav-templates'] },
     { key:'pipeline', label:'PIPELINE',     items:['nav-prospect','nav-catchup','nav-vendor','nav-massmail','nav-emailstudio','nav-oppimport','nav-shortagerfq'] },
     { key:'work',     label:'WORK & COMMS', items:['nav-projects','nav-discuss','nav-support'] },
@@ -28323,6 +28499,7 @@ window.navTo = function(section) {
     reports:    {panel:'panel-reports',    title:'Reports',      hasSrc:false},
     reconcile:  {panel:'panel-reconcile',  title:'Reconciliation', hasSrc:false},
     arfollowup: {panel:'panel-arfollowup', title:'Invoice Follow-up', hasSrc:false},
+    pipehealth: {panel:'panel-pipehealth', title:'Pipeline Health', hasSrc:false},
     finreports: {panel:'panel-finreports', title:'Financial Reports', hasSrc:false},
     catchup:    {panel:'panel-catchup',    title:'Dormant Contacts',     hasSrc:false},
     vendor:     {panel:'panel-vendor',     title:'Vendor Outreach', hasSrc:false},
@@ -28362,6 +28539,7 @@ window.navTo = function(section) {
   if (section === 'expenses') setTimeout(() => { if (typeof expInit === 'function') expInit(); }, 200);
   if (section === 'reconcile') setTimeout(() => { if (typeof rcInit === 'function') rcInit(); }, 200);
   if (section === 'arfollowup') setTimeout(() => { if (typeof arInit === 'function') arInit(); }, 200);
+  if (section === 'pipehealth') setTimeout(() => { if (typeof phInit === 'function') phInit(); }, 100);
   if (section === 'finreports') setTimeout(() => { if (typeof frInit === 'function') frInit(); }, 200);
 };
 
@@ -32548,7 +32726,7 @@ document.addEventListener('DOMContentLoaded', hslInit);
         try {
           const e = r.entries[0];
           const vals = { res_model_id: await modelId(e.model), res_id: e.resId, user_id: odooUid, date_deadline: due,
-                         summary: `Follow-up: ${e.summary || subject}`,
+                         summary: _oelFu(e.summary || subject),
                          note: `Scheduled after email sent on ${today}.\nSubject: ${subject}` };
           const typeId = Array.isArray(e.typeId) ? e.typeId[0] : (e.typeId || defaultType);
           if (typeId) vals.activity_type_id = typeId;
@@ -32951,7 +33129,7 @@ document.addEventListener('DOMContentLoaded', hslInit);
           });
           const actVals = {
             res_model_id: partnerModelId, res_id: partner.id, user_id: assignedUserId,
-            date_deadline: date, summary: `Follow-up: ${subject}`, note,
+            date_deadline: date, summary: _oelFu(subject), note,
           };
           if (defaultTypeId) actVals.activity_type_id = defaultTypeId;
           await odooExecute(odooUid, 'mail.activity', 'create', [actVals]);
@@ -35420,6 +35598,129 @@ document.addEventListener('DOMContentLoaded', hslInit);
 })();
 </script>
 
+<!-- ── Pipeline Health ─────────────────────────────────────────────────── -->
+<script>
+(function(){
+  const PH = { acts: [], quotes: [], leads: [], users: [], lost: [], loaded: false };
+  const money = n => '$' + (n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const base = () => (odooConfig && odooConfig.url ? odooConfig.url : '').replace(/\/+$/, '');
+  const link = (model, id, label) => { const b = base(); const t = escHtml(label || ''); return b ? '<a href="' + b + '/web#id=' + id + '&model=' + model + '&view_type=form" target="_blank" style="color:var(--accent);text-decoration:none">' + t + ' ↗</a>' : t; };
+  const today = () => new Date().toISOString().slice(0, 10);
+  const daysSince = d => d ? Math.floor((Date.now() - new Date(String(d).replace(' ', 'T') + (String(d).length > 10 ? 'Z' : '')).getTime()) / 864e5) : 0;
+  const st = (id, msg, color) => { const e = document.getElementById(id); if (e) { e.style.color = color || 'var(--muted)'; e.innerHTML = msg; } };
+  const sel = kind => Array.from(document.querySelectorAll('input.ph-cb[data-k="' + kind + '"]:checked')).map(c => parseInt(c.value));
+  const m2o = v => Array.isArray(v) ? v[1] : '';
+
+  window.phInit = function() {
+    const wk = document.getElementById('ph-act-date'), wl = document.getElementById('ph-l-date');
+    const t = new Date(Date.now() + 864e5).toISOString().slice(0, 10);
+    if (wk && !wk.value) wk.value = t; if (wl && !wl.value) wl.value = t;
+    if (!odooUid) { st('ph-load-st', 'Connect to Odoo first.', 'var(--danger)'); return; }
+    if (!PH.loaded) phLoad();
+  };
+
+  window.phLoad = async function() {
+    if (!odooUid) { st('ph-load-st', 'Connect to Odoo first.', 'var(--danger)'); return; }
+    st('ph-load-st', 'Loading…');
+    const staleDays = parseInt(document.getElementById('ph-stale').value) || 30;
+    const cut = new Date(Date.now() - staleDays * 864e5).toISOString().slice(0, 10);
+    try {
+      const x = (m, d, f, o) => odooExecute(odooUid, m, 'search_read', [d], Object.assign({ fields: f }, o || {}));
+      const orderFields = ['name', 'partner_id', 'amount_total', 'state', 'create_date', 'user_id', 'opportunity_id', 'is_rental_order'];
+      const orders = async dom => { try { return await x('sale.order', dom, orderFields, { order: 'create_date asc', limit: 400 }); } catch (e) { return await x('sale.order', dom, orderFields.slice(0, -1), { order: 'create_date asc', limit: 400 }); } };
+      const [acts, stale, noopp, leads, users, lost] = await Promise.all([
+        x('mail.activity', [['date_deadline', '<', today()]], ['res_name', 'res_model', 'res_id', 'user_id', 'date_deadline', 'summary', 'activity_type_id'], { order: 'date_deadline asc', limit: 600 }),
+        orders([['state', 'in', ['draft', 'sent']], ['create_date', '<', cut]]),
+        orders([['state', 'in', ['draft', 'sent', 'sale']], ['opportunity_id', '=', false]]),
+        x('crm.lead', [['active', '=', true], ['probability', '<', 100], ['stage_id.name', '!=', 'Lost']], ['name', 'partner_id', 'stage_id', 'expected_revenue', 'create_date', 'write_date', 'user_id', 'source_id', 'activity_ids'], { order: 'create_date asc', limit: 400 }),
+        x('res.users', [['active', '=', true], ['share', '=', false]], ['name'], { order: 'name', limit: 100 }),
+        x('crm.lost.reason', [], ['name'], { limit: 50 })
+      ]);
+      PH.acts = acts || []; PH.staleQ = stale || []; PH.nooppQ = noopp || []; PH.users = users || []; PH.lost = lost || [];
+      const idle = parseInt(document.getElementById('ph-idle').value) || 14;
+      PH.leads = (leads || []).filter(l => !(l.activity_ids && l.activity_ids.length) || daysSince(l.write_date) > idle);
+      PH.loaded = true;
+      const uo = PH.users.map(u => '<option value="' + u.id + '"' + (u.id === odooUid ? ' selected' : '') + '>' + escHtml(u.name) + (u.id === odooUid ? ' (me)' : '') + '</option>').join('');
+      ['ph-act-user', 'ph-l-user'].forEach(id => { const e = document.getElementById(id); if (e) e.innerHTML = uo; });
+      const le = document.getElementById('ph-l-lost'); if (le) le.innerHTML = '<option value="">Lost reason…</option>' + PH.lost.map(r => '<option value="' + r.id + '">' + escHtml(r.name) + '</option>').join('');
+      st('ph-load-st', 'Loaded ' + new Date().toLocaleTimeString());
+      phRender();
+      const b = document.getElementById('badge-pipehealth'); if (b) b.textContent = PH.acts.length ? String(PH.acts.length) : '';
+    } catch (e) { st('ph-load-st', '✗ ' + escHtml(e.message), 'var(--danger)'); }
+  };
+
+  const head = (kind, cols) => '<thead><tr><th style="width:26px"><input type="checkbox" onchange="phAll(\'' + kind + '\',this.checked)"></th>' + cols.map(c => '<th>' + c + '</th>').join('') + '</tr></thead>';
+  const cb = (kind, id) => '<td><input type="checkbox" class="ph-cb" data-k="' + kind + '" value="' + id + '"></td>';
+  window.phAll = function(kind, on) { document.querySelectorAll('input.ph-cb[data-k="' + kind + '"]').forEach(c => c.checked = on); };
+
+  window.phRender = function() {
+    const q = (document.getElementById('ph-q-mode') || {}).value === 'noopp' ? PH.nooppQ : PH.staleQ;
+    PH.quotesShown = q;
+    const overdue30 = PH.acts.filter(a => daysSince(a.date_deadline + ' 00:00:00') > 30).length;
+    const staleVal = PH.staleQ.reduce((a, o) => a + (o.amount_total || 0), 0);
+    document.getElementById('ph-summary').innerHTML = [
+      [PH.acts.length, 'Overdue activities'], [overdue30, 'Overdue 30+ days'], [PH.staleQ.length, 'Stale quotes'], [money(staleVal), 'Stale quote value'],
+      [PH.nooppQ.length, 'Orders with no opportunity'], [PH.leads.length, 'Idle leads']
+    ].map(t => '<div class="ph-tile"><b>' + t[0] + '</b><span>' + t[1] + '</span></div>').join('');
+
+    document.getElementById('ph-t-act').innerHTML = head('act', ['Due', 'Days late', 'Assigned', 'Type', 'Summary', 'Record']) + '<tbody>' + (PH.acts.length ? PH.acts.map(a => {
+      const d = daysSince(a.date_deadline + ' 00:00:00');
+      return '<tr>' + cb('act', a.id) + '<td>' + escHtml(a.date_deadline) + '</td><td class="' + (d > 30 ? 'ph-over' : '') + '">' + d + '</td><td>' + escHtml(m2o(a.user_id)) + '</td><td>' + escHtml(m2o(a.activity_type_id)) + '</td><td>' + escHtml(a.summary || '') + '</td><td>' + link(a.res_model, a.res_id, a.res_name || (a.res_model + ' #' + a.res_id)) + '</td></tr>';
+    }).join('') : '<tr><td colspan="7" style="color:var(--muted);padding:14px">Nothing overdue. 🎉</td></tr>') + '</tbody>';
+
+    document.getElementById('ph-t-q').innerHTML = head('q', ['Quote', 'Customer', 'Type', 'Status', 'Amount', 'Age (days)', 'Salesperson', 'Opportunity']) + '<tbody>' + (q.length ? q.map(o => {
+      return '<tr>' + cb('q', o.id) + '<td>' + link('sale.order', o.id, o.name) + '</td><td>' + escHtml(m2o(o.partner_id)) + '</td><td>' + (o.is_rental_order ? 'Rental' : 'Sale') + '</td><td>' + escHtml(o.state) + '</td><td>' + money(o.amount_total) + '</td><td>' + daysSince(o.create_date) + '</td><td>' + escHtml(m2o(o.user_id)) + '</td><td>' + (o.opportunity_id ? escHtml(m2o(o.opportunity_id)) : '<span class="ph-over">none</span>') + '</td></tr>';
+    }).join('') : '<tr><td colspan="9" style="color:var(--muted);padding:14px">Nothing here.</td></tr>') + '</tbody>';
+
+    document.getElementById('ph-t-l').innerHTML = head('l', ['Lead', 'Customer', 'Stage', 'Revenue', 'Age (days)', 'Last touched (days)', 'Activities', 'Source', 'Owner']) + '<tbody>' + (PH.leads.length ? PH.leads.map(l => {
+      return '<tr>' + cb('l', l.id) + '<td>' + link('crm.lead', l.id, l.name) + '</td><td>' + escHtml(m2o(l.partner_id)) + '</td><td>' + escHtml(m2o(l.stage_id)) + '</td><td>' + (l.expected_revenue ? money(l.expected_revenue) : '<span class="ph-over">$0</span>') + '</td><td>' + daysSince(l.create_date) + '</td><td>' + daysSince(l.write_date) + '</td><td>' + ((l.activity_ids || []).length || '<span class="ph-over">none</span>') + '</td><td>' + (l.source_id ? escHtml(m2o(l.source_id)) : '<span class="ph-over">none</span>') + '</td><td>' + escHtml(m2o(l.user_id)) + '</td></tr>';
+    }).join('') : '<tr><td colspan="10" style="color:var(--muted);padding:14px">No idle leads.</td></tr>') + '</tbody>';
+  };
+
+  async function bulk(kind, stId, label, fn, confirmMsg) {
+    const ids = sel(kind);
+    if (!ids.length) { st(stId, 'Tick at least one row first.', 'var(--warning)'); return; }
+    if (!confirm((confirmMsg || label) + '\n\n' + ids.length + ' selected. Continue?')) return;
+    st(stId, 'Working…');
+    try { const msg = await fn(ids); st(stId, '✓ ' + msg, 'var(--success)'); PH.loaded = false; await phLoad(); }
+    catch (e) { st(stId, '✗ ' + escHtml(e.message), 'var(--danger)'); }
+  }
+  window.phActReassign = () => { const u = parseInt(document.getElementById('ph-act-user').value); return bulk('act', 'ph-st-act', 'Reassign', async ids => { await odooExecute(odooUid, 'mail.activity', 'write', [ids, { user_id: u }]); return 'Reassigned ' + ids.length; }, 'Reassign to ' + document.getElementById('ph-act-user').selectedOptions[0].textContent + '?'); };
+  window.phActReschedule = () => { const d = document.getElementById('ph-act-date').value; if (!d) { st('ph-st-act', 'Pick a date.', 'var(--warning)'); return; } return bulk('act', 'ph-st-act', 'Reschedule', async ids => { await odooExecute(odooUid, 'mail.activity', 'write', [ids, { date_deadline: d }]); return 'Rescheduled ' + ids.length + ' to ' + d; }, 'Move due date to ' + d + '?'); };
+  window.phActDone = () => bulk('act', 'ph-st-act', 'Mark done', async ids => { await odooExecute(odooUid, 'mail.activity', 'action_feedback', [ids], { feedback: 'Closed in OdooLink pipeline cleanup.' }); return 'Closed ' + ids.length; }, 'Mark these activities done? (logged in each record\'s chatter)');
+  window.phQuoteLink = () => bulk('q', 'ph-st-q', 'Link', async ids => {
+    let linked = 0, created = 0; const errs = [];
+    for (const id of ids) {
+      const o = (PH.quotesShown || []).find(r => r.id === id); if (!o || o.opportunity_id || !o.partner_id) continue;
+      try {
+        const opp = await _oelEnsureOpportunity(o.partner_id[0], { mode: 'auto', name: o.name + ' — ' + o.partner_id[1], revenue: o.amount_total });
+        await odooExecute(odooUid, 'sale.order', 'write', [[id], { opportunity_id: opp.id }]);
+        if (!opp.created && !opp.revenue && o.amount_total) { try { await odooExecute(odooUid, 'crm.lead', 'write', [[opp.id], { expected_revenue: o.amount_total }]); } catch (e) {} }
+        linked++; if (opp.created) created++;
+      } catch (e) { errs.push(o.name + ': ' + String(e.message).slice(0, 80)); }
+    }
+    return 'Linked ' + linked + ' (' + created + ' new opportunit' + (created === 1 ? 'y' : 'ies') + ')' + (errs.length ? ' · ' + errs.length + ' failed: ' + errs.join(' | ') : '');
+  }, 'Attach each selected quote to the contact\'s latest open opportunity (or create one)?');
+  window.phLeadSchedule = () => { const u = parseInt(document.getElementById('ph-l-user').value), d = document.getElementById('ph-l-date').value; if (!d) { st('ph-st-l', 'Pick a date.', 'var(--warning)'); return; }
+    return bulk('l', 'ph-st-l', 'Schedule', async ids => { const t = await _oelDefaultActTypeId(); let n = 0;
+      for (const id of ids) { const l = PH.leads.find(r => r.id === id); const v = { res_model: 'crm.lead', res_id: id, user_id: u, date_deadline: d, summary: _oelFu(l ? l.name : '') }; if (t) v.activity_type_id = t; await odooExecute(odooUid, 'mail.activity', 'create', [v]); n++; }
+      return 'Scheduled ' + n + ' follow-up' + (n !== 1 ? 's' : ''); }, 'Schedule a follow-up for ' + document.getElementById('ph-l-user').selectedOptions[0].textContent + ' on ' + d + '?'); };
+  window.phLeadLost = () => { const r = parseInt(document.getElementById('ph-l-lost').value); if (!r) { st('ph-st-l', 'Choose a lost reason first (so you can see why deals die).', 'var(--warning)'); return; }
+    return bulk('l', 'ph-st-l', 'Lost', async ids => { await odooExecute(odooUid, 'crm.lead', 'action_set_lost', [ids], { lost_reason_id: r }); return 'Marked ' + ids.length + ' lost'; }, 'Mark these LOST with reason "' + document.getElementById('ph-l-lost').selectedOptions[0].textContent + '"? This archives them (recoverable in Odoo).'); };
+
+  if (window.oelxRegister) window.oelxRegister('panel-pipehealth', function() {
+    return [
+      { name: 'Overdue activities', headers: ['Due', 'Days late', 'Assigned to', 'Type', 'Summary', 'Record'],
+        rows: PH.acts.map(a => [a.date_deadline, daysSince(a.date_deadline + ' 00:00:00'), m2o(a.user_id), m2o(a.activity_type_id), a.summary || '', a.res_name || (a.res_model + ' #' + a.res_id)]) },
+      { name: 'Quotes & orders', headers: ['Quote', 'Customer', 'Type', 'Status', 'Amount', 'Age (days)', 'Salesperson', 'Opportunity'],
+        rows: (PH.quotesShown || []).map(o => [o.name, m2o(o.partner_id), o.is_rental_order ? 'Rental' : 'Sale', o.state, money(o.amount_total), daysSince(o.create_date), m2o(o.user_id), m2o(o.opportunity_id) || 'none']) },
+      { name: 'Idle leads', headers: ['Lead', 'Customer', 'Stage', 'Revenue', 'Age (days)', 'Last touched (days)', 'Activities', 'Source', 'Owner'],
+        rows: PH.leads.map(l => [l.name, m2o(l.partner_id), m2o(l.stage_id), money(l.expected_revenue), daysSince(l.create_date), daysSince(l.write_date), (l.activity_ids || []).length, m2o(l.source_id) || 'none', m2o(l.user_id)]) }
+    ];
+  });
+})();
+</script>
+
 <!-- ── Invoice Follow-up (AR) ───────────────────────────────────────────── -->
 <script>
 (function(){
@@ -35527,7 +35828,52 @@ Thanks,`
     }
     arSyncSettingsInputs();
     arUpdateBadge();
+    arFillActUsers();
     arLoad();
+  };
+
+  async function arFillActUsers() {
+    const sel = document.getElementById('ar-act-user');
+    if (!sel || sel.options.length) return;
+    try {
+      const users = await odooExecute(odooUid, 'res.users', 'search_read', [[['active', '=', true], ['share', '=', false]]], { fields: ['name'], order: 'name', limit: 100 });
+      sel.innerHTML = users.map(u => '<option value="' + u.id + '"' + (u.id === odooUid ? ' selected' : '') + '>' + escHtml(u.name) + (u.id === odooUid ? ' (me)' : '') + '</option>').join('');
+    } catch (e) {}
+  }
+
+  // One "collect payment" to-do per overdue invoice (on the invoice itself), no duplicates.
+  window.arCreateActivities = async function() {
+    if (!odooUid) { alert('Connect to Odoo first.'); return; }
+    const todo = (AR.invoices || []).filter(i => i.daysOverdue > 0);
+    if (!todo.length) { alert('No overdue invoices in the current list.'); return; }
+    const likelyPaid = todo.filter(i => arIsLikely(i));
+    const targets = todo.filter(i => !arIsLikely(i));
+    const who = parseInt((document.getElementById('ar-act-user') || {}).value) || odooUid;
+    const whoName = ((document.getElementById('ar-act-user') || {}).selectedOptions || [{}])[0].textContent || 'me';
+    let have = [];
+    try { have = await odooExecute(odooUid, 'mail.activity', 'search_read', [[['res_model', '=', 'account.move'], ['res_id', 'in', targets.map(i => i.id)]]], { fields: ['res_id'], limit: 1000 }); } catch (e) {}
+    const hasSet = new Set((have || []).map(a => a.res_id));
+    const fresh = targets.filter(i => !hasSet.has(i.id));
+    if (!fresh.length) { alert('Nothing to add: every overdue invoice already has a to-do' + (likelyPaid.length ? ' (' + likelyPaid.length + ' skipped as probably paid)' : '') + '.'); return; }
+    const total = fresh.reduce((a, i) => a + (i.amountDue || 0), 0);
+    if (!confirm('Create ' + fresh.length + ' collect-payment to-do' + (fresh.length !== 1 ? 's' : '') + ' for ' + whoName + ' (' + arFmt2(total) + ' overdue)?\n\n' +
+      (hasSet.size ? hasSet.size + ' already have one and are skipped.\n' : '') + (likelyPaid.length ? likelyPaid.length + ' look paid by a bank deposit and are skipped.' : ''))) return;
+    const typeId = await _oelDefaultActTypeId();
+    const today = new Date().toISOString().slice(0, 10);
+    let ok = 0; const fails = [];
+    for (const i of fresh) {
+      try {
+        const vals = { res_model: 'account.move', res_id: i.id, user_id: who, date_deadline: today,
+          summary: 'Collect ' + i.number + ' \u2014 ' + i.customerName + ' \u2014 ' + arFmt2(i.amountDue) + ' (' + i.daysOverdue + 'd overdue)',
+          note: 'Created by OdooLink invoice follow-up.' };
+        if (typeId) vals.activity_type_id = typeId;
+        let id = await odooExecute(odooUid, 'mail.activity', 'create', [vals]);
+        if (Array.isArray(id)) id = id[0];
+        if (!id) throw new Error('no id returned');
+        ok++;
+      } catch (e) { fails.push(i.number + ': ' + (e.message || e).toString().slice(0, 100)); }
+    }
+    alert('Created ' + ok + ' to-do' + (ok !== 1 ? 's' : '') + ' for ' + whoName + '.' + (fails.length ? '\n\nFailed (' + fails.length + '):\n' + fails.slice(0, 5).join('\n') : ''));
   };
 
   window.arUpdateBadge = async function() {
