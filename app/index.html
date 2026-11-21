@@ -3,7 +3,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <meta name="oel-version" content="v15.72">
+  <meta name="oel-version" content="v15.73">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="mobile-web-app-capable" content="yes">
@@ -1056,6 +1056,11 @@
     <div class="sb-item" id="nav-dataexplorer" onclick="navTo('dataexplorer')" title="Data Explorer">
       <div class="sb-item-icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="12" height="12" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M1 4h12M1 7h12M1 10h12" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg></div>
       <span class="sb-item-label">Data Explorer</span>
+    </div>
+
+    <div class="sb-item" id="nav-datahealth" onclick="navTo('datahealth')" title="Data Health — scan Odoo for stale quotes, overdue activities, duplicate and incomplete contacts">
+      <div class="sb-item-icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1.5l4.5 1.8v3.4c0 2.6-1.9 4.5-4.5 5.3C4.4 11.2 2.5 9.3 2.5 6.7V3.3L7 1.5z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M5 7l1.5 1.5L9 5.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <span class="sb-item-label">Data Health</span>
     </div>
 
     <div class="sb-item" id="nav-docs" onclick="navTo('docs')" title="Documents">
@@ -3250,6 +3255,7 @@ Support Team"></textarea>
               <tr><td style="padding:5px 8px 5px 0;color:var(--text);vertical-align:top">Schedule a follow-up (one or several people)</td><td style="padding:5px 0">Inbox → row → <strong style="color:var(--text)">📅</strong> → tick everyone who gets it (one activity each). Defaults to the open opportunity</td></tr>
               <tr><td style="padding:5px 8px 5px 0;color:var(--text);vertical-align:top">Build a rental quote and tie it to a deal</td><td style="padding:5px 0"><a href="#" onclick="navTo('quotes');return false" style="color:var(--accent)">Quotes</a> → Opportunity and Payment terms dropdowns (Auto = reuse the latest open opportunity, else create one)</td></tr>
               <tr><td style="padding:5px 8px 5px 0;color:var(--text);vertical-align:top">See what is overdue, stale or idle</td><td style="padding:5px 0"><a href="#" onclick="navTo('pipehealth');return false" style="color:var(--accent)">Pipeline Health</a>: tick rows to reassign, reschedule, close, link or mark lost in bulk</td></tr>
+              <tr><td style="padding:5px 8px 5px 0;color:var(--text);vertical-align:top">Find duplicate or messy data (contacts, quotes, activities)</td><td style="padding:5px 0"><a href="#" onclick="navTo('datahealth');return false" style="color:var(--accent)">Data Health</a> → 🔍 Scan Odoo, open a check, export the list</td></tr>
               <tr><td style="padding:5px 8px 5px 0;color:var(--text);vertical-align:top">Chase unpaid invoices</td><td style="padding:5px 0"><a href="#" onclick="navTo('arfollowup');return false" style="color:var(--accent)">Invoice Follow-up</a> → email reminders, or <strong style="color:var(--text)">📌 To-dos for overdue</strong> to put each one on someone's list</td></tr>
               <tr><td style="padding:5px 8px 5px 0;color:var(--text);vertical-align:top">Export a table (HTML, Excel, CSV, print)</td><td style="padding:5px 0"><strong style="color:var(--text)">⤓ Export / Print</strong> button on most tabs; the HTML export is a sortable, searchable page</td></tr>
               <tr><td style="padding:5px 8px 5px 0;color:var(--text);vertical-align:top">Jump to any screen or customer</td><td style="padding:5px 0">Search icon in the top bar (or Ctrl+K): type what you want to do, such as "log note", "send to CRM", "overdue" or "assign two people"</td></tr>
@@ -3265,6 +3271,15 @@ Support Team"></textarea>
           <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
             <p style="margin:0 0 4px">Three tables on one tab: <strong style="color:var(--text)">overdue activities</strong>, <strong style="color:var(--text)">quotes and orders</strong> (stale drafts, or anything with no opportunity) and <strong style="color:var(--text)">idle leads</strong> (no activity, or not touched for N days). Set the day limits at the top, tick rows, then use the buttons above each table: reassign, reschedule, mark done, link to opportunity, schedule a follow-up, or mark lost (a reason is required). <strong style="color:var(--text)">⤓ Export / Print</strong> gives a sortable HTML page, Excel or CSV of all three.</p>
             <p style="margin:0">Bulk actions confirm first and report what they changed. Marking lost archives the lead, so it is recoverable in Odoo.</p>
+          </div>
+        </div>
+
+        <!-- Data Health -->
+        <div class="card" style="margin-bottom:14px">
+          <div class="card-title">🧹 Data Health</div>
+          <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
+            <p style="margin:0 0 4px"><strong style="color:var(--text)">🔍 Scan Odoo</strong> reads your quotes, activities and contacts and lists what needs cleaning: test or duplicate quotes, stacked follow-up text, duplicate emails, placeholder names, people that look like companies, contacts with no way to reach them. Scanning changes nothing. The tiles at the top show whether new quotes and leads are being linked and sourced correctly.</p>
+            <p style="margin:0">A few checks have a button (clean text, archive, mark as company); each asks first and says what changed. Merging duplicates is still done in Odoo (Contacts, select both, Action, Merge). Export gives one sheet per check.</p>
           </div>
         </div>
 
@@ -4097,6 +4112,38 @@ Support Team"></textarea>
           <div class="ph-st" id="ph-st-l"></div>
           <div class="ph-tblwrap"><table class="ph-tbl" id="ph-t-l"></table></div>
         </div>
+      </div>
+    </div>
+
+    <!-- ── DATA HEALTH ─────────────────────────────────────────────────── -->
+    <div class="section-panel" id="panel-datahealth">
+      <div class="section-scroll">
+        <style>
+          .dh-chk{border:1px solid var(--border);border-radius:10px;margin-bottom:10px;background:var(--surface)}
+          .dh-chk>summary{cursor:pointer;padding:10px 14px;display:flex;align-items:center;gap:10px;font-size:0.86rem;font-weight:500;list-style:none}
+          .dh-chk>summary::-webkit-details-marker{display:none}
+          .dh-chk>summary::before{content:'▸';color:var(--muted);font-size:0.75rem}
+          .dh-chk[open]>summary::before{content:'▾'}
+          .dh-cnt{margin-left:auto;font-family:'DM Mono',monospace;font-size:0.78rem;padding:2px 9px;border-radius:12px;border:1px solid var(--border)}
+          .dh-cnt.bad{color:var(--warning);border-color:var(--warning)}
+          .dh-cnt.ok{color:var(--success);border-color:var(--success)}
+          .dh-body{padding:0 14px 12px}
+          .dh-why{font-size:0.78rem;color:var(--muted);line-height:1.6;margin-bottom:8px}
+          .dh-grp{font-size:0.68rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin:18px 0 8px}
+        </style>
+        <div class="card" style="margin-bottom:14px">
+          <div class="card-title">🧹 Data Health</div>
+          <div class="card-subtitle">Reads Odoo (nothing is changed by scanning) and reports what needs cleaning: quote and activity problems, duplicate or incomplete contacts, plus whether the new defaults are working. Open a check to see the rows. Export gives a sortable HTML page, Excel or CSV with one sheet per check.</div>
+          <div class="ph-bar">
+            <button class="btn btn-primary" id="dh-scan-btn" onclick="dhLoad()" style="padding:6px 14px;font-size:0.8rem">🔍 Scan Odoo</button>
+            <label style="font-size:0.76rem;color:var(--muted)">Recent window <input type="number" id="dh-days" value="30" min="7" style="width:56px"> days</label>
+            <div style="flex:1"></div>
+            <span class="ph-st" id="dh-load-st"></span>
+            <button class="btn btn-ghost" data-oelx-btn="1" onclick="oelxMenu(this)" title="Export / print: sortable HTML, Excel or CSV" style="padding:6px 12px;font-size:0.78rem">⤓ Export / Print</button>
+          </div>
+        </div>
+        <div id="dh-summary" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-bottom:6px"></div>
+        <div id="dh-checks"></div>
       </div>
     </div>
 
@@ -11252,6 +11299,7 @@ const OEL_SEARCH_INDEX = [
   { id:'arfollowup',   label:'Invoice Follow-up', keywords:'to-dos for overdue invoices collect payment activity assign overdue invoices list accounts receivable ar invoice payment link send reminder overdue customer collections dunning first notice follow up unpaid outstanding balance due deposit stripe fees payout match reconcile payment received bank credit sort' },
   { id:'finreports',   label:'Financial Reports', keywords:'trial balance balance sheet profit loss pl income statement aged payable receivable ap ar xlsx export download report collection financial statements general ledger' },
   { id:'salestargeting', label:'Sales Targeting', keywords:'historical sales lookup quickbooks quarterly target list rep focus lapsed dormant customers reactivate prospecting quarter' },
+  { id:'datahealth',   label:'Data Health',       keywords:'scan odoo clean cleanup duplicate duplicates contacts email bad placeholder vendor company person no email stale quotes test quotes stacked follow-up audit data quality health report export merge archive' },
   { id:'dataexplorer', label:'Data Explorer',     keywords:'upload quickbooks export customer list sync review data import spreadsheet' },
   { id:'docs',         label:'Documents',         keywords:'w9 coi contract document library files attach paperwork' },
   { id:'reports',      label:'Reports',           keywords:'dashboard pipeline sales report commission rep stage revenue accounting aged ar top customers overdue invoices sales reporting' },
@@ -28370,7 +28418,7 @@ window.inboxTab = function(tab) {
     { key:'quoting',  label:'QUOTING',      items:['nav-quotedesk','nav-smartbuilder','nav-quotes','nav-templates'] },
     { key:'pipeline', label:'PIPELINE',     items:['nav-prospect','nav-catchup','nav-vendor','nav-massmail','nav-emailstudio','nav-oppimport','nav-shortagerfq'] },
     { key:'work',     label:'WORK & COMMS', items:['nav-projects','nav-discuss','nav-support'] },
-    { key:'utils',    label:'UTILITIES',    items:['nav-bounces','nav-expenses','nav-salestargeting','nav-dataexplorer','nav-docs'] },
+    { key:'utils',    label:'UTILITIES',    items:['nav-bounces','nav-expenses','nav-salestargeting','nav-dataexplorer','nav-datahealth','nav-docs'] },
     { key:'accounting',label:'ACCOUNTING',   items:['nav-reconcile','nav-arfollowup','nav-finreports'] },
     { key:'reports',  label:'REPORTS',      items:['nav-reports','nav-help'] },
   ];
@@ -28582,6 +28630,7 @@ window.navTo = function(section) {
     reconcile:  {panel:'panel-reconcile',  title:'Reconciliation', hasSrc:false},
     arfollowup: {panel:'panel-arfollowup', title:'Invoice Follow-up', hasSrc:false},
     pipehealth: {panel:'panel-pipehealth', title:'Pipeline Health', hasSrc:false},
+    datahealth: {panel:'panel-datahealth', title:'Data Health', hasSrc:false},
     finreports: {panel:'panel-finreports', title:'Financial Reports', hasSrc:false},
     catchup:    {panel:'panel-catchup',    title:'Dormant Contacts',     hasSrc:false},
     vendor:     {panel:'panel-vendor',     title:'Vendor Outreach', hasSrc:false},
@@ -28621,6 +28670,7 @@ window.navTo = function(section) {
   if (section === 'expenses') setTimeout(() => { if (typeof expInit === 'function') expInit(); }, 200);
   if (section === 'reconcile') setTimeout(() => { if (typeof rcInit === 'function') rcInit(); }, 200);
   if (section === 'arfollowup') setTimeout(() => { if (typeof arInit === 'function') arInit(); }, 200);
+  if (section === 'datahealth') setTimeout(() => { if (typeof dhInit === 'function') dhInit(); }, 100);
   if (section === 'pipehealth') setTimeout(() => { if (typeof phInit === 'function') phInit(); }, 100);
   if (section === 'finreports') setTimeout(() => { if (typeof frInit === 'function') frInit(); }, 200);
 };
@@ -35800,6 +35850,198 @@ document.addEventListener('DOMContentLoaded', hslInit);
       { name: 'Idle leads', headers: ['Lead', 'Customer', 'Stage', 'Revenue', 'Age (days)', 'Last touched (days)', 'Activities', 'Source', 'Owner'],
         rows: PH.leads.map(l => [l.name, m2o(l.partner_id), m2o(l.stage_id), money(l.expected_revenue), daysSince(l.create_date), daysSince(l.write_date), (l.activity_ids || []).length, m2o(l.source_id) || 'none', m2o(l.user_id)]) }
     ];
+  });
+})();
+</script>
+
+<!-- ── Data Health ─────────────────────────────────────────────────────── -->
+<script>
+(function(){
+  const DH = { checks: [], stats: [], loaded: false, fixes: {} };
+  const base = () => (odooConfig && odooConfig.url ? odooConfig.url : '').replace(/\/+$/, '');
+  const link = (model, id, label) => { const b = base(); const t = escHtml(String(label == null ? '' : label)); return b && model && id ? '<a href="' + b + '/web#id=' + id + '&model=' + model + '&view_type=form" target="_blank" style="color:var(--accent);text-decoration:none">' + t + ' ↗</a>' : t; };
+  const money = n => '$' + (n || 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+  const day = d => d ? String(d).slice(0, 10) : '';
+  const daysSince = d => d ? Math.floor((Date.now() - new Date(String(d).replace(' ', 'T') + (String(d).length > 10 ? 'Z' : '')).getTime()) / 864e5) : 0;
+  const st = (id, msg, color) => { const e = document.getElementById(id); if (e) { e.style.color = color || 'var(--muted)'; e.innerHTML = msg; } };
+  const m2o = v => Array.isArray(v) ? v[1] : '';
+  const SHOW = 300;
+  const EMAIL_RE = /^[^\s@,;]+@[^\s@,;]+\.[^\s@,;]{2,}$/;
+  const COMPANY_RE = /\b(llc|l\.l\.c\.?|inc\.?|incorporated|corp\.?|corporation|co\.|company|ltd\.?|limited|group|events?|productions?|hotels?|resort|church|school|university|college|center|centre|studios?|media|solutions|services|agency|foundation|association|partners|entertainment|winery|pharmaceuticals|airport|office|rentals?|leasing|systems|technologies|technology|international|enterprises|holdings|management|consulting|marketing)\b/i;
+  const PLACEHOLDER_RE = /^(vendor|customer|client|contact|test|unknown|new|tbd|n\/a|na)\s*#?\d*$|^[a-z]+ av$/i;
+  const emailTokens = e => String(e || '').split(/[,;\s]+/).filter(Boolean);
+
+  window.dhInit = function() {
+    if (!odooUid) { st('dh-load-st', 'Connect to Odoo first.', 'var(--danger)'); return; }
+  };
+
+  // A check: { key, group, title, why, cols, linkCol, rows:[{id, lm, li, v:[]}], fix:{label, confirm, fn} }
+  function mk(key, group, title, why, cols, linkCol, rows, fix) { return { key, group, title, why, cols, linkCol, rows, fix: fix || null }; }
+
+  window.dhLoad = async function() {
+    if (!odooUid) { st('dh-load-st', 'Connect to Odoo first.', 'var(--danger)'); return; }
+    const btn = document.getElementById('dh-scan-btn'); if (btn) btn.disabled = true;
+    st('dh-load-st', 'Scanning…');
+    const recent = parseInt(document.getElementById('dh-days').value) || 30;
+    const cutR = new Date(Date.now() - recent * 864e5).toISOString().slice(0, 19).replace('T', ' ');
+    const x = (m, meth, a, k) => odooExecute(odooUid, m, meth, a, k || {});
+    try {
+      // contacts, paged
+      const pf = ['name', 'email', 'phone', 'is_company', 'parent_id', 'create_date'];
+      let parts = [], off = 0;
+      for (;;) {
+        const b = await x('res.partner', 'search_read', [[['active', '=', true], ['type', '=', 'contact']]], { fields: pf, limit: 1000, offset: off, order: 'id' });
+        parts = parts.concat(b || []); off += (b || []).length;
+        st('dh-load-st', 'Reading contacts… ' + parts.length);
+        if (!b || b.length < 1000) break;
+      }
+      st('dh-load-st', 'Reading quotes, activities and leads…');
+      const [orders, acts, newOrders, newLeads] = await Promise.all([
+        x('sale.order', 'search_read', [[['state', 'in', ['draft', 'sent']]]], { fields: ['name', 'partner_id', 'amount_total', 'state', 'create_date', 'user_id', 'opportunity_id'], limit: 2000, order: 'create_date asc' }),
+        x('mail.activity', 'search_read', [[]], { fields: ['res_name', 'res_model', 'res_id', 'user_id', 'date_deadline', 'summary', 'activity_type_id'], limit: 4000, order: 'date_deadline asc' }),
+        x('sale.order', 'search_read', [[['create_date', '>=', cutR], ['state', '!=', 'cancel']]], { fields: ['opportunity_id'], limit: 2000 }),
+        x('crm.lead', 'search_read', [[['create_date', '>=', cutR]]], { fields: ['source_id', 'expected_revenue', 'partner_id'], limit: 2000 })
+      ]);
+      const checks = [];
+      const today = new Date().toISOString().slice(0, 10);
+
+      // ── QUOTES
+      const qrow = (o, extra) => ({ id: o.id, lm: 'sale.order', li: o.id, v: [o.name, m2o(o.partner_id), o.state, o.amount_total || 0, day(o.create_date), m2o(o.user_id)].concat(extra || []) });
+      checks.push(mk('q_test', 'Quotes', 'Test or placeholder quotes', 'Open quotes worth $1 or less, or for a customer with "test" in the name. Usually leftovers from trying things out. Review, then cancel or delete them in Odoo.',
+        ['Quote', 'Customer', 'Status', 'Amount', 'Created', 'Salesperson'], 0,
+        orders.filter(o => (o.amount_total || 0) <= 1 || /\btest\b/i.test(m2o(o.partner_id))).map(o => qrow(o))));
+      const dupRows = [], seen = new Set(), byP = {};
+      orders.forEach(o => { if (o.partner_id) (byP[o.partner_id[0]] = byP[o.partner_id[0]] || []).push(o); });
+      Object.values(byP).forEach(g => {
+        for (let i = 0; i < g.length; i++) for (let j = i + 1; j < g.length; j++) {
+          const a = g[i], b = g[j], hi = Math.max(a.amount_total || 0, b.amount_total || 0, 1);
+          if (Math.abs((a.amount_total || 0) - (b.amount_total || 0)) / hi <= 0.03 && Math.abs(daysSince(a.create_date) - daysSince(b.create_date)) <= 21) {
+            [[a, b], [b, a]].forEach(p => { if (!seen.has(p[0].id)) { seen.add(p[0].id); dupRows.push(qrow(p[0], [p[1].name])); } else { const r = dupRows.find(r => r.id === p[0].id); if (r && r.v[6].indexOf(p[1].name) < 0) r.v[6] += ', ' + p[1].name; } });
+          }
+        }
+      });
+      checks.push(mk('q_dup', 'Quotes', 'Possible duplicate quotes', 'Same customer, amounts within 3% and created within 3 weeks. Often a revision that was never cancelled. Keep the real one and cancel the other in Odoo.',
+        ['Quote', 'Customer', 'Status', 'Amount', 'Created', 'Salesperson', 'Looks like'], 0, dupRows));
+      checks.push(mk('q_noopp', 'Quotes', 'Open quotes with no opportunity', 'These never show in your pipeline or forecast. Fix them in bulk on the Pipeline Health tab (it attaches each to the customer\'s latest open opportunity or creates one).',
+        ['Quote', 'Customer', 'Status', 'Amount', 'Created', 'Salesperson'], 0, orders.filter(o => !o.opportunity_id).map(o => qrow(o)),
+        { label: 'Open Pipeline Health to fix →', go: 'pipehealth' }));
+
+      // ── ACTIVITIES
+      const arow = (a, extra) => ({ id: a.id, lm: a.res_model, li: a.res_id, v: [a.res_name || (a.res_model + ' #' + a.res_id), m2o(a.activity_type_id), a.summary || '', a.date_deadline, m2o(a.user_id)].concat(extra || []) });
+      const cleanSum = s => String(s || '').replace(/^\s*(follow-?up:\s*){2,}/i, 'Follow-up: ');
+      checks.push(mk('a_stack', 'Activities', 'Stacked "Follow-up:" text', 'Summaries like "Follow-up: Follow-up: Follow up". Tick rows and Clean to reduce them to one prefix.',
+        ['Record', 'Type', 'Summary', 'Due', 'Assigned'], 0,
+        acts.filter(a => /^\s*(follow-?up:\s*){2,}/i.test(a.summary || '')).map(a => arow(a, [cleanSum(a.summary)])).map(r => { r.v = r.v.slice(0, 5).concat([r.v[5]]); return r; }),
+        { label: 'Clean selected summaries', confirm: 'Rewrite these summaries with a single "Follow-up:" prefix?', fn: async ids => {
+          const rows = DH.checks.find(c => c.key === 'a_stack').rows; let n = 0;
+          for (const id of ids) { const r = rows.find(z => z.id === id); if (!r) continue; await x('mail.activity', 'write', [[id], { summary: r.v[5] }]); n++; }
+          return 'Cleaned ' + n; } }));
+      checks[checks.length - 1].cols = ['Record', 'Type', 'Summary', 'Due', 'Assigned', 'Cleaned text'];
+      const grp = {};
+      acts.forEach(a => { const k = a.res_model + ':' + a.res_id + ':' + a.date_deadline; (grp[k] = grp[k] || []).push(a); });
+      checks.push(mk('a_pile', 'Activities', 'Several activities on one record, same day', 'Two or more activities on the same record due the same day. Often a bulk-created batch (for example one call per contact at one company). Consider keeping one.',
+        ['Record', 'Count', 'Due', 'Assigned', 'Summaries'], 0,
+        Object.values(grp).filter(g => g.length > 1).map(g => ({ id: g[0].id, lm: g[0].res_model, li: g[0].res_id, v: [g[0].res_name || g[0].res_model, g.length, g[0].date_deadline, Array.from(new Set(g.map(a => m2o(a.user_id)))).join(', '), g.map(a => a.summary || '(none)').join(' | ')] }))));
+      checks.push(mk('a_old', 'Activities', 'Overdue more than 30 days', 'Probably dead. Reassign or close them in bulk on the Pipeline Health tab.',
+        ['Record', 'Type', 'Summary', 'Due', 'Assigned', 'Days late'], 0,
+        acts.filter(a => a.date_deadline < new Date(Date.now() - 30 * 864e5).toISOString().slice(0, 10)).map(a => { const r = arow(a); r.v.push(daysSince(a.date_deadline + ' 00:00:00')); return r; }),
+        { label: 'Open Pipeline Health to fix →', go: 'pipehealth' }));
+
+      // ── CONTACTS
+      const type = p => p.is_company ? 'Company' : 'Person';
+      const prow = (p, extra) => ({ id: p.id, lm: 'res.partner', li: p.id, v: [p.name, type(p), m2o(p.parent_id), p.email || '', p.phone || '', day(p.create_date)].concat(extra || []) });
+      const PCOLS = ['Name', 'Type', 'Company', 'Email', 'Phone', 'Created'];
+      const byE = {};
+      parts.forEach(p => { const seenE = new Set(); emailTokens(p.email).forEach(t => { const k = t.toLowerCase(); if (EMAIL_RE.test(k) && !seenE.has(k)) { seenE.add(k); (byE[k] = byE[k] || []).push(p); } }); });
+      const dupE = [];
+      Object.entries(byE).filter(e => e[1].length > 1).forEach(([em, g]) => {
+        const names = new Set(g.map(p => p.name.trim().toLowerCase()));
+        const ids = new Set(g.map(p => p.id));
+        const kind = names.size === 1 ? 'Exact twin' : (g.some(p => p.parent_id && ids.has(p.parent_id[0])) ? 'Company + its contact' : 'Shared email');
+        g.forEach(p => dupE.push(Object.assign(prow(p, [em, kind]), { _o: kind === 'Exact twin' ? 0 : kind === 'Shared email' ? 1 : 2, _e: em })));
+      });
+      dupE.sort((a, b) => a._o - b._o || a._e.localeCompare(b._e));
+      checks.push(mk('c_dupemail', 'Contacts', 'Same email on more than one contact', 'Exact twin = same name twice (safe to merge in Odoo: Contacts → select both → Action → Merge). Company + its contact is normal. Shared email needs a look.',
+        PCOLS.concat(['Matched email', 'Kind']), 0, dupE));
+      checks.push(mk('c_badmail', 'Contacts', 'Email field is not an email', 'Websites, phone numbers or text in the Email field. Mail to these bounces or never sends.',
+        PCOLS, 0, parts.filter(p => p.email && (!emailTokens(p.email).length || emailTokens(p.email).some(t => !EMAIL_RE.test(t)))).map(p => prow(p))));
+      checks.push(mk('c_place', 'Contacts', 'Placeholder names', 'Names like "vendor 8" or "Eric Av". Tick rows and Archive (reversible in Odoo) once you are sure nothing needs them.',
+        PCOLS, 0, parts.filter(p => !p.is_company && PLACEHOLDER_RE.test(p.name.trim())).map(p => prow(p)),
+        { label: 'Archive selected', confirm: 'Archive these contacts? (Reversible: Odoo → Contacts → Filters → Archived → Unarchive.)', fn: async ids => { await x('res.partner', 'write', [ids, { active: false }]); return 'Archived ' + ids.length; } }));
+      checks.push(mk('c_looksco', 'Contacts', 'People that look like companies', 'Not marked as a company, no parent company, and the name has words like LLC, Inc, Group, Events, Hotel. This is a keyword guess, so check the list first. Marking as company is reversible.',
+        PCOLS, 0, parts.filter(p => !p.is_company && !p.parent_id && COMPANY_RE.test(p.name)).map(p => prow(p)),
+        { label: 'Mark selected as companies', confirm: 'Mark these as companies?', fn: async ids => { await x('res.partner', 'write', [ids, { is_company: true }]); return 'Marked ' + ids.length + ' as companies'; } }));
+      checks.push(mk('c_unreach', 'Contacts', 'People at a company with no email and no phone', 'Contacts you cannot reach. Fill them in, or archive if they left.',
+        PCOLS, 0, parts.filter(p => !p.is_company && p.parent_id && !p.email && !p.phone).map(p => prow(p))));
+      checks.push(mk('c_noemail', 'Contacts', 'Standalone people with no email', 'Not attached to a company and no email. Largest clean-up list; work it by customer value.',
+        PCOLS, 0, parts.filter(p => !p.is_company && !p.parent_id && !p.email).map(p => prow(p))));
+
+      // ── is the new workflow working?
+      const nq = newOrders.length, nql = newOrders.filter(o => o.opportunity_id).length;
+      const nl = newLeads.length, nls = newLeads.filter(l => l.source_id).length, nlr = newLeads.filter(l => (l.expected_revenue || 0) > 0).length, nlc = newLeads.filter(l => l.partner_id).length;
+      const pct = (a, b) => b ? Math.round(a * 100 / b) + '%' : 'n/a';
+      DH.stats = [
+        [pct(nql, nq), 'New quotes linked to an opportunity (' + nql + '/' + nq + ')'],
+        [pct(nls, nl), 'New leads with a source (' + nls + '/' + nl + ')'],
+        [pct(nlr, nl), 'New leads with expected revenue (' + nlr + '/' + nl + ')'],
+        [pct(nlc, nl), 'New leads tied to a contact (' + nlc + '/' + nl + ')']
+      ];
+      const od = {}; acts.filter(a => a.date_deadline < today).forEach(a => { const u = m2o(a.user_id) || '?'; od[u] = (od[u] || 0) + 1; });
+      DH.overdueBy = Object.entries(od).sort((a, b) => b[1] - a[1]);
+      DH.meta = { contacts: parts.length, quotes: orders.length, acts: acts.length, recent: recent, when: new Date() };
+      DH.checks = checks; DH.loaded = true;
+      DH.checks.forEach(c => { if (c.fix && c.fix.fn) DH.fixes[c.key] = c.fix; });
+      st('dh-load-st', 'Scanned ' + DH.meta.when.toLocaleTimeString() + ' · ' + parts.length + ' contacts, ' + orders.length + ' open quotes, ' + acts.length + ' open activities');
+      dhRender();
+    } catch (e) { st('dh-load-st', '✗ ' + escHtml(e.message), 'var(--danger)'); }
+    if (btn) btn.disabled = false;
+  };
+
+  window.dhRender = function() {
+    const sum = document.getElementById('dh-summary'); if (!sum) return;
+    const tiles = DH.stats.map(t => '<div class="ph-tile"><b>' + t[0] + '</b><span>' + escHtml(t[1]) + '</span></div>');
+    tiles.push.apply(tiles, DH.overdueBy.map(o => '<div class="ph-tile"><b>' + o[1] + '</b><span>Overdue: ' + escHtml(o[0]) + '</span></div>'));
+    sum.innerHTML = '<div style="grid-column:1/-1;font-size:0.68rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted)">Is the new workflow sticking? (last ' + DH.meta.recent + ' days) · overdue by owner</div>' + tiles.join('');
+    let html = '', grp = '';
+    DH.checks.forEach(c => {
+      if (c.group !== grp) { grp = c.group; html += '<div class="dh-grp">' + escHtml(grp) + '</div>'; }
+      const n = c.rows.length;
+      html += '<details class="dh-chk"><summary>' + escHtml(c.title) + '<span class="dh-cnt ' + (n ? 'bad' : 'ok') + '">' + (n ? n : '✓ 0') + '</span></summary><div class="dh-body"><div class="dh-why">' + escHtml(c.why) + '</div>';
+      if (n) {
+        if (c.fix) {
+          html += '<div class="ph-bar">' + (c.fix.go ? '<button class="btn btn-primary" onclick="navTo(\'' + c.fix.go + '\')" style="padding:5px 12px;font-size:0.76rem">' + escHtml(c.fix.label) + '</button>'
+            : '<button class="btn btn-ghost" onclick="dhFix(\'' + c.key + '\')" style="padding:5px 12px;font-size:0.76rem">' + escHtml(c.fix.label) + '</button><span class="ph-st" id="dh-st-' + c.key + '"></span>') + '</div>';
+        }
+        const sel = c.fix && c.fix.fn;
+        html += '<div class="ph-tblwrap"><table class="ph-tbl"><thead><tr>' + (sel ? '<th style="width:26px"><input type="checkbox" onchange="dhAll(\'' + c.key + '\',this.checked)"></th>' : '') + c.cols.map(h => '<th>' + escHtml(h) + '</th>').join('') + '</tr></thead><tbody>';
+        c.rows.slice(0, SHOW).forEach(r => {
+          html += '<tr>' + (sel ? '<td><input type="checkbox" class="dh-cb" data-k="' + c.key + '" value="' + r.id + '"></td>' : '') + c.cols.map((h, i) => '<td>' + (i === c.linkCol ? link(r.lm, r.li, r.v[i]) : escHtml(String(r.v[i] == null ? '' : r.v[i]))) + '</td>').join('') + '</tr>';
+        });
+        html += '</tbody></table></div>' + (n > SHOW ? '<div class="dh-why" style="margin-top:6px">Showing the first ' + SHOW + ' of ' + n + '. Export has all of them.</div>' : '');
+      }
+      html += '</div></details>';
+    });
+    document.getElementById('dh-checks').innerHTML = html;
+  };
+
+  window.dhAll = function(k, on) { document.querySelectorAll('input.dh-cb[data-k="' + k + '"]').forEach(c => c.checked = on); };
+  window.dhFix = async function(k) {
+    const f = DH.fixes[k]; if (!f) return;
+    const ids = Array.from(document.querySelectorAll('input.dh-cb[data-k="' + k + '"]:checked')).map(c => parseInt(c.value));
+    const stId = 'dh-st-' + k;
+    if (!ids.length) { st(stId, 'Tick at least one row first.', 'var(--warning)'); return; }
+    if (!confirm(f.confirm + '\n\n' + ids.length + ' selected. Continue?')) return;
+    st(stId, 'Working…');
+    try { const msg = await f.fn(ids); await dhLoad(); st(stId, '✓ ' + msg, 'var(--success)'); }
+    catch (e) { st(stId, '✗ ' + escHtml(e.message), 'var(--danger)'); }
+  };
+
+  if (window.oelxRegister) window.oelxRegister('panel-datahealth', function() {
+    const used = new Set();
+    return DH.checks.filter(c => c.rows.length).map(c => {
+      let nm = (c.group + ' - ' + c.title).replace(/[\\\/?*\[\]:]/g, '').slice(0, 31), i = 2; while (used.has(nm)) nm = nm.slice(0, 28) + ' ' + (i++); used.add(nm);
+      return { name: nm, headers: c.cols, rows: c.rows.map(r => r.v.slice(0, c.cols.length)) };
+    });
   });
 })();
 </script>
