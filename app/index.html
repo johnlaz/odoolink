@@ -3,7 +3,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <meta name="oel-version" content="v15.74">
+  <meta name="oel-version" content="v15.75">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="mobile-web-app-capable" content="yes">
@@ -8167,10 +8167,20 @@ async function odooExecute(uid, model, method, args, kwargs) {
   if (model === 'crm.lead' && method === 'create' && Array.isArray(args) && args[0] && typeof args[0] === 'object' && !Array.isArray(args[0]) && !args[0].source_id) {
     try { args[0].source_id = await _oelSourceId('OdooLink'); } catch (e) { /* source is nice-to-have */ }
   }
-  return xmlrpcCall('/xmlrpc/2/object', 'execute_kw', [
-    odooConfig.database, uid, odooConfig.api_key,
-    model, method, args || [], kwargs || {}
-  ]);
+  // Odoo.com sometimes answers a heavy read with a 502/503/504 gateway error. Reads are safe to repeat, so retry them
+  // (writes and creates are never retried, so nothing can be done twice).
+  const _readOnly = ['search_read', 'read', 'search', 'search_count', 'read_group', 'name_search', 'fields_get', 'name_get'].indexOf(method) >= 0;
+  for (let t = 0; ; t++) {
+    try {
+      return await xmlrpcCall('/xmlrpc/2/object', 'execute_kw', [
+        odooConfig.database, uid, odooConfig.api_key,
+        model, method, args || [], kwargs || {}
+      ]);
+    } catch (e) {
+      if (!_readOnly || t >= 2 || !/\b50[234]\b|timed? ?out/i.test(String(e && e.message))) throw e;
+      await new Promise(r => setTimeout(r, 1500 * (t + 1)));
+    }
+  }
 }
 
 // ─── Connect & Fetch ──────────────────────────────────────
@@ -35761,14 +35771,22 @@ document.addEventListener('DOMContentLoaded', hslInit);
       const x = (m, d, f, o) => odooExecute(odooUid, m, 'search_read', [d], Object.assign({ fields: f }, o || {}));
       const orderFields = ['name', 'partner_id', 'amount_total', 'state', 'create_date', 'user_id', 'opportunity_id', 'is_rental_order'];
       const orders = async dom => { try { return await x('sale.order', dom, orderFields, { order: 'create_date asc', limit: 400 }); } catch (e) { return await x('sale.order', dom, orderFields.slice(0, -1), { order: 'create_date asc', limit: 400 }); } };
-      const [acts, stale, noopp, leads, users, lost] = await Promise.all([
-        x('mail.activity', [['date_deadline', '<', today()]], ['res_name', 'res_model', 'res_id', 'user_id', 'date_deadline', 'summary', 'activity_type_id'], { order: 'date_deadline asc', limit: 600 }),
-        orders([['state', 'in', ['draft', 'sent']], ['create_date', '<', cut]]),
-        orders([['state', 'in', ['draft', 'sent', 'sale']], ['opportunity_id', '=', false]]),
-        x('crm.lead', [['active', '=', true], ['probability', '<', 100], ['stage_id.name', '!=', 'Lost']], ['name', 'partner_id', 'stage_id', 'expected_revenue', 'create_date', 'write_date', 'user_id', 'source_id', 'activity_ids'], { order: 'create_date asc', limit: 400 }),
-        x('res.users', [['active', '=', true], ['share', '=', false]], ['name'], { order: 'name', limit: 100 }),
-        x('crm.lost.reason', [], ['name'], { limit: 50 })
-      ]);
+      // one read at a time, activities in small pages: Odoo.com rejects big parallel reads with a 502
+      const actDom = [['date_deadline', '<', today()]], actF = ['res_name', 'res_model', 'res_id', 'user_id', 'date_deadline', 'summary', 'activity_type_id'];
+      let acts = [];
+      for (;;) {
+        st('ph-load-st', 'Loading activities… ' + acts.length);
+        const b = await x('mail.activity', actDom, actF, { order: 'date_deadline asc, id', limit: 200, offset: acts.length });
+        acts = acts.concat(b || []);
+        if (!b || b.length < 200 || acts.length >= 1000) break;
+      }
+      st('ph-load-st', 'Loading quotes…');
+      const stale = await orders([['state', 'in', ['draft', 'sent']], ['create_date', '<', cut]]);
+      const noopp = await orders([['state', 'in', ['draft', 'sent', 'sale']], ['opportunity_id', '=', false]]);
+      st('ph-load-st', 'Loading leads…');
+      const leads = await x('crm.lead', [['active', '=', true], ['probability', '<', 100], ['stage_id.name', '!=', 'Lost']], ['name', 'partner_id', 'stage_id', 'expected_revenue', 'create_date', 'write_date', 'user_id', 'source_id', 'activity_ids'], { order: 'create_date asc', limit: 400 });
+      const users = await x('res.users', [['active', '=', true], ['share', '=', false]], ['name'], { order: 'name', limit: 100 });
+      const lost = await x('crm.lost.reason', [], ['name'], { limit: 50 });
       PH.acts = acts || []; PH.staleQ = stale || []; PH.nooppQ = noopp || []; PH.users = users || []; PH.lost = lost || [];
       const idle = parseInt(document.getElementById('ph-idle').value) || 14;
       PH.leads = (leads || []).filter(l => !(l.activity_ids && l.activity_ids.length) || daysSince(l.write_date) > idle);
