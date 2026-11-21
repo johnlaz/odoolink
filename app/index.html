@@ -3,7 +3,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <meta name="oel-version" content="v15.70">
+  <meta name="oel-version" content="v15.71">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="mobile-web-app-capable" content="yes">
@@ -3210,9 +3210,9 @@ Support Team"></textarea>
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
           <div>
             <div style="font-family:'DM Serif Display',serif;font-size:1.3rem;color:var(--text)">OdooLink</div>
-            <div style="font-size:0.75rem;color:var(--muted);margin-top:2px">Quick Reference Guide · v15.32</div>
+            <div style="font-size:0.75rem;color:var(--muted);margin-top:2px">Quick Reference Guide · <span data-oel-ver>v15</span></div>
           </div>
-          <span style="font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace">v15.32</span>
+          <span style="font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace" data-oel-ver>v15</span>
         </div>
 
         <!-- Setup -->
@@ -3239,7 +3239,34 @@ Support Team"></textarea>
           </div>
         </div>
 
+        <!-- Where do I find... -->
+        <div class="card" style="margin-bottom:14px">
+          <div class="card-title">🧭 Where do I find…?</div>
+          <div style="font-size:0.82rem;color:var(--muted);line-height:1.7">
+            <p style="margin:0 0 8px">By what you want to do. <strong style="color:var(--text)">Every note or activity goes on exactly one Odoo record</strong>, and you choose it in the "Log note on" / "Schedule on" dropdown (Contact by default; its Company, open Opportunities and quotes / rental orders are listed too). Nothing moves between tabs: other tabs just show what is already in Odoo.</p>
+            <table style="width:100%;border-collapse:collapse;font-size:0.8rem">
+              <tr><td style="padding:5px 8px 5px 0;color:var(--text);width:46%;vertical-align:top">Put an email into the CRM</td><td style="padding:5px 0"><a href="#" onclick="navTo('inbox');return false" style="color:var(--accent)">Inbox</a> → row → <strong style="color:var(--text)">📥 CRM</strong> (review window, warns about duplicates). Bulk scanning of form leads: <a href="#" onclick="navTo('leads');return false" style="color:var(--accent)">Lead Capture</a></td></tr>
+              <tr><td style="padding:5px 8px 5px 0;color:var(--text);vertical-align:top">Log a note (contact, company, opportunity, rental order)</td><td style="padding:5px 0">Inbox → row → <strong style="color:var(--text)">📋 Log</strong> → "Log note on"</td></tr>
+              <tr><td style="padding:5px 8px 5px 0;color:var(--text);vertical-align:top">Schedule a follow-up (one or several people)</td><td style="padding:5px 0">Inbox → row → <strong style="color:var(--text)">📅</strong> → tick everyone who gets it (one activity each). Defaults to the open opportunity</td></tr>
+              <tr><td style="padding:5px 8px 5px 0;color:var(--text);vertical-align:top">Build a rental quote and tie it to a deal</td><td style="padding:5px 0"><a href="#" onclick="navTo('quotes');return false" style="color:var(--accent)">Quotes</a> → Opportunity and Payment terms dropdowns (Auto = reuse the latest open opportunity, else create one)</td></tr>
+              <tr><td style="padding:5px 8px 5px 0;color:var(--text);vertical-align:top">See what is overdue, stale or idle</td><td style="padding:5px 0"><a href="#" onclick="navTo('pipehealth');return false" style="color:var(--accent)">Pipeline Health</a>: tick rows to reassign, reschedule, close, link or mark lost in bulk</td></tr>
+              <tr><td style="padding:5px 8px 5px 0;color:var(--text);vertical-align:top">Chase unpaid invoices</td><td style="padding:5px 0"><a href="#" onclick="navTo('arfollowup');return false" style="color:var(--accent)">Invoice Follow-up</a> → email reminders, or <strong style="color:var(--text)">📌 To-dos for overdue</strong> to put each one on someone's list</td></tr>
+              <tr><td style="padding:5px 8px 5px 0;color:var(--text);vertical-align:top">Export a table (HTML, Excel, CSV, print)</td><td style="padding:5px 0"><strong style="color:var(--text)">⤓ Export / Print</strong> button on most tabs; the HTML export is a sortable, searchable page</td></tr>
+              <tr><td style="padding:5px 8px 5px 0;color:var(--text);vertical-align:top">Jump to any screen or customer</td><td style="padding:5px 0">Search icon in the top bar (or Ctrl+K): type what you want to do, such as "log note", "send to CRM", "overdue" or "assign two people"</td></tr>
+            </table>
+          </div>
+        </div>
+
         <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);font-weight:500;margin:20px 0 10px 2px">Daily</div>
+
+        <!-- Pipeline Health -->
+        <div class="card" style="margin-bottom:14px">
+          <div class="card-title">🩺 Pipeline Health</div>
+          <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
+            <p style="margin:0 0 4px">Three tables on one tab: <strong style="color:var(--text)">overdue activities</strong>, <strong style="color:var(--text)">quotes and orders</strong> (stale drafts, or anything with no opportunity) and <strong style="color:var(--text)">idle leads</strong> (no activity, or not touched for N days). Set the day limits at the top, tick rows, then use the buttons above each table: reassign, reschedule, mark done, link to opportunity, schedule a follow-up, or mark lost (a reason is required). <strong style="color:var(--text)">⤓ Export / Print</strong> gives a sortable HTML page, Excel or CSV of all three.</p>
+            <p style="margin:0">Bulk actions confirm first and report what they changed. Marking lost archives the lead, so it is recoverable in Odoo.</p>
+          </div>
+        </div>
 
         <!-- Inbox -->
         <div class="card" style="margin-bottom:14px">
@@ -3247,6 +3274,7 @@ Support Team"></textarea>
           <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
             <p style="margin:0 0 4px">Unified inbox for Turbify/IMAP, Odoo messages, and Gmail. <strong style="color:var(--text)">Click any row</strong> to expand the body — invisible tracking characters and HTML noise are automatically stripped.</p>
             <p style="margin:0 0 4px"><strong style="color:var(--text)">✦ Draft</strong> — AI reply draft using Groq. <strong style="color:var(--text)">📋 Log</strong> — fetches body, opens note modal with live Odoo contact search override. <strong style="color:var(--text)">📅</strong> — schedule activity. <strong style="color:var(--text)">🗑</strong> — move to Trash (IMAP only).</p>
+            <p style="margin:0 0 4px"><strong style="color:var(--text)">📥 CRM</strong> — turns the email into an opportunity through the same Review &amp; push window as Lead Capture (name, address, phone and notes are prefilled; it warns if the contact already has one). <strong style="color:var(--text)">📋 Log</strong> and <strong style="color:var(--text)">📅</strong> let you pick the record (Contact, Company, Opportunity or rental order) in the "on" dropdown, and 📅 can assign several people at once. Notes are posted with a heading, From line and clean paragraphs.</p>
             <p style="margin:0"><strong style="color:var(--text)">Bounce emails:</strong> Delivery failures auto-detect the undeliverable address and pre-fill the contact search in the log note modal.</p>
           </div>
         </div>
@@ -8666,7 +8694,7 @@ function actUpdateLogButtonLabels() {
 // exactly the "shows logged, nothing on the record" failure mode. This makes
 // that failure loud and specific instead of silent, and self-heals the
 // subtype issue if that's what's actually wrong.
-async function postVerifiedNote(model, resId, body) {
+async function postVerifiedNote(model, resId, body, htmlBody) {
   let raw;
   try {
     raw = await odooExecute(odooUid, model, 'message_post', [[resId]], {
@@ -8725,6 +8753,16 @@ async function postVerifiedNote(model, resId, body) {
   if (!verifiedId) {
     throw new Error(`message_post returned ${JSON.stringify(raw)} (type: ${typeof raw}) for ${model}#${resId}, and a follow-up search for the note's own text on that record found nothing either — it genuinely wasn't created. Worth checking whether ${model} #${resId} still exists, whether this instance has custom mail.thread logic overriding message_post, or whether the API user's access rights actually allow posting on this record.`);
   }
+
+  // Odoo escapes anything sent as a string through message_post, so the note arrives as visible text.
+  // Upgrade the message we just posted to real formatting; if Odoo refuses, the readable plain text stays.
+  window._oelLastNoteFormatted = false;
+  try {
+    await odooExecute(odooUid, 'mail.message', 'write', [[verifiedId], { body: htmlBody || _oelTextToHtml(body) }]);
+    const chk = await odooExecute(odooUid, 'mail.message', 'read', [[verifiedId]], { fields: ['body'] });
+    const sb = (chk && chk[0] && chk[0].body) || '';
+    window._oelLastNoteFormatted = /<p>|<br|<strong>/i.test(sb) && !/&lt;(p|br|strong)/i.test(sb);
+  } catch (e) { /* keep plain text */ }
 
   return verifiedId;
 }
@@ -11190,12 +11228,12 @@ async function srRenderCommission() {
 // ── TOP-NAV AI SEARCH — "what do you need to do?" ────────────────────────────
 // ═══════════════════════════════════════════════════════════════════════════
 const OEL_SEARCH_INDEX = [
-  { id:'inbox',        label:'Inbox',             keywords:'email unified inbox turbify imap gmail odoo messages read reply check mail' },
-  { id:'leads',        label:'Lead Capture',      keywords:'scan parse leads turbify push odoo crm new lead capture inbox to crm' },
-  { id:'activities',   label:'Activities',        keywords:'due activities follow up draft email odoo activity ai draft review send tracker overdue tasks reminders' },
+  { id:'inbox',        label:'Inbox',             keywords:'log note on company opportunity rental order schedule activity assign multiple people two people send to crm new lead from email add to crm email unified inbox turbify imap gmail odoo messages read reply check mail' },
+  { id:'leads',        label:'Lead Capture',      keywords:'send email to crm one-off email not a form lead inbox crm button review push opportunity scan parse leads turbify push odoo crm new lead capture inbox to crm' },
+  { id:'activities',   label:'Activities',        keywords:'schedule activity several people assign more than one person follow up on opportunity due activities follow up draft email odoo activity ai draft review send tracker overdue tasks reminders' },
   { id:'quotedesk',    label:'Request Desk',      keywords:'manual quote request paste raw text build quote by hand request desk type in a quote' },
   { id:'smartbuilder', label:'Smart Builder',     keywords:'ai quote builder paste raw request extract auto build quote smart quickly quote a voicemail or email' },
-  { id:'quotes',       label:'Quotes',            keywords:'rental quotation builder create rental order odoo quote build a rental order' },
+  { id:'quotes',       label:'Quotes',            keywords:'link quote to opportunity payment terms opportunity dropdown rental quote create opportunity rental quotation builder create rental order odoo quote build a rental order' },
   { id:'templates',    label:'Templates',         keywords:'saved email templates reusable canned responses' },
   { id:'prospect',     label:'Prospecting',       keywords:'find new prospects target criteria industry niche cold outreach new business find new customers' },
   { id:'catchup',      label:'Dormant Contacts',  keywords:'dormant stale deals no activity re-engage stalled opportunities open deals no movement follow up old deals' },
@@ -11210,8 +11248,8 @@ const OEL_SEARCH_INDEX = [
   { id:'bounces',      label:'Bounce Manager',    keywords:'undeliverable bounced email list clear reschedule activities bad email address' },
   { id:'expenses',     label:'Expenses',          keywords:'expense report receipts approve refuse reimburse employee spend payment approval queue reporting by category vendor bills accounts payable ap invoice validate post new bills' },
   { id:'reconcile',    label:'Reconciliation',    keywords:'bank credit card reconcile reconciliation coding code transaction partner account assign missing uncoded deviation scan check accounting cleanup bookkeeping' },
-  { id:'pipehealth',   label:'Pipeline Health',   keywords:'overdue activities stale quotes old drafts idle leads cleanup bulk reassign close reschedule link opportunity lost reason health audit export' },
-  { id:'arfollowup',   label:'Invoice Follow-up', keywords:'accounts receivable ar invoice payment link send reminder overdue customer collections dunning first notice follow up unpaid outstanding balance due deposit stripe fees payout match reconcile payment received bank credit sort' },
+  { id:'pipehealth',   label:'Pipeline Health',   keywords:'where is overdue stale idle lead no opportunity bulk reassign close mark lost reason link quotes export html overdue activities stale quotes old drafts idle leads cleanup bulk reassign close reschedule link opportunity lost reason health audit export' },
+  { id:'arfollowup',   label:'Invoice Follow-up', keywords:'to-dos for overdue invoices collect payment activity assign overdue invoices list accounts receivable ar invoice payment link send reminder overdue customer collections dunning first notice follow up unpaid outstanding balance due deposit stripe fees payout match reconcile payment received bank credit sort' },
   { id:'finreports',   label:'Financial Reports', keywords:'trial balance balance sheet profit loss pl income statement aged payable receivable ap ar xlsx export download report collection financial statements general ledger' },
   { id:'salestargeting', label:'Sales Targeting', keywords:'historical sales lookup quickbooks quarterly target list rep focus lapsed dormant customers reactivate prospecting quarter' },
   { id:'dataexplorer', label:'Data Explorer',     keywords:'upload quickbooks export customer list sync review data import spreadsheet' },
@@ -16795,6 +16833,38 @@ function _renderInboxRow(em, src, idx) {
   };
   actions.appendChild(actBtn);
 
+  // 📥 CRM: send this email to the CRM through the same Review & push window Lead Capture uses
+  const crmBtn = document.createElement('button');
+  crmBtn.textContent = '📥 CRM';
+  crmBtn.title = 'Send this email to the CRM as a new opportunity (opens the review window and warns if one already exists)';
+  crmBtn.style.cssText = 'background:none;border:1px solid var(--border);border-radius:5px;padding:3px 8px;font-size:0.71rem;color:var(--muted);cursor:pointer;white-space:nowrap';
+  crmBtn.onmouseover = () => { crmBtn.style.borderColor = 'var(--accent)'; crmBtn.style.color = 'var(--accent)'; };
+  crmBtn.onmouseout  = () => { crmBtn.style.borderColor = 'var(--border)'; crmBtn.style.color = 'var(--muted)'; };
+  crmBtn.onclick = async (e) => {
+    e.stopPropagation();
+    if (!odooUid) { alert('Connect to Odoo first.'); return; }
+    crmBtn.disabled = true; crmBtn.textContent = '\u23f3';
+    let body = em.body || '';
+    if (!body && em.uid) {
+      try {
+        const br = await fetch(IMAP_SERVER + '/body', { method: 'POST', headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({ config: getImapConfig(), uid: em.uid }), signal: AbortSignal.timeout(15000) });
+        const bd = await br.json();
+        if (bd.body) { body = bd.body; em.body = body; }
+      } catch(_) {}
+    }
+    crmBtn.disabled = false; crmBtn.textContent = '📥 CRM';
+    const clean = cleanEmailBody(body || '').trim();
+    const nm = /^\s*"?([^"<]+?)"?\s*</.exec(sender || '');
+    const custName = (nm ? nm[1] : (sender || emailTo || '')).replace(/\s+/g, ' ').trim();
+    const ph = /(\+?1?[\s.\-]?\(?\d{3}\)?[\s.\-]?\d{3}[\s.\-]?\d{4})/.exec(clean);
+    const lead = { fields: { customer_name: custName, email: emailTo || '', phone: ph ? ph[1].trim() : '', notes: clean.slice(0, 1500), agent: '' },
+      spec_name: 'Inbox email', spec_tag: '', subject: subject || '', sender: sender || emailTo || '', date: em.date || '', body_snippet: clean.slice(0, 300), _inbox: true };
+    pendingLeads.push(lead);
+    openLeadModal(pendingLeads.length - 1);
+  };
+  actions.appendChild(crmBtn);
+
   // Trash button
   const trashBtn = document.createElement('button');
   trashBtn.textContent = '🗑';
@@ -17119,27 +17189,43 @@ function _oelOpenLink(model, id) {
   return u ? ' <a href="' + u + '" target="_blank" style="color:inherit;text-decoration:underline">Open in Odoo &#8599;</a>' : '';
 }
 
-// Turns whatever is in the note box into clean chatter HTML: a bold label line,
-// one From/To line, then the message as normal paragraphs (no <pre>, no raw headers,
-// no quoted reply chain, no leftover placeholder).
-function _oelBuildNoteHtml(typeLabel, subject, noteText) {
+// Turns whatever is in the note box into a clean note: a label line, From/To, then paragraphs.
+// Returns {text, html}. Odoo escapes any string sent through message_post, so the note is posted as
+// readable plain text first and then upgraded to real formatting by postVerifiedNote (see there).
+function _oelBuildNote(typeLabel, subject, noteText, extraMeta) {
   let t = String(noteText || '').replace(/\r\n?/g, '\n').trim();
   const meta = [];
   const grab = (re, label) => { const m = t.match(re); if (m) { meta.push([label, m[1].trim()]); t = t.replace(m[0], ''); } };
   grab(/^\s*(?:Email\s+)?From:\s*(.+)$/im, 'From');
   grab(/^\s*To:\s*(.+)$/im, 'To');
+  (extraMeta || []).forEach(m => { if (m && m[1]) meta.push([m[0], String(m[1]).trim()]); });
   let subj = subject || '';
   const ms = t.match(/^\s*Subject:\s*(.+)$/im);
   if (ms) { if (!subj) subj = ms[1].trim(); t = t.replace(ms[0], ''); }
   t = t.replace(/^\s*-{2,}\s*Email body\s*-{2,}\s*$/im, '').replace(/\[Add note here\]/g, '');
-  // drop quoted reply history
   const cut = t.search(/^\s*(On .{5,200} wrote:|-{2,}\s*Original Message\s*-{2,}|From:\s.+\n\s*(Sent|Date):)/im);
   if (cut > 0) t = t.slice(0, cut);
   t = t.replace(/^\s*>.*$/gm, '').replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
-  const paras = t ? t.split(/\n{2,}/).map(p => '<p>' + escHtml(p.trim()).replace(/\n/g, '<br>') + '</p>').join('') : '';
-  const metaHtml = meta.map(([k, v]) => '<em>' + k + ':</em> ' + escHtml(v)).join(' &nbsp;&middot;&nbsp; ');
-  return '<p><strong>' + escHtml(typeLabel) + '</strong>' + (subj ? ' &mdash; ' + escHtml(subj.replace(/^\s*(re|fw|fwd):\s*/i, '')) : '') + '</p>' +
-         (metaHtml ? '<p>' + metaHtml + '</p>' : '') + paras;
+  const title = typeLabel + (subj ? ' — ' + subj.replace(/^\s*(re|fw|fwd):\s*/i, '') : '');
+  const paras = t ? t.split(/\n{2,}/).map(x => x.trim()) : [];
+  const text = [title.toUpperCase().slice(0, 1) + title.slice(1), meta.map(m => m[0] + ': ' + m[1]).join('   '), '', paras.join('\n\n')].filter((x, i) => i !== 1 || x).join('\n').replace(/\n{3,}/g, '\n\n').trim();
+  const html = '<p><strong>' + escHtml(title) + '</strong></p>' +
+    (meta.length ? '<p>' + meta.map(m => '<em>' + escHtml(m[0]) + ':</em> ' + escHtml(m[1])).join(' &nbsp;&middot;&nbsp; ') + '</p>' : '') +
+    paras.map(x => '<p>' + escHtml(x).replace(/\n/g, '<br>') + '</p>').join('');
+  return { text: text, html: html };
+}
+function _oelBuildNoteHtml(typeLabel, subject, noteText) { return _oelBuildNote(typeLabel, subject, noteText).html; }
+// Any plain note -> tidy HTML (blank line = paragraph, newline = line break, ─── lines = rule)
+function _oelTextToHtml(t) {
+  const out = []; let cur = [];
+  const flush = () => { if (cur.length) { out.push('<p>' + cur.join('<br>') + '</p>'); cur = []; } };
+  String(t || '').replace(/\r\n?/g, '\n').trim().split('\n').forEach(l => {
+    if (!l.trim()) flush();
+    else if (/^[─—\-=_]{5,}\s*$/.test(l.trim())) { flush(); out.push('<hr/>'); }
+    else cur.push(escHtml(l));
+  });
+  flush();
+  return out.join('');
 }
 
 // Where can this note / activity go? Contact (default), its company, and the contact's
@@ -17314,8 +17400,8 @@ async function _openLogNoteModal({ em, emailTo, subject, sender, src, idx, wrapp
           const partner = isBatch ? await _findPartnerByEmail(bEmail) : resolvedPartner;
           if (!partner) { fails.push(bEmail + ': no Odoo contact'); continue; }
           const tgt = isBatch ? { model:'res.partner', id:partner.id, label:'Contact — ' + partner.name } : _oelPickTarget('lnm', partner);
-          const htmlBody = _oelBuildNoteHtml(typeLabel, bSubject, isBatch ? noteText.replace(/Subject:.*\n?/i, '') : noteText);
-          await postVerifiedNote(tgt.model, tgt.id, htmlBody);
+          const nb = _oelBuildNote(typeLabel, bSubject, isBatch ? noteText.replace(/Subject:.*\n?/i, '') : noteText);
+          await postVerifiedNote(tgt.model, tgt.id, nb.text, nb.html);
           ok++; lastLabel = tgt.label; lastModel = tgt.model; lastId = tgt.id;
         } catch(err) { fails.push(bEmail + ': ' + (err && err.message ? err.message.slice(0, 140) : err)); }
       }
@@ -17325,6 +17411,7 @@ async function _openLogNoteModal({ em, emailTo, subject, sender, src, idx, wrapp
       resultEl.style.color = 'var(--success)';
       resultEl.innerHTML = '&#10003; Logged ' + (isBatch ? ok + ' notes' : 'to <strong>' + escHtml(lastLabel) + '</strong>') +
         (isBatch ? '' : _oelOpenLink(lastModel, lastId)) +
+        (window._oelLastNoteFormatted === false ? '<br><span style="color:var(--warning)">Posted as plain text (Odoo would not apply formatting).</span>' : '') +
         (fails.length ? '<br><span style="color:var(--warning)">' + fails.length + ' failed: ' + escHtml(fails.join(' | ')) + '</span>' : '');
       submitBtn.textContent = '✓ Done';
       if (logBtn) { logBtn._logged=true; logBtn.textContent='✓ Logged'; logBtn.style.color='#c9a84c'; logBtn.style.borderColor='#c9a84c'; }
@@ -22091,6 +22178,9 @@ function getActivityDeadline() {
 
 function closeLeadModal() {
   document.getElementById('lead-modal').classList.add('hidden');
+  // an inbox-created lead that was never pushed must not linger as a pending card in Lead Capture
+  const L = pendingLeads[currentLeadIdx];
+  if (L && L._inbox && !L._pushed) { pendingLeads.splice(currentLeadIdx, 1); if (typeof renderLeadCards === 'function') renderLeadCards(); }
   currentLeadIdx = null;
 }
 
@@ -22287,18 +22377,10 @@ async function pushLeadToOdoo() {
 
     // 3. Log source email note to chatter
     logEl.innerHTML = '<div class="dot spin"></div> Logging note…';
-    const noteText = [
-      `Lead captured via Odoo Email Link — ${lead.spec_name}`,
-      `Source: ${lead.sender}`,
-      `Subject: ${lead.subject}`,
-      `Date: ${lead.date}`,
-      agent ? `Handled by: ${agent}` : '',
-      '─────────────────────────────',
-      notes
-    ].filter(Boolean).join('\n');
-    await odooExecute(odooUid, 'crm.lead', 'message_post', [[leadId]], {
-      body: noteText, message_type: 'comment', subtype_xmlid: 'mail.mt_note'
-    });
+    const nb = _oelBuildNote('Lead captured \u2014 ' + (lead.spec_name || 'inbox'), lead.subject, 'Email from: ' + (lead.sender || '') + '\n\n' + notes,
+      [['Date', lead.date], ['Handled by', agent]]);
+    try { await postVerifiedNote('crm.lead', leadId, nb.text, nb.html); }
+    catch (ne) { logEl.innerHTML = '<div class="dot err"></div> Lead created, but the note failed: ' + escHtml(ne.message).slice(0, 120); }
 
     // 4. Create mail.activity so it appears in Phase 1 list
     logEl.innerHTML = '<div class="dot spin"></div> Scheduling activity…';
@@ -35601,6 +35683,7 @@ document.addEventListener('DOMContentLoaded', hslInit);
 <!-- ── Pipeline Health ─────────────────────────────────────────────────── -->
 <script>
 (function(){
+  const _v = (document.querySelector('meta[name="oel-version"]') || {}).content; if (_v) document.querySelectorAll('[data-oel-ver]').forEach(e => e.textContent = _v);
   const PH = { acts: [], quotes: [], leads: [], users: [], lost: [], loaded: false };
   const money = n => '$' + (n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const base = () => (odooConfig && odooConfig.url ? odooConfig.url : '').replace(/\/+$/, '');
