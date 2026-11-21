@@ -1,7 +1,7 @@
 // OdooLink App Service Worker
 // Scope: /odoolink/app/
 // VERSION must match <meta name="oel-version"> in index.html (without the "v").
-const VERSION = '15.76';
+const VERSION = '15.77';
 const CACHE_NAME = 'odoolink-app-v' + VERSION;
 const STATIC_ASSETS = [
   '/odoolink/app/',
