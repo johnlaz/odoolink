@@ -107,6 +107,7 @@ If you change `server.py`, `imap_server.py` or `start.bat`, also refresh the emb
 
 | Version | Highlights |
 |---------|-----------|
+| **v15.76** | Prospecting made honest: removed AI "Generate prospects" and AI guessing of exhibitor contacts (they invented names, emails and phones). Exhibitors with no contact now show **Contact needed** with a lookup link; company-only prospects push to Odoo as a company. Find shows now warns that details come from AI memory. |
 | **v15.75** | HTTP 502 fix everywhere: every Odoo read now retries gateway errors (502/503/504) up to twice (writes are never retried); Pipeline Health loads one query at a time with activities in small pages. |
 | **v15.74** | Data Health scan reads Odoo in small pages and retries gateway errors (fixes HTTP 502 on large accounts). |
 | **v15.73** | New **Data Health** tab (Utilities): 🔍 Scan Odoo reports test and duplicate quotes, open quotes with no opportunity, stacked follow-up text, overdue activities, duplicate/bad/placeholder contacts, people that look like companies, and unreachable contacts, plus tiles showing whether new quotes and leads are being linked and sourced. One-sheet-per-check export; safe fixes (clean text, archive, mark as company). |

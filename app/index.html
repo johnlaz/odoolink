@@ -3,7 +3,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <meta name="oel-version" content="v15.75">
+  <meta name="oel-version" content="v15.76">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="mobile-web-app-capable" content="yes">
@@ -3368,7 +3368,7 @@ Support Team"></textarea>
         <div class="card" style="margin-bottom:14px">
           <div class="card-title">🔭 Prospecting</div>
           <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
-            <p style="margin:0 0 4px">Target-criteria search (industry, niche) to find brand-new prospect companies you haven't worked with yet.</p>
+            <p style="margin:0 0 4px"><strong style="color:var(--text)">Find shows</strong> suggests tradeshows for an industry (from AI memory, so verify dates and links). <strong style="color:var(--text)">Scrape floor plan</strong> reads a real exhibitor list into prospect cards. Nothing is invented: a company with no contact in the list shows <em>Contact needed</em> with a lookup link.</p>
             <p style="margin:0">Net-new business — distinct from Dormant Contacts (existing accounts gone quiet) and Sales Targeting (mining your own sales history).</p>
           </div>
         </div>
@@ -3590,11 +3590,11 @@ Support Team"></textarea>
             <input type="text" id="prosp-industry" placeholder="e.g. Corporate event planning, Wedding venues, Concert promoters" style="font-size:0.82rem">
           </div>
           <div class="form-group" style="margin-bottom:0">
-            <label>Location</label>
+            <label>Region <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">(optional, for Find shows)</span></label>
             <input type="text" id="prosp-location" placeholder="e.g. Los Angeles, CA" style="font-size:0.82rem">
           </div>
         </div>
-        <div class="form-grid" style="margin-bottom:12px">
+        <div class="form-grid" style="margin-bottom:12px;display:none">
           <div class="form-group" style="margin-bottom:0">
             <label>Decision-maker titles</label>
             <input type="text" id="prosp-titles" placeholder="e.g. Event Manager, Production Director, AV Coordinator" style="font-size:0.82rem">
@@ -3609,12 +3609,13 @@ Support Team"></textarea>
             </select>
           </div>
         </div>
-        <div class="form-group" style="margin-bottom:12px">
+        <div class="form-group" style="margin-bottom:12px;display:none">
           <label>Additional context <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">(optional — tell Groq what you're selling)</span></label>
           <input type="text" id="prosp-context" placeholder="e.g. We rent truss, drape, LED walls, and staging to event companies in SoCal" style="font-size:0.82rem">
         </div>
+        <div style="font-size:0.76rem;color:var(--muted);margin-bottom:10px;line-height:1.5">Prospects here come from real tradeshow exhibitor lists. Nothing is invented: if a list has no contact for a company, the card says <strong style="color:var(--text)">Contact needed</strong> and gives you a lookup link.</div>
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-          <div style="display:flex;align-items:center;gap:8px">
+          <div style="display:none;align-items:center;gap:8px">
             <label style="font-size:0.8rem;color:var(--muted)">Generate</label>
             <select id="prosp-count" style="background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:5px 8px;color:var(--text);font-family:'DM Mono',monospace;font-size:0.82rem;outline:none;cursor:pointer">
               <option value="10">10 prospects</option>
@@ -3622,10 +3623,6 @@ Support Team"></textarea>
               <option value="30">30 prospects</option>
             </select>
           </div>
-          <button class="btn btn-primary" onclick="prospGenerate()" id="prosp-btn" style="padding:8px 20px;font-size:0.83rem;gap:6px">
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1l1.2 3.6L11 5.5l-2.9 2.7.7 3.8L6 10.2l-2.8 1.8.7-3.8L1 5.5l3.8-.9z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"></path></svg>
-            Generate prospects
-          </button>
           <button class="btn btn-ghost" onclick="openShowFinder()" style="padding:8px 16px;font-size:0.83rem;gap:6px;border-color:var(--accent);color:var(--accent)">
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="5" cy="5" r="3.5" stroke="currentColor" stroke-width="1.2"></circle><path d="M8 8l2.5 2.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"></path><path d="M5 3v4M3 5h4" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"></path></svg>
             Find shows
@@ -5404,7 +5401,7 @@ Thank you</textarea>
           <div class="nav-item-icon accent">🎯</div>
           <div class="nav-item-text">
             <div class="nav-item-title">Prospecting</div>
-            <div class="nav-item-desc">AI-generate cold outreach prospect lists</div>
+            <div class="nav-item-desc">Find tradeshows and turn real exhibitor lists into prospects</div>
           </div>
           <span class="nav-item-badge live">unlocked</span>
         </div>
@@ -5531,6 +5528,7 @@ Thank you</textarea>
             <span>Shows found — testing exhibitor list accessibility</span>
             <span id="sf-results-summary" style="font-size:0.76rem;font-weight:400;font-family:'DM Mono',monospace"></span>
           </div>
+          <div style="font-size:0.74rem;color:var(--warning);margin-bottom:8px;line-height:1.5">⚠ This list comes from the AI's memory. Show names are usually right, but dates, attendance, exhibitor counts and links can be wrong or out of date, so check the show's own website before relying on them.</div>
           <div id="sf-show-list" style="display:flex;flex-direction:column;gap:6px;max-height:400px;overflow-y:auto"></div>
         </div>
 
@@ -11292,7 +11290,7 @@ const OEL_SEARCH_INDEX = [
   { id:'smartbuilder', label:'Smart Builder',     keywords:'ai quote builder paste raw request extract auto build quote smart quickly quote a voicemail or email' },
   { id:'quotes',       label:'Quotes',            keywords:'link quote to opportunity payment terms opportunity dropdown rental quote create opportunity rental quotation builder create rental order odoo quote build a rental order' },
   { id:'templates',    label:'Templates',         keywords:'saved email templates reusable canned responses' },
-  { id:'prospect',     label:'Prospecting',       keywords:'find new prospects target criteria industry niche cold outreach new business find new customers' },
+  { id:'prospect',     label:'Prospecting',       keywords:'find new prospects tradeshow exhibitors floor plan exhibitor list find shows new business find new customers contact needed' },
   { id:'catchup',      label:'Dormant Contacts',  keywords:'dormant stale deals no activity re-engage stalled opportunities open deals no movement follow up old deals' },
   { id:'vendor',       label:'Vendor Outreach',   keywords:'find subcontractors vendors blast quote request track responses rent from vendor mailto email a vendor about pricing' },
   { id:'emailstudio', label:'Email Studio', keywords:'marketing email template newsletter campaign html builder master template edit text pictures images save templates outlook mailchimp hubspot trade show flyer blast design' },
@@ -20974,12 +20972,7 @@ ${chunk}`;
     paginfoEl.textContent = `Pass ${passNum}/${totalPass} · ${_tsTotalFound} exhibitors captured`;
     paginfoEl.style.display = 'block';
 
-    // Enrich company-only records
-    const needsEnrich = _prospects.filter(p => p._needsEnrich && p.company);
-    if (needsEnrich.length > 0) {
-      statusEl.innerHTML = `<div class="dot spin" style="display:inline-block;margin-right:5px"></div> Enriching ${needsEnrich.length} company-only records with AI…`;
-      await tsEnrichBatch(needsEnrich, showName, groqKey, model);
-    }
+    // Companies with no contact stay marked 'Contact needed'. We never invent names or emails.
 
     statusEl.style.color = 'var(--success)';
     statusEl.textContent = `✓ Pass ${passNum} done · ${newProspects.length} new · ${_tsTotalFound} total${hasMore ? ` · ${Math.ceil(remaining / TS_CHUNK)} pass${Math.ceil(remaining/TS_CHUNK)!==1?'es':''} remaining` : ' · All content processed ✓'}`;
@@ -21033,148 +21026,15 @@ ${chunk}`;
   }
 }
 
-async function tsEnrichBatch(needsEnrich, showName, groqKey, model) {
-  const BATCH = 30;
-  for (let i = 0; i < needsEnrich.length; i += BATCH) {
-    const batch = needsEnrich.slice(i, i + BATCH);
-    const names = batch.map((p, idx) => `${idx + 1}. ${p.company}`).join('\n');
-
-    const prompt = `You are helping build a tradeshow exhibitor outreach list for ${showName || 'a tradeshow'}.
-For each company below, infer the most likely decision-maker contact.
-Return ONLY a JSON array of exactly ${batch.length} objects (same order):
-[{"contact":"Full Name","email":"realistic@email.com","title":"Job Title"}, ...]
-Base email on company name pattern. Use realistic titles (Event Manager, Marketing Director, Production Coordinator, etc).
-Raw JSON only.
-
-COMPANIES:
-${names}`;
-
-    try {
-      const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${groqKey}` },
-        body: JSON.stringify({ model, reasoning_effort:'none', reasoning_format:'hidden', max_tokens: 1500, temperature: 0.7,
-          messages: [{ role: 'user', content: prompt }]
-        }),
-        signal: AbortSignal.timeout(30000)
-      });
-      const data = await r.json();
-      let raw = data.choices?.[0]?.message?.content?.trim() || '[]';
-      raw = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
-      let enriched = [];
-      try { enriched = JSON.parse(raw); }
-      catch(e) { const m = raw.match(/\[[\s\S]+\]/); if (m) enriched = JSON.parse(m[0]); }
-      if (Array.isArray(enriched)) {
-        batch.forEach((p, idx) => {
-          const e = enriched[idx];
-          if (!e) return;
-          if (!p.name  && e.contact) p.name  = e.contact;
-          if (!p.email && e.email)   p.email  = e.email;
-          if (!p.title && e.title)   p.title  = e.title;
-          p._needsEnrich = false;
-        });
-      }
-    } catch(e) { /* enrichment is best-effort */ }
-  }
-}
+// (Removed: AI guessing of exhibitor contacts. Invented names and emails do not belong in a CRM.)
 
 
 let _prospects = [];  // [{name,title,company,email,phone,location,notes,_selected,_pushed,_dismissed}]
 
-const PROSP_PERSONA = `You are a senior account manager at a rental company specializing in AV, staging, truss, LED walls, drape, and event production equipment. You are building a cold outreach prospect list. Generate realistic, plausible contacts — people who genuinely exist in this industry and role type. Be specific: use real-sounding names, real company name patterns for the industry, and realistic email formats. Do not invent absurd or generic placeholder names.`;
 
-async function prospGenerate() {
-  const industry = document.getElementById('prosp-industry').value.trim();
-  const location = document.getElementById('prosp-location').value.trim();
-  const titles   = document.getElementById('prosp-titles').value.trim();
-  const size     = document.getElementById('prosp-size').value;
-  const context  = document.getElementById('prosp-context').value.trim();
-  const count    = parseInt(document.getElementById('prosp-count').value) || 20;
-  const groqKey  = document.getElementById('gemini-key')?.value?.trim() || '';
 
-  if (!industry) {
-    document.getElementById('prosp-status').style.color = 'var(--danger)';
-    document.getElementById('prosp-status').textContent = 'Enter an industry first';
-    return;
-  }
-  if (!groqKey) {
-    document.getElementById('prosp-status').style.color = 'var(--danger)';
-    document.getElementById('prosp-status').textContent = 'No Groq key — add in Step 1';
-    return;
-  }
-
-  const btn      = document.getElementById('prosp-btn');
-  const statusEl = document.getElementById('prosp-status');
-  const model    = document.getElementById('gemini-model')?.value || 'qwen/qwen3.8-27b';
-
-  btn.disabled = true;
-  statusEl.style.color = 'var(--muted)';
-  statusEl.innerHTML = '<div class="dot spin" style="display:inline-block;margin-right:5px"></div> Generating prospects…';
-  document.getElementById('prosp-results').innerHTML = '';
-  document.getElementById('prosp-batch-bar').style.display = 'none';
-
-  const sizeDesc = { small:'small (1–50 employees)', mid:'mid-size (51–500 employees)', enterprise:'enterprise (500+ employees)' }[size] || 'any size';
-
-  const prompt = `${PROSP_PERSONA}
-
-Generate exactly ${count} realistic B2B sales prospects matching these criteria:
-- Industry: ${industry}
-- Location: ${location || 'United States (mix of cities)'}
-- Decision-maker titles: ${titles || 'Event Manager, Production Manager, Director of Events, AV Coordinator, Operations Manager'}
-- Company size: ${sizeDesc}
-${context ? `- We are selling: ${context}` : ''}
-
-Return ONLY a JSON array of ${count} objects. Each object must have exactly these keys:
-{
-  "name": "Full name",
-  "title": "Job title",
-  "company": "Company name",
-  "email": "realistic.email@companyname.com",
-  "phone": "(XXX) XXX-XXXX or empty string",
-  "location": "City, State",
-  "notes": "1-sentence reason why they are a good prospect for AV/staging/event equipment rental"
-}
-
-Use realistic email formats (firstname.lastname@company.com, firstnamelastname@company.com, etc).
-Return raw JSON array only — no markdown, no explanation, no wrapper object.`;
-
-  try {
-    const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${groqKey}` },
-      body: JSON.stringify({
-        model, reasoning_effort:'none', reasoning_format:'hidden', max_tokens: 3000, temperature: 0.8,
-        messages: [{ role: 'user', content: prompt }]
-      }),
-      signal: AbortSignal.timeout(45000)
-    });
-    const data = await r.json();
-    let raw = data.choices?.[0]?.message?.content?.trim() || '[]';
-    raw = raw.replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'').trim();
-    raw = raw.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '');
-
-    let list = [];
-    try { list = JSON.parse(raw); } catch(e) {
-      // Try extracting array from within the text
-      const m = raw.match(/\[[\s\S]+\]/);
-      if (m) list = JSON.parse(m[0]);
-    }
-
-    if (!Array.isArray(list) || list.length === 0) throw new Error('No prospects returned — try again');
-
-    _prospects = list.map(p => ({ ...p, _selected: false, _pushed: false, _dismissed: false }));
-    renderProspects();
-    statusEl.style.color = 'var(--success)';
-    statusEl.textContent = `✓ ${_prospects.length} prospects generated`;
-    document.getElementById('prosp-export-btn').style.display = 'inline-flex';
-    document.getElementById('prosp-export-csv-btn').style.display = 'inline-flex';
-
-  } catch(e) {
-    statusEl.style.color = 'var(--danger)';
-    statusEl.textContent = `✗ ${e.message}`;
-  }
-  btn.disabled = false;
-}
+// (Removed: AI 'Generate prospects'. It invented people, emails and phones. Real prospect lists come from Find shows,
+//  Scrape floor plan, Dormant Contacts and Sales Targeting.)
 
 function renderProspects() {
   const container = document.getElementById('prosp-results');
@@ -21205,7 +21065,7 @@ function renderProspects() {
         <div style="flex:1;min-width:0">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:5px">
             <div>
-              <div style="font-weight:500;font-size:0.9rem;color:var(--text)">${escHtml(p.name)}</div>
+              <div style="font-weight:500;font-size:0.9rem;color:var(--text)">${escHtml(p.name || p.company)}${!p.name ? ' <span style="font-size:0.68rem;font-weight:400;padding:2px 8px;border-radius:20px;border:1px solid var(--warning);color:var(--warning)">Contact needed</span>' : ''}</div>
               <div style="font-size:0.76rem;color:var(--muted);margin-top:2px">${escHtml(p.title)} · <strong style="color:var(--text)">${escHtml(p.company)}</strong> · ${escHtml(p.location)}</div>
             </div>
             ${statusBadge}
@@ -21225,6 +21085,7 @@ function renderProspects() {
             ${!p._pushed ? `
               <button class="btn btn-primary" onclick="prospPushOdoo(${idx})" style="padding:5px 12px;font-size:0.77rem">Push to Odoo</button>
               <button class="btn btn-ghost" onclick="prospEmail(${idx})" style="padding:5px 12px;font-size:0.77rem">Email</button>
+              ${!p.name || !p.email ? `<a class="btn btn-ghost" target="_blank" rel="noopener" href="https://www.google.com/search?q=${encodeURIComponent('"' + p.company + '" event OR marketing OR production manager')}" style="padding:5px 12px;font-size:0.77rem;text-decoration:none">🔎 Look up contact</a>` : ''}
               <button class="btn btn-ghost" onclick="prospDismiss(${idx})" style="padding:5px 10px;font-size:0.77rem;color:var(--muted);margin-left:auto">Dismiss</button>
             ` : `<span style="font-size:0.77rem;color:var(--success)">✓ Pushed to Odoo</span>`}
           </div>
@@ -21296,13 +21157,13 @@ async function prospPushOdoo(idx) {
       if (ps?.length) partnerId = ps[0];
     }
     if (!partnerId) {
-      const pv = { name: p.name, email: p.email||'', phone: p.phone||'', function: p.title||'' };
+      const pv = p.name ? { name: p.name, email: p.email||'', phone: p.phone||'', function: p.title||'' } : { name: p.company, is_company: true, email: p.email||'', phone: p.phone||'' };
       partnerId = await odooExecute(odooUid,'res.partner','create',[pv]);
     }
 
     // Create lead
     const lv = {
-      name:        `Prospect: ${p.name} — ${p.company}`,
+      name:        `Prospect: ${p.name ? p.name + ' — ' : ''}${p.company}`,
       type:        'opportunity',
       partner_id:  partnerId,
       description: `${p.title} at ${p.company} (${p.location})\n\n${p.notes||''}`,
@@ -21313,7 +21174,7 @@ async function prospPushOdoo(idx) {
 
     // Chatter note
     await odooExecute(odooUid,'crm.lead','message_post',[[leadId]],{
-      body: `Cold prospect generated via Laz Mode Prospecting.\nTitle: ${p.title}\nCompany: ${p.company}\nLocation: ${p.location}\n\n${p.notes||''}`,
+      body: `Prospect from a tradeshow exhibitor list (contact details as published; nothing generated).\nTitle: ${p.title}\nCompany: ${p.company}\nLocation: ${p.location}\n\n${p.notes||''}`,
       message_type:'comment', subtype_xmlid:'mail.mt_note'
     });
 
