@@ -3,7 +3,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <meta name="oel-version" content="v15.73">
+  <meta name="oel-version" content="v15.74">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="mobile-web-app-capable" content="yes">
@@ -35884,24 +35884,30 @@ document.addEventListener('DOMContentLoaded', hslInit);
     st('dh-load-st', 'Scanning…');
     const recent = parseInt(document.getElementById('dh-days').value) || 30;
     const cutR = new Date(Date.now() - recent * 864e5).toISOString().slice(0, 19).replace('T', ' ');
-    const x = (m, meth, a, k) => odooExecute(odooUid, m, meth, a, k || {});
-    try {
-      // contacts, paged
-      const pf = ['name', 'email', 'phone', 'is_company', 'parent_id', 'create_date'];
-      let parts = [], off = 0;
-      for (;;) {
-        const b = await x('res.partner', 'search_read', [[['active', '=', true], ['type', '=', 'contact']]], { fields: pf, limit: 1000, offset: off, order: 'id' });
-        parts = parts.concat(b || []); off += (b || []).length;
-        st('dh-load-st', 'Reading contacts… ' + parts.length);
-        if (!b || b.length < 1000) break;
+    // Odoo.com rejects heavy single reads with a 502, so read in small pages, one at a time, and retry a gateway error
+    const x = async (m, meth, a, k) => {
+      for (let t = 0; ; t++) {
+        try { return await odooExecute(odooUid, m, meth, a, k || {}); }
+        catch (e) { if (t >= 2 || !/50[234]|timeout|timed out/i.test(String(e.message))) throw e; await new Promise(r => setTimeout(r, 1500 * (t + 1))); }
       }
-      st('dh-load-st', 'Reading quotes, activities and leads…');
-      const [orders, acts, newOrders, newLeads] = await Promise.all([
-        x('sale.order', 'search_read', [[['state', 'in', ['draft', 'sent']]]], { fields: ['name', 'partner_id', 'amount_total', 'state', 'create_date', 'user_id', 'opportunity_id'], limit: 2000, order: 'create_date asc' }),
-        x('mail.activity', 'search_read', [[]], { fields: ['res_name', 'res_model', 'res_id', 'user_id', 'date_deadline', 'summary', 'activity_type_id'], limit: 4000, order: 'date_deadline asc' }),
-        x('sale.order', 'search_read', [[['create_date', '>=', cutR], ['state', '!=', 'cancel']]], { fields: ['opportunity_id'], limit: 2000 }),
-        x('crm.lead', 'search_read', [[['create_date', '>=', cutR]]], { fields: ['source_id', 'expected_revenue', 'partner_id'], limit: 2000 })
-      ]);
+    };
+    const paged = async (label, m, dom, fields, order, page, max) => {
+      let all = [];
+      for (;;) {
+        st('dh-load-st', 'Reading ' + label + '… ' + all.length);
+        const b = await x(m, 'search_read', [dom], { fields, limit: page, offset: all.length, order });
+        all = all.concat(b || []);
+        if (!b || b.length < page || all.length >= max) break;
+      }
+      return all;
+    };
+    try {
+      const parts = await paged('contacts', 'res.partner', [['active', '=', true], ['type', '=', 'contact']], ['name', 'email', 'phone', 'is_company', 'parent_id', 'create_date'], 'id', 500, 30000);
+      const orders = await paged('quotes', 'sale.order', [['state', 'in', ['draft', 'sent']]], ['name', 'partner_id', 'amount_total', 'state', 'create_date', 'user_id', 'opportunity_id'], 'create_date asc, id', 300, 3000);
+      const acts = await paged('activities', 'mail.activity', [], ['res_name', 'res_model', 'res_id', 'user_id', 'date_deadline', 'summary', 'activity_type_id'], 'date_deadline asc, id', 200, 5000);
+      st('dh-load-st', 'Reading recent quotes and leads…');
+      const newOrders = await paged('recent quotes', 'sale.order', [['create_date', '>=', cutR], ['state', '!=', 'cancel']], ['opportunity_id'], 'id', 300, 3000);
+      const newLeads = await paged('recent leads', 'crm.lead', [['create_date', '>=', cutR]], ['source_id', 'expected_revenue', 'partner_id'], 'id', 300, 3000);
       const checks = [];
       const today = new Date().toISOString().slice(0, 10);
 

@@ -107,6 +107,7 @@ If you change `server.py`, `imap_server.py` or `start.bat`, also refresh the emb
 
 | Version | Highlights |
 |---------|-----------|
+| **v15.74** | Data Health scan reads Odoo in small pages and retries gateway errors (fixes HTTP 502 on large accounts). |
 | **v15.73** | New **Data Health** tab (Utilities): 🔍 Scan Odoo reports test and duplicate quotes, open quotes with no opportunity, stacked follow-up text, overdue activities, duplicate/bad/placeholder contacts, people that look like companies, and unreachable contacts, plus tiles showing whether new quotes and leads are being linked and sourced. One-sheet-per-check export; safe fixes (clean text, archive, mark as company). |
 | **v15.72** | Version stamps unified: app meta tag, service worker, landing page and every in-app label (Help, About) now come from one number; `scripts/bump-version.sh` updates them together. |
 | **v15.71** | Inbox: 📥 CRM button turns an email into a lead. Notes now post as real formatting (Odoo escapes plain strings, so they are written back as HTML and verified). Help gains a "Where do I find…?" guide; search keywords broadened. |
