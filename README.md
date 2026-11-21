@@ -96,7 +96,7 @@ OdooLink uses **Groq** only. Your key is entered in Settings and kept in your br
 The site is static and served by GitHub Pages from the repo root.
 
 1. Edit `app/index.html`.
-2. Bump the version in **both** places so installs refresh: `<meta name="oel-version">` in `app/index.html` and `VERSION` in `app/sw.js`. The in-app stamp reads the meta tag.
+2. Run `scripts/bump-version.sh <new version>` (e.g. `15.72`). It updates the meta tag in `app/index.html`, `VERSION` in `app/sw.js` and the landing page badge together; in-app labels read the meta tag. Then add a changelog row.
 3. Commit and push. HTML is fetched network-first, so a normal reload picks it up. Open installs show a small **Reload** prompt when a new version takes over.
 
 If you change `server.py`, `imap_server.py` or `start.bat`, also refresh the embedded copies that Settings falls back to when the app is opened from `file://`.
@@ -107,6 +107,12 @@ If you change `server.py`, `imap_server.py` or `start.bat`, also refresh the emb
 
 | Version | Highlights |
 |---------|-----------|
+| **v15.72** | Version stamps unified: app meta tag, service worker, landing page and every in-app label (Help, About) now come from one number; `scripts/bump-version.sh` updates them together. |
+| **v15.71** | Inbox: 📥 CRM button turns an email into a lead. Notes now post as real formatting (Odoo escapes plain strings, so they are written back as HTML and verified). Help gains a "Where do I find…?" guide; search keywords broadened. |
+| **v15.70** | Quotes link to an opportunity (editable default) with payment terms; activities default to the opportunity; new Pipeline Health tab; to-dos for overdue invoices; leads get an OdooLink source. |
+| **v15.69** | Activity type list limited to general types. |
+| **v15.68** | Schedule an activity to several people at once (one activity each). |
+| **v15.67** | Cleaner logged notes, verified activities assigned to you by default, note/activity destination picker; composer popups close only with X. |
 | **v15.56** | Sales Reporting: **Σ Tax totals** button shows total tax per approved name (FL Sales Tax vs NW Sales Tax and Services), any unapproved names, the Odoo tax-engine amount (invoices) and an all-tax total for the rows listed; included in exports. |
 | **v15.55** | Tax-names dialog wording now covers invoices as well as orders. |
 | **v15.54** | Sales Reporting: new Source switch — run the report on **Sales orders** (as before) or **Customer invoices** (account.move; invoice date, status incl. Paid/Partial/Unpaid, credit notes negative, tax-named lines plus Odoo's own tax amount). Default approved tax names are now “FL Sales Tax” and “NW Sales Tax and Services” (old NW Tax / Local Tax defaults retired). Approved tax names and other report settings are now included in the credentials export/import. |
