@@ -3,7 +3,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <meta name="oel-version" content="v15.78">
+  <meta name="oel-version" content="v15.79">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="mobile-web-app-capable" content="yes">
@@ -642,6 +642,26 @@
   .spin-icon { display: inline-block; animation: spin 1s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
+  /* ── Themed dialogs & toasts (replace native alert/confirm/prompt) ── */
+  .oeld-ov { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 100000; display: flex; align-items: center; justify-content: center; padding: 20px; animation: fadeIn 0.15s ease; }
+  .oeld { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; width: 100%; max-width: 440px; box-shadow: 0 18px 60px rgba(0,0,0,0.55); animation: slideUp 0.2s ease; overflow: hidden; }
+  .oeld-bar { height: 3px; background: var(--accent); }
+  .oeld.danger .oeld-bar, .oeld.error .oeld-bar { background: var(--danger); }
+  .oeld.success .oeld-bar { background: var(--success); }
+  .oeld-body { padding: 20px 22px 6px; }
+  .oeld-title { font-size: 0.95rem; font-weight: 600; color: var(--text); line-height: 1.45; white-space: pre-wrap; word-break: break-word; }
+  .oeld-sub { font-size: 0.82rem; color: var(--muted); line-height: 1.65; margin-top: 8px; white-space: pre-wrap; word-break: break-word; max-height: 40vh; overflow-y: auto; }
+  .oeld-input { width: 100%; margin-top: 14px; box-sizing: border-box; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 9px 11px; color: var(--text); font-family: inherit; font-size: 0.88rem; outline: none; }
+  .oeld-input:focus { border-color: var(--accent); }
+  textarea.oeld-input { min-height: 96px; resize: vertical; }
+  .oeld-foot { display: flex; justify-content: flex-end; gap: 8px; padding: 16px 22px 18px; }
+  .oeld-foot .btn { padding: 7px 18px; font-size: 0.82rem; }
+  .oeld.danger .oeld-foot .btn-primary { background: var(--danger); color: #fff; }
+  #oel-toasts { position: fixed; right: 18px; bottom: 18px; z-index: 100001; display: flex; flex-direction: column; gap: 8px; align-items: flex-end; pointer-events: none; }
+  .oel-toast { pointer-events: auto; cursor: pointer; max-width: 380px; background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: 10px; padding: 10px 14px; font-size: 0.82rem; line-height: 1.5; color: var(--text); box-shadow: 0 8px 28px rgba(0,0,0,0.5); animation: slideUp 0.2s ease; word-break: break-word; }
+  .oel-toast.success { border-left-color: var(--success); }
+  .oel-toast.error { border-left-color: var(--danger); }
+  .oel-toast.warn { border-left-color: var(--warning); }
   .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 20px; animation: fadeIn 0.2s ease; }
   @keyframes fadeIn { from{opacity:0} to{opacity:1} }
   .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; width: 100%; max-width: 660px; max-height: 90vh; display: flex; flex-direction: column; animation: slideUp 0.25s ease; }
@@ -5279,7 +5299,7 @@ Thank you</textarea>
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="2" width="12" height="10" rx="1.5" stroke="currentColor" stroke-width="1.2"></rect><path d="M4 6h6M4 8h4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"></path></svg>
             Mail account wizard
           </button>
-          <button class="gear-item" style="color:var(--danger)" onclick="if(confirm('Clear all saved data?')){clearAllData()}">
+          <button class="gear-item" style="color:var(--danger)" onclick="oelConfirm('Clear all saved data?').then(function(ok){if(ok){clearAllData()}})">
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 4h10M5 4V2h4v2M11 4l-.7 8H3.7L3 4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
             Clear all data
           </button>
@@ -6496,6 +6516,105 @@ Thank you</textarea>
 </div>
 
 <script>
+// ── Themed dialogs and toasts ───────────────────────────────────────────────
+// Replaces the browser's own alert / confirm / prompt boxes. alert() becomes a toast (short) or a dialog (long).
+// confirm()/prompt() are asynchronous: use `await oelConfirm(msg)` and `await oelPrompt(msg, default)`.
+(function() {
+  var nativeAlert = window.alert.bind(window), nativeConfirm = window.confirm.bind(window), nativePrompt = window.prompt.bind(window);
+  var kindOf = function(m) {
+    if (/^\s*(✗|❌|⚠|error|failed|could not|couldn't|cannot|can't|unable)|\b(error|failed|failure)\b/i.test(m)) return /^\s*⚠/.test(m) ? 'warn' : 'error';
+    if (/^\s*(✓|✅|done|saved|copied|created|sent|updated|pushed|logged)|\b(saved|copied|created|logged|sent|pushed|updated)\b/i.test(m)) return 'success';
+    return 'info';
+  };
+  var clean = function(m) { return String(m == null ? '' : m).replace(/^\s*(✓|✅|✗|❌)\s*/, ''); };
+  var dangerRe = /\b(delete|remove|clear|discard|cannot be undone|can't be undone|permanent|block|trash|cancel all|overwrite|replace)\b/i;
+
+  function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+
+  // dialog({message, input:'text'|'area'|null, value, ok, cancel:true|false, kind}) -> Promise<{ok, value}>
+  function dialog(o) {
+    return new Promise(function(resolve) {
+      if (!document.body) { resolve({ ok: true, value: '' }); return; }
+      var msg = String(o.message == null ? '' : o.message), prevFocus = document.activeElement;
+      var parts = msg.split(/\n+/), title = o.title || parts[0], sub = o.title ? msg : parts.slice(1).join('\n');
+      var ov = el('div', 'oeld-ov'), box = el('div', 'oeld ' + (o.kind || ''));
+      box.setAttribute('role', 'dialog'); box.setAttribute('aria-modal', 'true');
+      box.appendChild(el('div', 'oeld-bar'));
+      var body = el('div', 'oeld-body');
+      body.appendChild(el('div', 'oeld-title', title));
+      if (sub) body.appendChild(el('div', 'oeld-sub', sub));
+      var input = null;
+      if (o.input) {
+        input = el(o.input === 'area' ? 'textarea' : 'input', 'oeld-input');
+        if (o.input !== 'area') input.type = 'text';
+        input.value = o.value == null ? '' : o.value;
+        body.appendChild(input);
+      }
+      var foot = el('div', 'oeld-foot'), cancelBtn = null;
+      if (o.cancel !== false) { cancelBtn = el('button', 'btn btn-ghost', o.cancelText || 'Cancel'); foot.appendChild(cancelBtn); }
+      var okBtn = el('button', 'btn btn-primary', o.okText || 'OK'); foot.appendChild(okBtn);
+      box.appendChild(body); box.appendChild(foot); ov.appendChild(box); document.body.appendChild(ov);
+      var done = false;
+      function finish(ok) {
+        if (done) return; done = true;
+        document.removeEventListener('keydown', onKey, true); ov.remove();
+        try { if (prevFocus && prevFocus.focus) prevFocus.focus(); } catch (e) {}
+        resolve({ ok: ok, value: input ? input.value : '' });
+      }
+      function onKey(e) {
+        if (!document.body.contains(ov)) return;
+        if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); finish(false); }
+        else if (e.key === 'Enter' && (o.input !== 'area' || e.ctrlKey || e.metaKey) && document.activeElement !== cancelBtn) { e.preventDefault(); e.stopPropagation(); finish(true); }
+        else if (e.key === 'Tab') {
+          var f = Array.prototype.slice.call(box.querySelectorAll('input,textarea,button')); if (!f.length) return;
+          var i = f.indexOf(document.activeElement);
+          if (e.shiftKey && i <= 0) { e.preventDefault(); f[f.length - 1].focus(); } else if (!e.shiftKey && i === f.length - 1) { e.preventDefault(); f[0].focus(); }
+        }
+      }
+      document.addEventListener('keydown', onKey, true);
+      okBtn.onclick = function() { finish(true); };
+      if (cancelBtn) cancelBtn.onclick = function() { finish(false); };
+      setTimeout(function() { if (input) { input.focus(); input.select && input.select(); } else okBtn.focus(); }, 30);
+    });
+  }
+
+  function toast(message, kind, ms) {
+    if (!document.body) return nativeAlert(message);
+    var box = document.getElementById('oel-toasts');
+    if (!box) { box = el('div'); box.id = 'oel-toasts'; document.body.appendChild(box); }
+    while (box.children.length >= 4) box.removeChild(box.firstChild);
+    var t = el('div', 'oel-toast ' + (kind && kind !== 'info' ? kind : ''), clean(message));
+    t.title = 'Click to dismiss';
+    var gone = function() { if (t.parentNode) t.parentNode.removeChild(t); };
+    t.onclick = gone; box.appendChild(t);
+    setTimeout(gone, ms || (kind === 'error' || kind === 'warn' ? 8000 : 4500));
+  }
+
+  window.oelToast = function(message, kind) { toast(message, kind || kindOf(String(message))); };
+  window.oelAlert = function(message, kind) { var m = String(message == null ? '' : message); var k = kind || kindOf(m); return dialog({ message: clean(m), cancel: false, kind: k, title: k === 'error' ? 'Something went wrong' : k === 'success' ? 'Done' : k === 'warn' ? 'Heads up' : 'Notice' }).then(function() {}); };
+  window.oelConfirm = function(message, opts) {
+    opts = opts || {}; var m = String(message == null ? '' : message);
+    if (!document.body) return Promise.resolve(nativeConfirm(m));
+    return dialog({ message: m, kind: opts.danger === false ? '' : (opts.danger || dangerRe.test(m)) ? 'danger' : '', okText: opts.okText || ((opts.danger || dangerRe.test(m)) && opts.danger !== false ? 'Yes, continue' : 'OK') }).then(function(r) { return r.ok; });
+  };
+  window.oelPrompt = function(message, def, opts) {
+    opts = opts || {}; var m = String(message == null ? '' : message);
+    if (!document.body) return Promise.resolve(nativePrompt(m, def));
+    var area = opts.multiline != null ? opts.multiline : /\b(body|text|note|message|description)\b/i.test(m) && !/name|pattern|address|tags|label/i.test(m.split('\n')[0]);
+    return dialog({ message: m, input: area ? 'area' : 'text', value: def, okText: opts.okText || 'OK' }).then(function(r) { return r.ok ? r.value : null; });
+  };
+  // alert(): short one-line messages become a toast, anything long or multi-line becomes a dialog
+  window.alert = function(message) {
+    var m = String(message == null ? '' : message);
+    var k = kindOf(m);
+    if (m.length <= 140 && m.indexOf('\n') < 0) { toast(m, k); return; }
+    window.oelAlert(m, k);
+  };
+  window._oelNative = { alert: nativeAlert, confirm: nativeConfirm, prompt: nativePrompt };
+})();
+</script>
+
+<script>
 // ─── Service Worker ──────────────────────────────────────────────────────────
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
@@ -6617,10 +6736,10 @@ function qmtDelete(i) {
   qmtSave(); qmtRender();
 }
 
-function qmtAddTemplate() {
-  const name = prompt('Template name (short label):');
+async function qmtAddTemplate() {
+  const name = await oelPrompt('Template name (short label):');
   if (!name) return;
-  const text = prompt('Template text:');
+  const text = await oelPrompt('Template text:');
   if (!text) return;
   _qmTemplates.push({ name: name.trim(), text: text.trim() });
   qmtSave(); qmtRender();
@@ -6692,7 +6811,7 @@ async function lftSchedule(leadId, leadName) {
   const types = await loadActivityTypes().catch(() => []);
   const typeId = types.length ? types[0].id : null;
   if (!typeId) { alert('Could not load activity types'); return; }
-  const note = prompt(`Schedule follow-up for "${leadName}"?
+  const note = await oelPrompt(`Schedule follow-up for "${leadName}"?
 Note (optional):`);
   if (note === null) return;
   try {
@@ -6931,7 +7050,7 @@ document.addEventListener('click', e => {
 // ── Add product line ──────────────────────────────────────────────────────────
 async function qbAddLine() {
   if (!odooUid) { alert('Connect to Odoo first'); return; }
-  const q = prompt('Search rental product name:');
+  const q = await oelPrompt('Search rental product name:');
   if (!q) return;
   const statusEl = document.getElementById('qb-status');
   statusEl.style.color = 'var(--muted)';
@@ -6951,7 +7070,7 @@ async function qbAddLine() {
       statusEl.style.color = 'var(--warning)';
       statusEl.textContent = 'Note: no rental-enabled products found — showing all products';
       const choiceList = all.map((p,i) => (i+1)+'. '+p.name).join('\n');
-      const choice = prompt('Pick a product (enter number):\n'+choiceList);
+      const choice = await oelPrompt('Pick a product (enter number):\n'+choiceList);
       if (!choice) { statusEl.textContent = ''; return; }
       const picked = all[parseInt(choice)-1];
       if (!picked) return;
@@ -6963,7 +7082,7 @@ async function qbAddLine() {
       picked = products[0];
     } else {
       const choiceList2 = products.map((p,i) => (i+1)+'. '+p.name).join('\n');
-      const choice2 = prompt('Pick a rental product (enter number):\n'+choiceList2);
+      const choice2 = await oelPrompt('Pick a rental product (enter number):\n'+choiceList2);
       if (!choice2) return;
       picked = products[parseInt(choice2)-1];
       if (!picked) return;
@@ -7034,9 +7153,9 @@ async function qbApplyOdooTemplate(templateId, templateName) {
 }
 
 // ── Local templates ───────────────────────────────────────────────────────────
-function qbSaveLocalTemplate() {
+async function qbSaveLocalTemplate() {
   if (!_qbLines.length) { alert('Add equipment lines first'); return; }
-  const name = prompt('Template name:');
+  const name = await oelPrompt('Template name:');
   if (!name) return;
   const stored = JSON.parse(localStorage.getItem(QB_LOCAL_KEY) || '[]');
   stored.push({ name: name.trim(), lines: _qbLines.map(l=>({...l})) });
@@ -10040,7 +10159,7 @@ async function voBlast() {
   if (!selected.length) { alert('Select vendors with email addresses first'); return; }
   var subject  = document.getElementById('vo-subject')?.value || 'Quote Request';
   var body     = document.getElementById('vo-body')?.value || '';
-  if (!confirm('Send quote request to ' + selected.length + ' vendor' + (selected.length!==1?'s':'') + '?')) return;
+  if (!await oelConfirm('Send quote request to ' + selected.length + ' vendor' + (selected.length!==1?'s':'') + '?')) return;
   var statusEl = document.getElementById('vo-status');
   var sent = 0;
   for (var vi = 0; vi < selected.length; vi++) {
@@ -11498,7 +11617,7 @@ async function oelSubmitNoteModal() {
 async function oelScheduleActivityForContact(idx) {
   const c = _oelLastRecords.contacts[idx];
   if (!c || !odooUid) return;
-  const summary = prompt('Activity for ' + c.name + ':', 'Follow up with ' + c.name);
+  const summary = await oelPrompt('Activity for ' + c.name + ':', 'Follow up with ' + c.name);
   if (!summary || !summary.trim()) return;
   try {
     if (typeof loadActivityTypes === 'function') await loadActivityTypes();
@@ -11854,7 +11973,7 @@ async function cuBulkSchedule() {
   if (!selected.length) { alert('Select contacts first'); return; }
   if (!odooUid) { alert('Connect to Odoo first'); return; }
 
-  const note = prompt('Schedule follow-up for ' + selected.length + ' contact' + (selected.length!==1?'s':'') + '.\n\nNote (optional):');
+  const note = await oelPrompt('Schedule follow-up for ' + selected.length + ' contact' + (selected.length!==1?'s':'') + '.\n\nNote (optional):');
   if (note === null) return; // cancelled
 
   const types = await loadActivityTypes().catch(() => []);
@@ -12095,8 +12214,8 @@ function bounceParseAndAdd(text) {
   if (added && odooUid) bounceScanAll();
 }
 
-function bounceClearAll() {
-  if (_bounceEmails.length && !confirm('Clear all ' + _bounceEmails.length + ' emails?')) return;
+async function bounceClearAll() {
+  if (_bounceEmails.length && !await oelConfirm('Clear all ' + _bounceEmails.length + ' emails?')) return;
   _bounceEmails = [];
   bounceUpdateCount();
   bounceRenderCards();
@@ -12198,7 +12317,7 @@ async function bounceLogAllNotes() {
     e._idx = i; return e.status === 'matched';
   });
   if (!matched.length) { alert('No matched contacts to log to'); return; }
-  if (!confirm('Log bounce note on all ' + matched.length + ' matched contacts?')) return;
+  if (!await oelConfirm('Log bounce note on all ' + matched.length + ' matched contacts?')) return;
   for (const entry of matched) {
     await bounceLogNote(entry._idx);
   }
@@ -12207,7 +12326,7 @@ async function bounceLogAllNotes() {
 async function bounceClearActivities(idx) {
   const entry = _bounceEmails[idx];
   if (!entry || !entry.partner || !entry.activities.length) return;
-  if (!confirm('Cancel all ' + entry.activities.length + ' scheduled activit' + (entry.activities.length!==1?'ies':'y') + ' for ' + entry.partner.name + '?')) return;
+  if (!await oelConfirm('Cancel all ' + entry.activities.length + ' scheduled activit' + (entry.activities.length!==1?'ies':'y') + ' for ' + entry.partner.name + '?')) return;
   const btn = document.getElementById('bounce-clear-act-' + idx);
   if (btn) { btn.disabled = true; btn.textContent = 'Clearing…'; }
   try {
@@ -13155,7 +13274,7 @@ function projOpenProject(projectId) {
 }
 
 async function projNewProject() {
-  const name = prompt('Project name:');
+  const name = await oelPrompt('Project name:');
   if (!name) return;
   if (!odooUid) { alert('Connect to Odoo first'); return; }
   try {
@@ -13326,7 +13445,7 @@ function projNewTaskForProject(projectId, projectName) {
 }
 
 async function projNewTask() {
-  const name = prompt('Task name:');
+  const name = await oelPrompt('Task name:');
   if (!name) return;
   if (!odooUid) { alert('Connect to Odoo first'); return; }
   const projectId = parseInt(document.getElementById('proj-task-project-filter')?.value) || null;
@@ -13360,7 +13479,7 @@ async function projToggleTaskDone(taskId, done) {
 // projEditTask — see modal version below
 
 async function projLogNote(taskId) {
-  const note = prompt('Add a note to this task:');
+  const note = await oelPrompt('Add a note to this task:');
   if (!note || !odooUid) return;
   try {
     await odooExecute(odooUid, 'project.task', 'message_post', [[taskId]], {
@@ -13807,7 +13926,7 @@ async function projSaveLastAs(type) {
     if (!odooUid) { alert('Connect to Odoo first'); return; }
     const suggestedName = firstLine.slice(0, 60)
       .replace(/^(TASK:|#|\*|-|Here is|Here's|Below is)\s*/i,'').trim();
-    const projName = prompt('New project name:', suggestedName);
+    const projName = await oelPrompt('New project name:', suggestedName);
     if (!projName) return;
 
     const statusDiv = document.createElement('div');
@@ -13947,7 +14066,7 @@ async function ptmSave() {
 async function ptmDelete() {
   if (!_ptmTaskId || !odooUid) return;
   const taskName = document.getElementById('ptm-name').value || 'this task';
-  if (!confirm('Delete "' + taskName + '"? This cannot be undone.')) return;
+  if (!await oelConfirm('Delete "' + taskName + '"? This cannot be undone.')) return;
   const statusEl = document.getElementById('ptm-status');
   statusEl.innerHTML = '<div class="dot spin" style="display:inline-block;margin-right:5px"></div> Deleting…';
   try {
@@ -14637,7 +14756,7 @@ async function docLibDownload(idx) {
 }
 
 async function docLibDelete(idx) {
-  if (!confirm('Remove "' + (_docLibrary[idx]?.name || 'this document') + '" from the library?')) return;
+  if (!await oelConfirm('Remove "' + (_docLibrary[idx]?.name || 'this document') + '" from the library?')) return;
   docLibLoad();
   const doc = _docLibrary[idx];
   if (doc && doc.id) await _docDel(doc.id);
@@ -14646,12 +14765,12 @@ async function docLibDelete(idx) {
   docLibRender();
 }
 
-function docLibEditTags(idx) {
+async function docLibEditTags(idx) {
   docLibLoad();
   const doc = _docLibrary[idx];
   if (!doc) return;
   const current = (doc.tags || []).join(', ');
-  const newTags = prompt('Tags (comma-separated):', current);
+  const newTags = await oelPrompt('Tags (comma-separated):', current);
   if (newTags === null) return;
   _docLibrary[idx].tags = newTags.split(',').map(function(t){ return t.trim(); }).filter(Boolean);
   docLibSave();
@@ -14663,7 +14782,7 @@ async function docLibAttachToOdoo(idx) {
   docLibLoad();
   const doc = _docLibrary[idx];
   if (!doc) return;
-  const q = prompt('Search for an Odoo contact to attach to:');
+  const q = await oelPrompt('Search for an Odoo contact to attach to:');
   if (!q) return;
   try {
     const partners = await odooExecute(odooUid, 'res.partner', 'search_read',
@@ -14674,7 +14793,7 @@ async function docLibAttachToOdoo(idx) {
     let picked = partners[0];
     if (partners.length > 1) {
       const list = partners.map(function(p,i){ return (i+1) + '. ' + p.name; }).join('\n');
-      const choice = parseInt(prompt('Pick:\n' + list)) - 1;
+      const choice = parseInt(await oelPrompt('Pick:\n' + list)) - 1;
       if (isNaN(choice)) return;
       picked = partners[choice];
     }
@@ -14802,7 +14921,7 @@ function qsbPushLine(tmplId, name, qty) {
 
 async function qsbAddLine() {
   if (!odooUid) { alert('Connect to Odoo first'); return; }
-  const q = prompt('Search rental product:');
+  const q = await oelPrompt('Search rental product:');
   if (!q) return;
   try {
     const products = await odooExecute(odooUid, 'product.template', 'search_read',
@@ -14815,7 +14934,7 @@ async function qsbAddLine() {
       picked = products[0];
     } else {
       const list = products.map(function(p,i){ return (i+1) + '. ' + p.name + (p.list_price ? ' ($' + p.list_price.toFixed(2) + ')' : ''); }).join('\n');
-      const choice = prompt('Pick a product (enter number):\n' + list);
+      const choice = await oelPrompt('Pick a product (enter number):\n' + list);
       if (!choice) return;
       picked = products[parseInt(choice)-1];
       if (!picked) return;
@@ -14866,18 +14985,18 @@ async function qsbApplyTemplate(i) {
   await qsbVerifyLines(startIdx);
 }
 
-function qsbDeleteTemplate(i) {
-  if (!confirm('Delete this template?')) return;
+async function qsbDeleteTemplate(i) {
+  if (!await oelConfirm('Delete this template?')) return;
   const stored = JSON.parse(localStorage.getItem(QSB_TMPL_KEY) || '[]');
   stored.splice(i, 1);
   localStorage.setItem(QSB_TMPL_KEY, JSON.stringify(stored));
   qsbShowLocalTemplates();
 }
 
-function qsbSaveTemplate() {
+async function qsbSaveTemplate() {
   const lines = _qspMatchedLines.filter(function(l){ return l.matched && l.productTmplId; });
   if (!lines.length) { alert('No matched equipment lines to save — match some products first'); return; }
-  const name = prompt('Template name:');
+  const name = await oelPrompt('Template name:');
   if (!name) return;
   const stored = JSON.parse(localStorage.getItem(QSB_TMPL_KEY) || '[]');
   stored.push({
@@ -15001,10 +15120,10 @@ function samPickContact(i) {
 
 async function samCreateContact() {
   const searchEl = document.getElementById('sam-contact-search');
-  const name = prompt('New contact name:', searchEl?.value || '');
+  const name = await oelPrompt('New contact name:', searchEl?.value || '');
   if (!name) return;
   if (!odooUid) { alert('Connect to Odoo first'); return; }
-  const email = prompt('Email address (optional):') || '';
+  const email = await oelPrompt('Email address (optional):') || '';
   try {
     const vals = { name };
     if (email) vals.email = email;
@@ -15378,10 +15497,10 @@ function newSpec() {
   loadSpec();
 }
 
-function deleteSpec() {
+async function deleteSpec() {
   const idx = parseInt(document.getElementById('spec-selector').value);
   if (isNaN(idx)) return;
-  if (!confirm(`Delete "${leadSpecs[idx].name}"?`)) return;
+  if (!await oelConfirm(`Delete "${leadSpecs[idx].name}"?`)) return;
   leadSpecs.splice(idx, 1);
   saveLeadSpecs();
   rebuildSpecSelector();
@@ -15934,9 +16053,9 @@ HOW TO WRITE THE REPLY (match this structure and tone):
 
 // ── Unlock ────────────────────────────────────────────────
 
-function promptLazUnlock() {
+async function promptLazUnlock() {
   if (lazModeUnlocked) { setStep(6); return; }
-  const pw = prompt('Enter Laz Mode password:');
+  const pw = await oelPrompt('Enter Laz Mode password:');
   if (pw === null) return;
   if (pw === LAZ_PASSWORD) {
     lazModeUnlocked = true;
@@ -15996,7 +16115,7 @@ function lazTab(tab) {
 // Send quick Odoo message to deal rep about a specific opportunity
 async function ddSendQuickMsg(leadId, leadName) {
   if (!odooUid) { alert('Connect to Odoo first'); return; }
-  const note = prompt('Message to rep about "' + leadName + '":\n(Will be logged as internal note in Odoo)');
+  const note = await oelPrompt('Message to rep about "' + leadName + '":\n(Will be logged as internal note in Odoo)');
   if (!note) return;
   try {
     await odooExecute(odooUid, 'crm.lead', 'message_post', [leadId], {
@@ -16930,7 +17049,7 @@ function _renderInboxRow(em, src, idx) {
   trashBtn.onmouseout  = function() { trashBtn.style.color='var(--muted)';  trashBtn.style.borderColor='var(--border)'; };
   trashBtn.onclick = async function() {
     if (!em.uid) { alert('No UID — can only trash IMAP emails'); return; }
-    if (!confirm('Move this email to Trash?')) return;
+    if (!await oelConfirm('Move this email to Trash?')) return;
     trashBtn.disabled = true; trashBtn.textContent = '…';
     const ok = await imapMoveToTrash(em.uid, src);
     if (ok) {
@@ -17629,7 +17748,7 @@ async function _openScheduleActivityModal({ em, emailTo, subject, sender, src, i
 
   clearBtn.onclick = async () => {
     if (!resolvedPartner) return;
-    if (!confirm('Clear all activities for ' + resolvedPartner.name + '?')) return;
+    if (!await oelConfirm('Clear all activities for ' + resolvedPartner.name + '?')) return;
     try {
       const acts = await odooExecute(odooUid, 'mail.activity', 'search',
         [[['res_model','=','res.partner'],['res_id','=',resolvedPartner.id]]]);
@@ -19271,14 +19390,14 @@ function lazSaveTemplate() {
   document.getElementById('laz-tmpl-save-status').textContent = '✓ Saved';
 }
 
-function lazDeleteTemplate() {
+async function lazDeleteTemplate() {
   let idx = parseInt(document.getElementById('laz-tmpl-selector')?.value);
   if (isNaN(idx)) {
     const list = document.getElementById('laz-tmpl-list');
     idx = list ? parseInt(list.dataset.active) : NaN;
   }
   if (isNaN(idx) || !lazTemplates[idx]) return;
-  if (!confirm('Delete "' + lazTemplates[idx].name + '"?')) return;
+  if (!await oelConfirm('Delete "' + lazTemplates[idx].name + '"?')) return;
   lazTemplates.splice(idx, 1);
   saveLazTemplates();
   lazTmplClear();
@@ -21197,7 +21316,7 @@ async function prospPushOdoo(idx) {
 async function prospBatchPushOdoo() {
   const selected = _prospects.map((p,i)=>({p,i})).filter(({p})=>p._selected&&!p._pushed&&!p._dismissed);
   if (!selected.length) return;
-  if (!confirm(`Push ${selected.length} prospect${selected.length>1?'s':''} to Odoo CRM?`)) return;
+  if (!await oelConfirm(`Push ${selected.length} prospect${selected.length>1?'s':''} to Odoo CRM?`)) return;
   for (const {i} of selected) {
     _prospects[i]._selected = false;
     await prospPushOdoo(i);
@@ -21614,7 +21733,7 @@ function updateBatchBar() {
 async function batchPush() {
   const selected = pendingLeads.map((l,i) => ({lead:l,idx:i})).filter(({lead}) => lead._selected && !lead._pushed && !lead._dismissed);
   if (!selected.length) return;
-  if (!confirm(`Push ${selected.length} lead${selected.length>1?'s':''} to Odoo?\n\nEach will be created as an opportunity with today as the activity deadline and assigned per the spec. You can review individually first if preferred.`)) return;
+  if (!await oelConfirm(`Push ${selected.length} lead${selected.length>1?'s':''} to Odoo?\n\nEach will be created as an opportunity with today as the activity deadline and assigned per the spec. You can review individually first if preferred.`)) return;
 
   const bar = document.getElementById('batch-bar');
   if (bar) bar.innerHTML = `<div class="dot spin"></div> <span style="font-size:0.8rem;color:var(--muted)">Pushing ${selected.length} leads…</span>`;
@@ -21703,8 +21822,8 @@ function batchDismiss() {
   renderLeadCards();
 }
 
-function batchDelete() {
-  if (!confirm('Delete all selected leads?')) return;
+async function batchDelete() {
+  if (!await oelConfirm('Delete all selected leads?')) return;
   for (let i = pendingLeads.length - 1; i >= 0; i--) {
     if (pendingLeads[i]._selected) pendingLeads.splice(i, 1);
   }
@@ -21987,12 +22106,12 @@ function hideLeadEmail(idx) {
   renderLeadCards();
 }
 
-function blockLeadSender(idx) {
+async function blockLeadSender(idx) {
   const lead = pendingLeads[idx];
   if (!lead) return;
   const sender = lead.sender_email || lead.sender || lead.fields?.email || '';
   if (!sender) { alert('No sender address found.'); return; }
-  if (!confirm(`Block all emails from ${sender}?\nThey won't be fetched in future scans.`)) return;
+  if (!await oelConfirm(`Block all emails from ${sender}?\nThey won't be fetched in future scans.`)) return;
   loadBlocklist();
   if (!_blocklist.find(b => b.pattern.toLowerCase() === sender.toLowerCase())) {
     _blocklist.push({ id: 'bl_' + Date.now(), pattern: sender, note: 'Blocked from lead capture', ts: Date.now(), source: 'lead-capture', type: 'block' });
@@ -22517,8 +22636,8 @@ function gearGo(fn) {
   fn();
 }
 
-function clearAllData() {
-  if (!confirm('Clear all saved data?\n\nThis removes credentials, IMAP settings, lead specs, and theme from this browser. The action cannot be undone.')) return;
+async function clearAllData() {
+  if (!await oelConfirm('Clear all saved data?\n\nThis removes credentials, IMAP settings, lead specs, and theme from this browser. The action cannot be undone.')) return;
   localStorage.clear();
   location.reload();
 }
@@ -22664,10 +22783,10 @@ function supportSaveTemplate() {
   document.getElementById('support-tmpl-status').textContent = '✓ Saved';
 }
 
-function supportDeleteTemplate() {
+async function supportDeleteTemplate() {
   const idx = parseInt(document.getElementById('support-tmpl-selector').value);
   if (isNaN(idx)) return;
-  if (!confirm(`Delete "${_supportTemplates[idx]?.name}"?`)) return;
+  if (!await oelConfirm(`Delete "${_supportTemplates[idx]?.name}"?`)) return;
   _supportTemplates.splice(idx, 1);
   saveSupportTemplates();
   rebuildSupportTemplateSelector();
@@ -23722,7 +23841,7 @@ async function mawGmailAuthorize() {
 }
 
 async function mawGmailRevoke() {
-  if (!confirm('Remove Gmail authorization? You will need to re-authorize to use Gmail.')) return;
+  if (!await oelConfirm('Remove Gmail authorization? You will need to re-authorize to use Gmail.')) return;
   await fetch('http://localhost:7842/gmail/revoke', { signal: AbortSignal.timeout(4000) }).catch(()=>{});
   mawCheckGmailStatus();
 }
@@ -24011,13 +24130,13 @@ function persGetAllConfigs() {
   return [getImapConfig()]; // fall back to main IMAP
 }
 
-function persUnsubscribeByIdx(idx) {
+async function persUnsubscribeByIdx(idx) {
   const em = _persEmails[idx];
   if (!em?.list_unsubscribe) { alert('No unsubscribe link.'); return; }
   const urls=[...em.list_unsubscribe.matchAll(/<(https?[^>]+)>/gi)].map(m=>m[1]);
   const mailtos=[...em.list_unsubscribe.matchAll(/<(mailto:[^>]+)>/gi)].map(m=>m[1]);
-  if (urls.length){if(confirm('Open unsubscribe page?'))window.open(urls[0],'_blank');}
-  else if (mailtos.length){if(confirm('Send unsubscribe email?'))window.location.href=mailtos[0];}
+  if (urls.length){if(await oelConfirm('Open unsubscribe page?'))window.open(urls[0],'_blank');}
+  else if (mailtos.length){if(await oelConfirm('Send unsubscribe email?'))window.location.href=mailtos[0];}
 }
 
 function persHideEmailAt(idx) {
@@ -24028,12 +24147,12 @@ function persHideEmailAt(idx) {
     _persEmails.some(e=>e._selected) ? 'inline-flex' : 'none';
 }
 
-function persBlockSenderAt(idx) {
+async function persBlockSenderAt(idx) {
   const em = _persEmails[idx];
   if (!em) return;
   const sender = (em.sender_email || em.sender || '').trim();
   if (!sender) { alert('No sender address found.'); return; }
-  if (!confirm(`Block all emails from ${sender}?\n\nThey will be permanently hidden on future scans.\nYou can remove them via the Blocked button.`)) return;
+  if (!await oelConfirm(`Block all emails from ${sender}?\n\nThey will be permanently hidden on future scans.\nYou can remove them via the Blocked button.`)) return;
   loadBlocklist();
   if (!_blocklist.find(b => b.pattern.toLowerCase() === sender.toLowerCase())) {
     _blocklist.push({ id: 'bl_' + Date.now(), pattern: sender, note: '', ts: Date.now(), source: 'personal', type: 'block' });
@@ -24291,9 +24410,9 @@ function mawEditAccount(id) {
   if(acc) mawPickProvider(acc.provider||'custom');
 }
 
-function mawDeleteAccount(id) {
+async function mawDeleteAccount(id) {
   const acc=_persAccounts.find(a=>a.id===id);
-  if(!acc||!confirm('Remove "'+( acc.nickname||acc.email)+'"?')) return;
+  if(!acc||!await oelConfirm('Remove "'+( acc.nickname||acc.email)+'"?')) return;
   _persAccounts=_persAccounts.filter(a=>a.id!==id);
   savePersAccounts();
   mawGoList();
@@ -24612,8 +24731,8 @@ async function persUnsubscribe(idx) {
   if (!em?.list_unsubscribe) { alert('No unsubscribe link found.'); return; }
   const urls = [...em.list_unsubscribe.matchAll(/<(https?[^>]+)>/gi)].map(m=>m[1]);
   const mailtos = [...em.list_unsubscribe.matchAll(/<(mailto:[^>]+)>/gi)].map(m=>m[1]);
-  if (urls.length > 0) { if (confirm('Open unsubscribe page?')) window.open(urls[0],'_blank'); }
-  else if (mailtos.length > 0) { if (confirm('Send unsubscribe email?')) window.location.href = mailtos[0]; }
+  if (urls.length > 0) { if (await oelConfirm('Open unsubscribe page?')) window.open(urls[0],'_blank'); }
+  else if (mailtos.length > 0) { if (await oelConfirm('Send unsubscribe email?')) window.location.href = mailtos[0]; }
 }
 
 // ── Personal Compose ──────────────────────────────────────
@@ -24637,10 +24756,10 @@ function persPickContact(email) {
   document.getElementById('pers-compose-contact-picker').value = '';
 }
 
-function persSaveContact() {
+async function persSaveContact() {
   const email = document.getElementById('pers-compose-to')?.value?.trim();
   if (!email) { document.getElementById('pers-compose-toolbar-status').textContent='Enter an email first'; return; }
-  const name = prompt('Name for this contact:', email.split('@')[0]);
+  const name = await oelPrompt('Name for this contact:', email.split('@')[0]);
   if (!name) return;
   loadQCContacts();
   if (!_qcContacts.find(c=>c.email.toLowerCase()===email.toLowerCase()))
@@ -25176,12 +25295,12 @@ function blocklistRemove(i) {
   document.getElementById('blocklist-status').textContent = 'Removed: ' + removed;
 }
 
-function blocklistEdit(i) {
+async function blocklistEdit(i) {
   const b = _blocklist[i];
   if (!b) return;
-  const newPat  = prompt('Sender/domain pattern:', b.pattern);
+  const newPat  = await oelPrompt('Sender/domain pattern:', b.pattern);
   if (newPat === null) return;
-  const newNote = prompt('Note:', b.note || '');
+  const newNote = await oelPrompt('Note:', b.note || '');
   if (newNote === null) return;
   _blocklist[i].pattern = newPat.trim();
   _blocklist[i].note    = newNote.trim();
@@ -25200,7 +25319,7 @@ function blocklistExport() {
 
 // ── Block / Hide from email row ───────────────────────────
 
-function _lazSenderAction(idx, type) {
+async function _lazSenderAction(idx, type) {
   const em = lazEmails[idx];
   if (!em) return;
   const existing = getSenderEntry(em.sender_email);
@@ -25227,7 +25346,7 @@ function _lazSenderAction(idx, type) {
   }
 
   const domain = em.sender_email.split('@')[1];
-  const domainQ = domain ? confirm(
+  const domainQ = domain ? await oelConfirm(
     (type === 'block' ? '🚫 Block' : '👻 Hide') + ' options for: ' + em.sender_email + '\n\n' +
     'OK = ' + (type === 'block' ? 'Block' : 'Hide') + ' entire domain (@' + domain + ')\n' +
     'Cancel = ' + (type === 'block' ? 'Block' : 'Hide') + ' this address only'
@@ -25278,17 +25397,17 @@ async function lazUnsubscribe(idx) {
   const mailtos = [...unsubLink.matchAll(/<(mailto:[^>]+)>/gi)].map(m => m[1]);
 
   if (urls.length > 0) {
-    if (confirm(`Unsubscribe from ${em.sender_email}?\n\nThis will open the unsubscribe page:\n${urls[0].slice(0,80)}…`)) {
+    if (await oelConfirm(`Unsubscribe from ${em.sender_email}?\n\nThis will open the unsubscribe page:\n${urls[0].slice(0,80)}…`)) {
       window.open(urls[0], '_blank');
       // Offer to also block
-      if (confirm('Unsubscribe page opened. Also block this sender so they\'re hidden in future scans?')) {
+      if (await oelConfirm('Unsubscribe page opened. Also block this sender so they\'re hidden in future scans?')) {
         lazBlockSender(idx);
       }
     }
   } else if (mailtos.length > 0) {
-    if (confirm(`Unsubscribe from ${em.sender_email} by sending an email?\n\n${mailtos[0].slice(0,80)}`)) {
+    if (await oelConfirm(`Unsubscribe from ${em.sender_email} by sending an email?\n\n${mailtos[0].slice(0,80)}`)) {
       window.location.href = mailtos[0];
-      if (confirm('Unsubscribe email opened. Also block this sender?')) {
+      if (await oelConfirm('Unsubscribe email opened. Also block this sender?')) {
         lazBlockSender(idx);
       }
     }
@@ -25322,7 +25441,7 @@ function updateSavedSearchesBadge() {
   badge.textContent   = n;
 }
 
-function prospSaveSearch() {
+async function prospSaveSearch() {
   loadSavedSearches();
   const industry = document.getElementById('prosp-industry')?.value?.trim() || '';
   const location = document.getElementById('prosp-location')?.value?.trim() || '';
@@ -25342,7 +25461,7 @@ function prospSaveSearch() {
   const parts = [industry, location].filter(Boolean);
   const defaultLabel = parts.join(' · ') || titles || 'Search';
 
-  const label = prompt('Name this search:', defaultLabel);
+  const label = await oelPrompt('Name this search:', defaultLabel);
   if (label === null) return; // cancelled
 
   const entry = {
@@ -25499,10 +25618,10 @@ function recallSearch(i) {
   saveSavedSearches();
 }
 
-function savedSearchRename(i) {
+async function savedSearchRename(i) {
   const s = _savedSearches[i];
   if (!s) return;
-  const newLabel = prompt('Rename search:', s.label);
+  const newLabel = await oelPrompt('Rename search:', s.label);
   if (newLabel === null || !newLabel.trim()) return;
   s.label = newLabel.trim();
   saveSavedSearches();
@@ -25608,10 +25727,10 @@ function qcFilterContacts(val) {
   // Future: could filter dropdown to matching contacts
 }
 
-function qcSaveContact() {
+async function qcSaveContact() {
   const email = document.getElementById('qc-to').value.trim();
   if (!email) { document.getElementById('qc-toolbar-status').textContent = 'Enter an email first'; return; }
-  const name = prompt('Name for this contact:', email.split('@')[0]);
+  const name = await oelPrompt('Name for this contact:', email.split('@')[0]);
   if (!name) return;
   const existing = _qcContacts.findIndex(c => c.email.toLowerCase() === email.toLowerCase());
   if (existing >= 0) {
@@ -29453,7 +29572,7 @@ async function cuScheduleActivity(i) {
   const types = await loadActivityTypes().catch(() => []);
   const typeId = types.length ? types[0].id : null;
   if (!typeId) { alert('Could not load activity types'); return; }
-  const note = prompt(`Schedule follow-up for "${lead.name}"?\nNote:`);
+  const note = await oelPrompt(`Schedule follow-up for "${lead.name}"?\nNote:`);
   if (note === null) return;
   try {
     const actModel = lead._isContact ? 'res.partner' : 'crm.lead';
@@ -29471,20 +29590,20 @@ async function cuScheduleActivity(i) {
 }
 
 // ── Template management ───────────────────────────────────────────────────────
-function cuSaveAsTemplate(i) {
+async function cuSaveAsTemplate(i) {
   const draft = _cuLeads[i]?._draft;
   if (!draft) return;
-  const name = prompt('Template name:');
+  const name = await oelPrompt('Template name:');
   if (!name) return;
   _cuTemplates.push({ id: Date.now(), name: name.trim(), body: draft, isDefault: false, created: new Date().toISOString() });
   localStorage.setItem(CU_TEMPLATES_KEY, JSON.stringify(_cuTemplates));
   cuRenderTemplates();
 }
 
-function cuNewTemplate() {
-  const name = prompt('Template name:');
+async function cuNewTemplate() {
+  const name = await oelPrompt('Template name:');
   if (!name) return;
-  const body = prompt('Template body (use {{customer_name}}, {{deal_name}}, {{rep_name}}, {{last_contact}}):') || '';
+  const body = await oelPrompt('Template body (use {{customer_name}}, {{deal_name}}, {{rep_name}}, {{last_contact}}):') || '';
   _cuTemplates.push({ id: Date.now(), name: name.trim(), body, isDefault: false, created: new Date().toISOString() });
   localStorage.setItem(CU_TEMPLATES_KEY, JSON.stringify(_cuTemplates));
   cuRenderTemplates();
@@ -29521,8 +29640,8 @@ function cuDeleteTemplate(i) {
 }
 
 // ── Saved searches ────────────────────────────────────────────────────────────
-function cuSaveSearch() {
-  const name = prompt('Search name:');
+async function cuSaveSearch() {
+  const name = await oelPrompt('Search name:');
   if (!name) return;
   const search = {
     id: Date.now(), name: name.trim(),
@@ -31543,11 +31662,11 @@ window.persTab = function(tab) {
   // ── Create activities ──────────────────────────────────────────────────────
   window.deCreateActivities = window.deScheduleChecked; // legacy alias
 
-  window.deConfirmReset = function () {
+  window.deConfirmReset = async function () {
     if (S.scheduled.size > 0) {
-      if (!confirm('You have ' + S.scheduled.size + ' scheduled item' + (S.scheduled.size === 1 ? '' : 's') + ' this session. Load a new list anyway? (Odoo activities are already saved.)')) return;
+      if (!await oelConfirm('You have ' + S.scheduled.size + ' scheduled item' + (S.scheduled.size === 1 ? '' : 's') + ' this session. Load a new list anyway? (Odoo activities are already saved.)')) return;
     } else if (S.matches.length > 0) {
-      if (!confirm('Load a new list? Current results will be cleared.')) return;
+      if (!await oelConfirm('Load a new list? Current results will be cleared.')) return;
     }
     // Reset the file input so the same file can be re-selected
     var fi = document.getElementById('de-file-input');
@@ -32439,13 +32558,13 @@ document.addEventListener('DOMContentLoaded', hslInit);
   function editor() { return $('rc-editor'); }
 
   window.actRcFmt = function(cmd) { editor().focus(); document.execCommand(cmd, false, null); actRcSaveDraft(); };
-  window.actRcLink = function() {
-    const url = prompt('Link address (https://…):', 'https://');
+  window.actRcLink = async function() {
+    const url = await oelPrompt('Link address (https://…):', 'https://');
     if (!url || url === 'https://') return;
     editor().focus(); document.execCommand('createLink', false, url); actRcSaveDraft();
   };
-  window.actRcClearEditor = function() {
-    if (editor().innerHTML.trim() && !confirm('Clear the message?')) return;
+  window.actRcClearEditor = async function() {
+    if (editor().innerHTML.trim() && !await oelConfirm('Clear the message?')) return;
     editor().innerHTML = ''; actRcSaveDraft();
   };
 
@@ -32601,7 +32720,7 @@ document.addEventListener('DOMContentLoaded', hslInit);
   window.actRcOpenEml = async function() {
     if (!needMessage()) return;
     const s = needSel(); if (!s.length) return;
-    if (s.length > 15 && !confirm(`This will create ${s.length} separate draft files. Your browser may ask permission to download multiple files.\n\nContinue?`)) return;
+    if (s.length > 15 && !await oelConfirm(`This will create ${s.length} separate draft files. Your browser may ask permission to download multiple files.\n\nContinue?`)) return;
     for (let i = 0; i < s.length; i++) {
       composeStatus(`Creating draft ${i + 1} of ${s.length}…`);
       downloadEml(s[i]);
@@ -32616,12 +32735,12 @@ document.addEventListener('DOMContentLoaded', hslInit);
     downloadEml(r); composeStatus(`✓ Draft for ${r.name} created.`, 'var(--success)'); renderList();
   };
 
-  window.actRcOpenNextMailto = function() {
+  window.actRcOpenNextMailto = async function() {
     if (!needMessage()) return;
     const s = needSel(); if (!s.length) return;
     let r = s.find(x => !x.mailto);
     if (!r) {
-      if (!confirm('All selected recipients have already been opened. Start over from the first one?')) return;
+      if (!await oelConfirm('All selected recipients have already been opened. Start over from the first one?')) return;
       s.forEach(x => x.mailto = false); r = s[0];
     }
     const subject = currentSubject(r);
@@ -32674,7 +32793,7 @@ document.addEventListener('DOMContentLoaded', hslInit);
     };
     if (!o.done && !o.note && !o.fu && !o.tags.length) { alert('Nothing is checked — tick at least one thing to apply.'); return; }
     const plan = [o.note && 'log a note', o.done && 'clear the activity', o.fu ? `schedule a follow-up in ${o.days} days` : 'NOT schedule a follow-up', o.tags.length && `tag with “${o.tags.join('”, “')}”`].filter(Boolean).join(' · ');
-    if (!confirm(`For ${s.length} recipient${s.length !== 1 ? 's' : ''}: ${plan}.\n\nOnly continue if the emails have actually gone out.`)) return;
+    if (!await oelConfirm(`For ${s.length} recipient${s.length !== 1 ? 's' : ''}: ${plan}.\n\nOnly continue if the emails have actually gone out.`)) return;
 
     const btn = $('rc-finish-btn'), prog = $('rc-finish-progress'), out = $('rc-finish-results');
     btn.disabled = true; out.innerHTML = '';
@@ -33007,11 +33126,11 @@ document.addEventListener('DOMContentLoaded', hslInit);
     }
   };
 
-  window.mmOpenMailto = function() {
+  window.mmOpenMailto = async function() {
     const selected = mmCurrentBatch().filter(c => c.selected);
     if (!selected.length) { alert('Select at least one recipient in this batch first.'); return; }
     if (selected.length > 20) {
-      if (!confirm(`${selected.length} recipients is a lot for a single mailto link — Outlook may truncate or reject the list. Use "Copy recipient list" instead for batches this size.\n\nTry opening it anyway?`)) return;
+      if (!await oelConfirm(`${selected.length} recipients is a lot for a single mailto link — Outlook may truncate or reject the list. Use "Copy recipient list" instead for batches this size.\n\nTry opening it anyway?`)) return;
     }
     const placement = document.querySelector('input[name="mm-placement"]:checked')?.value || 'bcc';
     const subject = document.getElementById('mm-subject')?.value || '';
@@ -33611,7 +33730,7 @@ document.addEventListener('DOMContentLoaded', hslInit);
   }
 
   window.expApprove = async function(expenseId) {
-    if (!confirm('Approve this expense?')) return;
+    if (!await oelConfirm('Approve this expense?')) return;
     const statusEl = document.getElementById('exp-status');
     try {
       if (statusEl) statusEl.textContent = 'Approving…';
@@ -34016,7 +34135,7 @@ document.addEventListener('DOMContentLoaded', hslInit);
   };
 
   window.vbValidatePost = async function(billId) {
-    if (!confirm('Validate and post this bill? This locks it into your books.')) return;
+    if (!await oelConfirm('Validate and post this bill? This locks it into your books.')) return;
     const statusEl = document.getElementById('vb-status');
     try {
       if (statusEl) statusEl.textContent = 'Posting…';
@@ -34314,8 +34433,8 @@ document.addEventListener('DOMContentLoaded', hslInit);
     oiGoTo('done');
   };
 
-  window.oiConfirmReset = function() {
-    if (OI.rows.length && !confirm('Start a new list? This clears the current one.')) return;
+  window.oiConfirmReset = async function() {
+    if (OI.rows.length && !await oelConfirm('Start a new list? This clears the current one.')) return;
     OI = { headers: [], rows: [], mapping: {}, opps: [], fileName: '' };
     const fileInput = document.getElementById('oi-file-input');
     if (fileInput) fileInput.value = '';
@@ -35174,7 +35293,7 @@ document.addEventListener('DOMContentLoaded', hslInit);
     const groups = {};
     rows.forEach(r => { const k = (rcMerchantKeys(r.description).k2 || r.description).toLowerCase(); (groups[k] = groups[k] || []).push(r); });
     const keys = Object.keys(groups);
-    if (!_rcAiOk && !confirm(`Send ${keys.length} merchant description${keys.length === 1 ? '' : 's'} (no amounts) and your account names to Groq to get suggestions?\n\nResults are guesses — they're never ticked for you.`)) return;
+    if (!_rcAiOk && !await oelConfirm(`Send ${keys.length} merchant description${keys.length === 1 ? '' : 's'} (no amounts) and your account names to Groq to get suggestions?\n\nResults are guesses — they're never ticked for you.`)) return;
     _rcAiOk = true;
     const typed = _rcAccounts.some(a => a.account_type);
     const chart = _rcAccounts.filter(a => !typed || /^(expense|income)/.test(a.account_type || '')).slice(0, 300);
@@ -35379,7 +35498,7 @@ document.addEventListener('DOMContentLoaded', hslInit);
     const conf = RC.coding.filter(r => !r._saved && r._conf === 'high' && (r._accountId || r._partnerId));
     if (!conf.length) { alert('No Confident rows to accept right now.'); return; }
     const total = conf.reduce((s, r) => s + Math.abs(r.amount || 0), 0);
-    if (!confirm(`Save ${conf.length} Confident row${conf.length === 1 ? '' : 's'} (${rcMoney(total)} total) to Odoo?\n\nThese match your rules or a solid history. Likely and Review rows are left alone.`)) return;
+    if (!await oelConfirm(`Save ${conf.length} Confident row${conf.length === 1 ? '' : 's'} (${rcMoney(total)} total) to Odoo?\n\nThese match your rules or a solid history. Likely and Review rows are left alone.`)) return;
     RC.coding.forEach(r => { r._selected = conf.includes(r); r._selTouched = true; });
     await rcSaveChecked(true);
   };
@@ -35577,7 +35696,7 @@ document.addEventListener('DOMContentLoaded', hslInit);
     if (!odooUid) { alert('Connect to Odoo first'); return; }
     const targets = RC.deviations.filter(d => d._selected && !d._saved);
     if (!targets.length) { alert('Select at least one deviation first.'); return; }
-    if (!confirm(`Rewrite the account on ${targets.length} transaction${targets.length!==1?'s':''} to match the suggested account? This edits posted accounting entries.`)) return;
+    if (!await oelConfirm(`Rewrite the account on ${targets.length} transaction${targets.length!==1?'s':''} to match the suggested account? This edits posted accounting entries.`)) return;
 
     const statusEl = document.getElementById('rc-dev-status');
     let ok = 0, err = 0;
@@ -35690,7 +35809,7 @@ document.addEventListener('DOMContentLoaded', hslInit);
   async function bulk(kind, stId, label, fn, confirmMsg) {
     const ids = sel(kind);
     if (!ids.length) { st(stId, 'Tick at least one row first.', 'var(--warning)'); return; }
-    if (!confirm((confirmMsg || label) + '\n\n' + ids.length + ' selected. Continue?')) return;
+    if (!await oelConfirm((confirmMsg || label) + '\n\n' + ids.length + ' selected. Continue?')) return;
     st(stId, 'Working…');
     try { const msg = await fn(ids); st(stId, '✓ ' + msg, 'var(--success)'); PH.loaded = false; await phLoad(); }
     catch (e) { st(stId, '✗ ' + escHtml(e.message), 'var(--danger)'); }
@@ -35913,7 +36032,7 @@ document.addEventListener('DOMContentLoaded', hslInit);
     const ids = Array.from(document.querySelectorAll('input.dh-cb[data-k="' + k + '"]:checked')).map(c => parseInt(c.value));
     const stId = 'dh-st-' + k;
     if (!ids.length) { st(stId, 'Tick at least one row first.', 'var(--warning)'); return; }
-    if (!confirm(f.confirm + '\n\n' + ids.length + ' selected. Continue?')) return;
+    if (!await oelConfirm(f.confirm + '\n\n' + ids.length + ' selected. Continue?')) return;
     st(stId, 'Working…');
     try { const msg = await f.fn(ids); await dhLoad(); st(stId, '✓ ' + msg, 'var(--success)'); }
     catch (e) { st(stId, '✗ ' + escHtml(e.message), 'var(--danger)'); }
@@ -36064,7 +36183,7 @@ Thanks,`
     const fresh = targets.filter(i => !hasSet.has(i.id));
     if (!fresh.length) { alert('Nothing to add: every overdue invoice already has a to-do' + (likelyPaid.length ? ' (' + likelyPaid.length + ' skipped as probably paid)' : '') + '.'); return; }
     const total = fresh.reduce((a, i) => a + (i.amountDue || 0), 0);
-    if (!confirm('Create ' + fresh.length + ' collect-payment to-do' + (fresh.length !== 1 ? 's' : '') + ' for ' + whoName + ' (' + arFmt2(total) + ' overdue)?\n\n' +
+    if (!await oelConfirm('Create ' + fresh.length + ' collect-payment to-do' + (fresh.length !== 1 ? 's' : '') + ' for ' + whoName + ' (' + arFmt2(total) + ' overdue)?\n\n' +
       (hasSet.size ? hasSet.size + ' already have one and are skipped.\n' : '') + (likelyPaid.length ? likelyPaid.length + ' look paid by a bank deposit and are skipped.' : ''))) return;
     const typeId = await _oelDefaultActTypeId();
     const today = new Date().toISOString().slice(0, 10);
@@ -36791,7 +36910,7 @@ Thanks,`
     const body = document.getElementById('ar-comp-body')?.value || '';
     const tplKey = modal?.dataset.currentTpl || 'first';
 
-    if (arIsLikely(inv) && !confirm('A bank deposit that looks like payment for this invoice has not been reconciled yet.\n\nSend the reminder anyway?')) return;
+    if (arIsLikely(inv) && !await oelConfirm('A bank deposit that looks like payment for this invoice has not been reconciled yet.\n\nSend the reminder anyway?')) return;
 
     const mailto = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     window.location.href = mailto;
@@ -37075,10 +37194,10 @@ Thanks,`
     const allCb = document.getElementById('rfq-lines-select-all');
     if (allCb) allCb.checked = RFQ.lines.length > 0 && n === RFQ.lines.length;
   }
-  window.rfqDeleteSelectedLines = function() {
+  window.rfqDeleteSelectedLines = async function() {
     const n = RFQ.lines.filter(l => l.selected !== false).length;
     if (!n) { alert('Nothing selected.'); return; }
-    if (!confirm(`Remove ${n} line${n!==1?'s':''} from this RFQ?`)) return;
+    if (!await oelConfirm(`Remove ${n} line${n!==1?'s':''} from this RFQ?`)) return;
     RFQ.lines = RFQ.lines.filter(l => l.selected === false);
     rfqRenderLines();
   };
@@ -37423,7 +37542,7 @@ Thanks,`
 
   // ── Confirm RFQ → PO ─────────────────────────────────────────────────
   window.rfqConfirmToPO = async function(poId) {
-    if (!confirm('Confirm this RFQ into a Purchase Order? Do this once the vendor has agreed to the order.')) return;
+    if (!await oelConfirm('Confirm this RFQ into a Purchase Order? Do this once the vendor has agreed to the order.')) return;
     try {
       try {
         await odooExecute(odooUid, 'purchase.order', 'button_confirm', [[poId]], {});
@@ -38402,7 +38521,7 @@ ${header}${hero}${intro}${pk}${why}${btn}${footer}
   const isDirty = () => JSON.stringify(S) !== savedJson;
   function loadInto(id, data) { curId = id; S = merge(master(), data); savedJson = JSON.stringify(S); if (id === 'master') savedJson = JSON.stringify(S); renderSelect(); renderEditor(); renderPreview(); $('es-dirty').textContent = ''; kv('set', 'draft', { data: S, tplId: curId }); }
   window.esSwitch = async function(id) {
-    if (isDirty() && !confirm('You have unsaved changes to this template. Switch anyway and discard them?')) { $('es-tpl-select').value = curId; return; }
+    if (isDirty() && !await oelConfirm('You have unsaved changes to this template. Switch anyway and discard them?')) { $('es-tpl-select').value = curId; return; }
     if (id === 'master') { loadInto('master', master()); return; }
     const t = await kv('get', 'tpl:' + id); if (!t) { status('Template not found', true); return; }
     loadInto(id, t.data);
@@ -38418,20 +38537,20 @@ ${header}${hero}${intro}${pk}${why}${btn}${footer}
   };
   window.esSaveAs = async function() {
     const cur = tpls.find(x => x.id === curId);
-    const name = (prompt('Name this template:', cur ? cur.name + ' copy' : 'New campaign') || '').trim(); if (!name) return;
+    const name = (await oelPrompt('Name this template:', cur ? cur.name + ' copy' : 'New campaign') || '').trim(); if (!name) return;
     const id = 't' + Date.now().toString(36); if (await persist(id, name)) status('Saved as “' + name + '”');
   };
   window.esRename = async function() {
     const t = tpls.find(x => x.id === curId); if (!t) { status('Save it first, then you can rename it.', true); return; }
-    const name = (prompt('Rename template:', t.name) || '').trim(); if (!name) return;
+    const name = (await oelPrompt('Rename template:', t.name) || '').trim(); if (!name) return;
     if (await persist(curId, name)) status('Renamed');
   };
   window.esDelete = async function() {
     const t = tpls.find(x => x.id === curId); if (!t) { status('The master template can’t be deleted — it’s the starting point.', true); return; }
-    if (!confirm('Delete template “' + t.name + '”? This can’t be undone.')) return;
+    if (!await oelConfirm('Delete template “' + t.name + '”? This can’t be undone.')) return;
     await kv('del', 'tpl:' + curId); await loadList(); loadInto('master', master()); status('Deleted');
   };
-  window.esResetMaster = function() { if (isDirty() && !confirm('Discard your edits and go back to the master design?')) return; loadInto('master', master()); };
+  window.esResetMaster = async function() { if (isDirty() && !await oelConfirm('Discard your edits and go back to the master design?')) return; loadInto('master', master()); };
   window.esSetTheme = function(t) { S.theme = t; touched(); };
   window.esSetView = function(v) { view = v; renderPreview(); };
   window.esExportJson = function() {
@@ -38446,7 +38565,7 @@ ${header}${hero}${intro}${pk}${why}${btn}${footer}
     r.onload = async () => {
       try {
         const j = JSON.parse(r.result); if (j.app !== 'odoolink-email-template' || !j.data) throw new Error('not an OdooLink email template file');
-        if (isDirty() && !confirm('Importing will replace what’s on screen (unsaved edits are lost). Continue?')) return;
+        if (isDirty() && !await oelConfirm('Importing will replace what’s on screen (unsaved edits are lost). Continue?')) return;
         S = merge(master(), j.data); const id = 't' + Date.now().toString(36);
         if (await persist(id, String(j.name || 'Imported template').slice(0, 60))) { renderEditor(); renderPreview(); status('Imported “' + (j.name || 'template') + '”'); }
       } catch (e) { status('Import failed: ' + e.message, true); }
@@ -38504,13 +38623,13 @@ ${header}${hero}${intro}${pk}${why}${btn}${footer}
       else if (t.dataset.col) { S.colors[t.dataset.col] = t.value; touched(); }
     });
     ed.addEventListener('change', e => { const t = e.target; if (t.dataset.show) { S.show[t.dataset.show] = t.checked; touched(); } else if (t.tagName === 'SELECT' && t.dataset.p) { setP(S, t.dataset.p, t.value); touched(); } });
-    ed.addEventListener('click', e => {
+    ed.addEventListener('click', async e => {
       const b = e.target.closest('[data-act]'); if (!b) return; const a = b.dataset.act, i = +b.dataset.i, cards = S.packages.cards;
       if (a === 'pick') { const w = b.closest('.es-img'); pickTarget = { p: w.dataset.img, w: +w.dataset.w, h: +w.dataset.h }; picker.click(); return; }
       if (a === 'clear') { const w = b.closest('.es-img'); setP(S, w.dataset.img, ''); renderEditor(); touched(); return; }
       if (a === 'resetcol') S.colors = { brand: '', accent: '' };
       else if (a === 'addcard') cards.push({ img: '', alt: '', tone: 'accent', label: 'New offer', title: 'New feature', text: 'Describe it here.', linkText: 'Learn more', link: S.brand.web || '' });
-      else if (a === 'delcard') { if (!confirm('Remove card ' + (i + 1) + '?')) return; cards.splice(i, 1); }
+      else if (a === 'delcard') { if (!await oelConfirm('Remove card ' + (i + 1) + '?')) return; cards.splice(i, 1); }
       else if (a === 'up' && i > 0) cards.splice(i - 1, 0, cards.splice(i, 1)[0]);
       else if (a === 'down' && i < cards.length - 1) cards.splice(i + 1, 0, cards.splice(i, 1)[0]);
       else if (a === 'addwhy') S.why.items.push('New point: describe it here.');
@@ -38531,7 +38650,7 @@ ${header}${hero}${intro}${pk}${why}${btn}${footer}
     if (brief.length < 10) { aiStatus('Tell me a little about the campaign first (audience, offer, tone).', true); return; }
     const scope = [...document.querySelectorAll('.es-ai-scope:checked')].map(x => x.value);
     if (!scope.length) { aiStatus('Tick at least one part to rewrite.', true); return; }
-    if (!aiOk && !confirm('Send your brief and the current wording of this email to Groq to write new copy?\n\nNothing is changed until it replies, and you can undo it.')) return;
+    if (!aiOk && !await oelConfirm('Send your brief and the current wording of this email to Groq to write new copy?\n\nNothing is changed until it replies, and you can undo it.')) return;
     aiOk = true;
     const cur = {}, want = {};
     if (scope.includes('hero')) { cur.hero = { pill: S.hero.pill, headline: S.hero.headline, sub: S.hero.sub }; want.hero = '{"pill":"≤40 chars, ALL CAPS ok","headline":"≤70 chars; wrap 1-3 key words in [[double brackets]]","sub":"≤160 chars"}'; }

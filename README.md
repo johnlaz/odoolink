@@ -107,6 +107,7 @@ If you change `server.py`, `imap_server.py` or `start.bat`, also refresh the emb
 
 | Version | Highlights |
 |---------|-----------|
+| **v15.79** | All pop-ups are app-themed: the browser's own alert/confirm/prompt boxes are replaced by a themed dialog and toast system (short alerts become toasts, long ones dialogs; delete/remove/clear confirms are red; Esc cancels, Enter confirms; clicking outside never closes). 92 confirm/prompt call sites now use `await oelConfirm()` / `await oelPrompt()`; the 248 `alert()` calls are themed automatically. |
 | **v15.78** | Sidebar: Reports renamed **Dashboard** and moved to the top; Help and Settings now sit together at the bottom (the REPORTS section is gone). Help and search updated. |
 | **v15.77** | Version bump to refresh installed copies that were stuck on an old cached version. |
 | **v15.76** | Prospecting made honest: removed AI "Generate prospects" and AI guessing of exhibitor contacts (they invented names, emails and phones). Exhibitors with no contact now show **Contact needed** with a lookup link; company-only prospects push to Odoo as a company. Find shows now warns that details come from AI memory. |
