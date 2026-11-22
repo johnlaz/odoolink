@@ -107,6 +107,7 @@ If you change `server.py`, `imap_server.py` or `start.bat`, also refresh the emb
 
 | Version | Highlights |
 |---------|-----------|
+| **v15.78** | Sidebar: Reports renamed **Dashboard** and moved to the top; Help and Settings now sit together at the bottom (the REPORTS section is gone). Help and search updated. |
 | **v15.77** | Version bump to refresh installed copies that were stuck on an old cached version. |
 | **v15.76** | Prospecting made honest: removed AI "Generate prospects" and AI guessing of exhibitor contacts (they invented names, emails and phones). Exhibitors with no contact now show **Contact needed** with a lookup link; company-only prospects push to Odoo as a company. Find shows now warns that details come from AI memory. |
 | **v15.75** | HTTP 502 fix everywhere: every Odoo read now retries gateway errors (502/503/504) up to twice (writes are never retried); Pipeline Health loads one query at a time with activities in small pages. |

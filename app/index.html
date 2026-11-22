@@ -3,7 +3,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <meta name="oel-version" content="v15.77">
+  <meta name="oel-version" content="v15.78">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="mobile-web-app-capable" content="yes">
@@ -849,6 +849,16 @@
   </div>
 
   <nav class="sb-nav">
+    <div class="sb-item" id="nav-reports" onclick="navTo('reports')" title="Dashboard — pipeline, sales and accounting at a glance, plus sales reporting">
+      <div class="sb-item-icon">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M2 11V7M5.5 11V4M9 11V8M12.5 11V5.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"></path>
+        </svg>
+      </div>
+      <span class="sb-item-label">Dashboard</span>
+    </div>
+
+    <div class="sb-divider"></div>
     <div class="sb-section-label">DAILY</div>
 
     <div class="sb-item active" id="nav-inbox" onclick="navTo('inbox')" title="Inbox">
@@ -1090,16 +1100,7 @@
     </div>
 
     <div class="sb-divider"></div>
-    <div class="sb-section-label">REPORTS</div>
-
-    <div class="sb-item" id="nav-reports" onclick="navTo('reports')" title="Reports">
-      <div class="sb-item-icon">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-          <path d="M2 11V7M5.5 11V4M9 11V8M12.5 11V5.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"></path>
-        </svg>
-      </div>
-      <span class="sb-item-label">Reports</span>
-    </div>
+    <div id="sb-bottom-anchor" style="height:0;overflow:hidden"></div>
 
     <div class="sb-item" id="nav-help" onclick="navTo('help')" title="Help &amp; Guide">
       <div class="sb-item-icon">
@@ -1110,7 +1111,6 @@
       </div>
       <span class="sb-item-label">Help</span>
     </div>
-    <div class="sb-divider"></div>
 
     <div class="sb-item" id="nav-settings" onclick="openSettings()" title="Settings">
       <div class="sb-item-icon">
@@ -3492,7 +3492,7 @@ Support Team"></textarea>
           <div class="card-title">⤓ Export &amp; Print</div>
           <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
             <p style="margin:0 0 4px">The <strong style="color:var(--text)">Export</strong> button in the top bar works on every tab: <strong style="color:var(--text)">Print / Save as PDF</strong> produces a clean, light, one-column version of whatever is on screen (no sidebar or buttons) — use it instead of screenshots — and <strong style="color:var(--text)">Excel / CSV</strong> download the tables you're looking at (one sheet per table).</p>
-            <p style="margin:0">Sales Reporting, the Accounting summary on the Reports tab, Invoice Follow-up and Reconciliation also have their own <strong style="color:var(--text)">⤓ Export / Print</strong> button that exports just that block with the filters currently applied.</p>
+            <p style="margin:0">Sales Reporting, the Accounting summary on the Dashboard tab, Invoice Follow-up and Reconciliation also have their own <strong style="color:var(--text)">⤓ Export / Print</strong> button that exports just that block with the filters currently applied.</p>
           </div>
         </div>
 
@@ -11310,7 +11310,7 @@ const OEL_SEARCH_INDEX = [
   { id:'datahealth',   label:'Data Health',       keywords:'scan odoo clean cleanup duplicate duplicates contacts email bad placeholder vendor company person no email stale quotes test quotes stacked follow-up audit data quality health report export merge archive' },
   { id:'dataexplorer', label:'Data Explorer',     keywords:'upload quickbooks export customer list sync review data import spreadsheet' },
   { id:'docs',         label:'Documents',         keywords:'w9 coi contract document library files attach paperwork' },
-  { id:'reports',      label:'Reports',           keywords:'dashboard pipeline sales report commission rep stage revenue accounting aged ar top customers overdue invoices sales reporting' },
+  { id:'reports',      label:'Dashboard',         keywords:'reports home start dashboard pipeline sales report commission rep stage revenue accounting aged ar top customers overdue invoices sales reporting' },
   { id:'help',         label:'Help',              keywords:'help guide troubleshooting quick reference setup how does this work connect connection failed failing retry cors proxy odoo not connecting' },
 ];
 
@@ -28291,7 +28291,6 @@ window.inboxTab = function(tab) {
     { key:'work',     label:'WORK & COMMS', items:['nav-projects','nav-discuss','nav-support'] },
     { key:'utils',    label:'UTILITIES',    items:['nav-bounces','nav-expenses','nav-salestargeting','nav-dataexplorer','nav-datahealth','nav-docs'] },
     { key:'accounting',label:'ACCOUNTING',   items:['nav-reconcile','nav-arfollowup','nav-finreports'] },
-    { key:'reports',  label:'REPORTS',      items:['nav-reports','nav-help'] },
   ];
 
   // Captured once, in authored DOM order, before any reordering ever runs —
@@ -28346,8 +28345,7 @@ window.inboxTab = function(tab) {
     // leave any later manual reordering alone.
     try {
       if (!localStorage.getItem(KEY + '_acct_v1')) {
-        var a = order.indexOf('accounting'), r = order.indexOf('reports');
-        if (a >= 0 && r >= 0 && a > r) { order.splice(a, 1); order.splice(r, 0, 'accounting'); }
+        
         localStorage.setItem(KEY + '_acct_v1', '1');
       }
     } catch(e) {}
@@ -28364,7 +28362,7 @@ window.inboxTab = function(tab) {
     var saved = load();
     if (!saved || !saved.length) return;
     var nav = document.querySelector('#sidebar nav.sb-nav');
-    var settingsEl = document.getElementById('nav-settings');
+    var settingsEl = document.getElementById('sb-bottom-anchor');
     if (!nav || !settingsEl) return;
 
     var order = normalize(saved).filter(function(k){ return refs[k]; });
@@ -28497,7 +28495,7 @@ window.navTo = function(section) {
     discuss:    {panel:'panel-discuss',    title:'Discuss',      hasSrc:false},
     support:    {panel:'panel-support',    title:'Support',      hasSrc:false},
     prospect:   {panel:'panel-prospect',   title:'Prospecting',  hasSrc:false},
-    reports:    {panel:'panel-reports',    title:'Reports',      hasSrc:false},
+    reports:    {panel:'panel-reports',    title:'Dashboard',    hasSrc:false},
     reconcile:  {panel:'panel-reconcile',  title:'Reconciliation', hasSrc:false},
     arfollowup: {panel:'panel-arfollowup', title:'Invoice Follow-up', hasSrc:false},
     pipehealth: {panel:'panel-pipehealth', title:'Pipeline Health', hasSrc:false},
@@ -28732,7 +28730,7 @@ const NAV_PANELS = {
   discuss:      { panel: 'panel-discuss',      title: 'Discuss',       hasSrc: false },
   support:      { panel: 'panel-support',      title: 'Support',       hasSrc: false },
   prospect:     { panel: 'panel-prospect',     title: 'Prospecting',   hasSrc: false },
-  reports:      { panel: 'panel-reports',      title: 'Reports',       hasSrc: false },
+  reports:      { panel: 'panel-reports',      title: 'Dashboard',     hasSrc: false },
   catchup:      { panel: 'panel-catchup',      title: 'Dormant Contacts', hasSrc: false },
   vendor:       { panel: 'panel-vendor',       title: 'Vendor Outreach',  hasSrc: false },
   docs:         { panel: 'panel-docs',         title: 'Documents',        hasSrc: false },
