@@ -107,6 +107,7 @@ If you change `server.py`, `imap_server.py` or `start.bat`, also refresh the emb
 
 | Version | Highlights |
 |---------|-----------|
+| **v15.80** | Pick lists and follow-ups are now real dialogs instead of type-a-number prompts. New searchable pick list (live Odoo search, arrow keys + Enter, click) used for Quote Builder add-line, Smart Builder add-line, and Docs Library attach-to-contact. New Schedule Follow-up dialog (type, summary, due date, note, assignee checkboxes with you pre-ticked; one activity per person, verified by read-back) used for Pipeline follow-ups, contact search, Contact Updates single and bulk. Also fixes follow-ups that failed because activity types were not loading. |
 | **v15.79** | All pop-ups are app-themed: the browser's own alert/confirm/prompt boxes are replaced by a themed dialog and toast system (short alerts become toasts, long ones dialogs; delete/remove/clear confirms are red; Esc cancels, Enter confirms; clicking outside never closes). 92 confirm/prompt call sites now use `await oelConfirm()` / `await oelPrompt()`; the 248 `alert()` calls are themed automatically. |
 | **v15.78** | Sidebar: Reports renamed **Dashboard** and moved to the top; Help and Settings now sit together at the bottom (the REPORTS section is gone). Help and search updated. |
 | **v15.77** | Version bump to refresh installed copies that were stuck on an old cached version. |

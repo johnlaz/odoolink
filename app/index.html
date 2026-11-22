@@ -3,7 +3,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <meta name="oel-version" content="v15.79">
+  <meta name="oel-version" content="v15.80">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="mobile-web-app-capable" content="yes">
@@ -654,6 +654,16 @@
   .oeld-input { width: 100%; margin-top: 14px; box-sizing: border-box; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 9px 11px; color: var(--text); font-family: inherit; font-size: 0.88rem; outline: none; }
   .oeld-input:focus { border-color: var(--accent); }
   textarea.oeld-input { min-height: 96px; resize: vertical; }
+  .oeld-list { margin-top: 10px; max-height: 280px; overflow-y: auto; border-radius: 8px; }
+  .oeld-item { padding: 8px 11px; border-radius: 8px; cursor: pointer; border: 1px solid transparent; }
+  .oeld-item.sel { background: var(--surface2); border-color: var(--accent); }
+  .oeld-item-l { font-size: 0.86rem; color: var(--text); }
+  .oeld-item-s { font-size: 0.74rem; color: var(--muted); margin-top: 2px; }
+  .oeld-note { font-size: 0.76rem; color: var(--muted); min-height: 1.2em; margin: 8px 0 2px; }
+  .oeld-field { margin-top: 12px; }
+  .oeld-lbl { display: block; font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 4px; }
+  .oeld-who { max-height: 130px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; font-size: 0.82rem; color: var(--text); }
+  .oeld-chk { cursor: pointer; display: flex; align-items: center; gap: 6px; }
   .oeld-foot { display: flex; justify-content: flex-end; gap: 8px; padding: 16px 22px 18px; }
   .oeld-foot .btn { padding: 7px 18px; font-size: 0.82rem; }
   .oeld.danger .oeld-foot .btn-primary { background: var(--danger); color: #fff; }
@@ -6610,6 +6620,154 @@ Thank you</textarea>
     if (m.length <= 140 && m.indexOf('\n') < 0) { toast(m, k); return; }
     window.oelAlert(m, k);
   };
+  // ── Searchable pick list: oelPickRecord({title, sub, placeholder, search:async q=>[{label,sub,value}], minChars, empty}) -> Promise<value|null>
+  window.oelPickRecord = function(o) {
+    o = o || {};
+    return new Promise(function(resolve) {
+      if (!document.body) { resolve(null); return; }
+      var prevFocus = document.activeElement, minChars = o.minChars == null ? 2 : o.minChars;
+      var ov = el('div', 'oeld-ov'), box = el('div', 'oeld');
+      box.setAttribute('role', 'dialog'); box.setAttribute('aria-modal', 'true'); box.style.maxWidth = '520px';
+      box.appendChild(el('div', 'oeld-bar'));
+      var body = el('div', 'oeld-body');
+      body.appendChild(el('div', 'oeld-title', o.title || 'Pick one'));
+      if (o.sub) body.appendChild(el('div', 'oeld-sub', o.sub));
+      var input = el('input', 'oeld-input'); input.type = 'text'; input.placeholder = o.placeholder || 'Type to search…'; input.value = o.value || '';
+      body.appendChild(input);
+      var list = el('div', 'oeld-list'), note = el('div', 'oeld-note', minChars ? 'Type at least ' + minChars + ' characters to search.' : '');
+      body.appendChild(list); body.appendChild(note);
+      var foot = el('div', 'oeld-foot'), cancelBtn = el('button', 'btn btn-ghost', 'Cancel'); foot.appendChild(cancelBtn);
+      box.appendChild(body); box.appendChild(foot); ov.appendChild(box); document.body.appendChild(ov);
+      var items = [], sel = -1, seq = 0, timer = null, done = false;
+      function finish(v) { if (done) return; done = true; clearTimeout(timer); document.removeEventListener('keydown', onKey, true); ov.remove(); try { if (prevFocus && prevFocus.focus) prevFocus.focus(); } catch (e) {} resolve(v); }
+      function paint() {
+        list.innerHTML = '';
+        items.forEach(function(it, i) {
+          var row = el('div', 'oeld-item' + (i === sel ? ' sel' : ''));
+          row.appendChild(el('div', 'oeld-item-l', it.label));
+          if (it.sub) row.appendChild(el('div', 'oeld-item-s', it.sub));
+          row.onclick = function() { finish(it.value); };
+          row.onmouseenter = function() { sel = i; Array.prototype.forEach.call(list.children, function(c, j) { c.classList.toggle('sel', j === i); }); };
+          list.appendChild(row);
+        });
+      }
+      function run() {
+        var q = input.value.trim(), my = ++seq;
+        if (q.length < minChars) { items = []; sel = -1; paint(); note.textContent = minChars ? 'Type at least ' + minChars + ' characters to search.' : ''; return; }
+        note.textContent = 'Searching…';
+        Promise.resolve().then(function() { return o.search(q); }).then(function(r) {
+          if (my !== seq || done) return;
+          items = r || []; sel = items.length ? 0 : -1; paint();
+          note.textContent = items.length ? (o.footer ? o.footer(items) : '') : (o.empty || 'No matches.');
+        }).catch(function(e) { if (my !== seq || done) return; items = []; paint(); note.textContent = 'Search failed: ' + (e && e.message || e); });
+      }
+      function onKey(e) {
+        if (!document.body.contains(ov)) return;
+        if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); finish(null); }
+        else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+          e.preventDefault(); if (!items.length) return;
+          sel = (sel + (e.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length; paint();
+          var s = list.children[sel]; if (s && s.scrollIntoView) s.scrollIntoView({ block: 'nearest' });
+        } else if (e.key === 'Enter' && document.activeElement !== cancelBtn) { e.preventDefault(); e.stopPropagation(); if (sel >= 0 && items[sel]) finish(items[sel].value); else { clearTimeout(timer); run(); } }
+      }
+      document.addEventListener('keydown', onKey, true);
+      input.oninput = function() { clearTimeout(timer); timer = setTimeout(run, 250); };
+      cancelBtn.onclick = function() { finish(null); };
+      setTimeout(function() { input.focus(); input.select && input.select(); if (input.value) run(); }, 30);
+    });
+  };
+
+  // ── Schedule follow-up dialog (Odoo activities). One activity per ticked assignee, each verified by read-back.
+  // oelScheduleDialog({title, targets:[{model,id,name}], summary, note, days}) -> Promise<{ok, failed, created}|null>
+  window.oelScheduleDialog = function(o) {
+    o = o || {};
+    var targets = o.targets || [];
+    return new Promise(function(resolve) {
+      if (!document.body || !targets.length) { resolve(null); return; }
+      var prevFocus = document.activeElement;
+      var ov = el('div', 'oeld-ov'), box = el('div', 'oeld');
+      box.setAttribute('role', 'dialog'); box.setAttribute('aria-modal', 'true'); box.style.maxWidth = '480px';
+      box.appendChild(el('div', 'oeld-bar'));
+      var body = el('div', 'oeld-body');
+      body.appendChild(el('div', 'oeld-title', o.title || 'Schedule follow-up'));
+      body.appendChild(el('div', 'oeld-sub', targets.length === 1 ? targets[0].name : targets.length + ' records'));
+      function field(label, node) { var w = el('div', 'oeld-field'); w.appendChild(el('label', 'oeld-lbl', label)); w.appendChild(node); body.appendChild(w); return node; }
+      var typeSel = field('Type', el('select', 'oeld-input')); typeSel.style.marginTop = '0';
+      var summary = field('Summary', el('input', 'oeld-input')); summary.type = 'text'; summary.value = o.summary || 'Follow-up'; summary.style.marginTop = '0';
+      var due = field('Due date', el('input', 'oeld-input')); due.type = 'date'; due.style.marginTop = '0';
+      var d = new Date(Date.now() + (o.days || 1) * 86400000); due.value = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+      var note = field('Note (optional)', el('textarea', 'oeld-input')); note.value = o.note || ''; note.style.marginTop = '0'; note.style.minHeight = '64px';
+      var who = el('div', 'oeld-who', 'Loading users…'); field('Assign to', who);
+      var status = el('div', 'oeld-note', ''); body.appendChild(status);
+      var foot = el('div', 'oeld-foot'), cancelBtn = el('button', 'btn btn-ghost', 'Cancel'), okBtn = el('button', 'btn btn-primary', 'Schedule');
+      foot.appendChild(cancelBtn); foot.appendChild(okBtn);
+      box.appendChild(body); box.appendChild(foot); ov.appendChild(box); document.body.appendChild(ov);
+      var done = false, busy = false, users = [];
+      function finish(v) { if (done) return; done = true; document.removeEventListener('keydown', onKey, true); ov.remove(); try { if (prevFocus && prevFocus.focus) prevFocus.focus(); } catch (e) {} resolve(v); }
+      function onKey(e) {
+        if (!document.body.contains(ov)) return;
+        if (e.key === 'Escape' && !busy) { e.preventDefault(); e.stopPropagation(); finish(null); }
+        else if (e.key === 'Enter' && (e.ctrlKey || e.metaKey) && !busy) { e.preventDefault(); e.stopPropagation(); go(); }
+      }
+      document.addEventListener('keydown', onKey, true);
+      cancelBtn.onclick = function() { if (!busy) finish(null); };
+      okBtn.onclick = go;
+      var uid = (typeof odooUid !== 'undefined') ? odooUid : null;
+      Promise.all([
+        odooExecute(uid, 'mail.activity.type', 'search_read', [[['res_model', '=', false]]], { fields: ['id', 'name', 'category'], limit: 50 }),
+        odooExecute(uid, 'res.users', 'search_read', [[['active', '=', true], ['share', '=', false]]], { fields: ['id', 'name'], limit: 100, order: 'name asc' })
+      ]).then(function(r) {
+        var types = r[0] || [];
+        if (!types.length) typeSel.appendChild(new Option('Default', ''));
+        types.forEach(function(t) { typeSel.appendChild(new Option(t.name, t.id)); });
+        var def = types.find(function(t) { return t.category === 'default'; }) || types[0]; if (def) typeSel.value = String(def.id);
+        users = (r[1] || []).slice().sort(function(a, b) { return (a.id === uid ? -1 : 0) - (b.id === uid ? -1 : 0) || a.name.localeCompare(b.name); });
+        who.innerHTML = '';
+        users.forEach(function(u) {
+          var lb = el('label', 'oeld-chk'), cb = el('input'); cb.type = 'checkbox'; cb.value = u.id; cb.checked = (u.id === uid);
+          lb.appendChild(cb); lb.appendChild(document.createTextNode(' ' + u.name + (u.id === uid ? ' (me)' : ''))); who.appendChild(lb);
+        });
+        if (!users.length) who.textContent = 'No users found.';
+        summary.focus(); summary.select();
+      }).catch(function(e) { who.textContent = 'Could not load Odoo options: ' + (e && e.message || e); okBtn.disabled = true; });
+
+      async function go() {
+        if (busy) return;
+        var assignees = Array.prototype.map.call(who.querySelectorAll('input:checked'), function(c) { return parseInt(c.value, 10); });
+        if (!assignees.length) { status.style.color = 'var(--warning)'; status.textContent = 'Pick at least one person.'; return; }
+        if (!due.value) { status.style.color = 'var(--warning)'; status.textContent = 'Pick a due date.'; return; }
+        if (!summary.value.trim()) { status.style.color = 'var(--warning)'; status.textContent = 'Add a summary.'; return; }
+        busy = true; okBtn.disabled = cancelBtn.disabled = true; okBtn.textContent = 'Scheduling…';
+        var safe = function(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); };
+        var created = [], failed = 0, total = targets.length * assignees.length, n = 0, lastErr = '';
+        for (var ti = 0; ti < targets.length; ti++) for (var ai = 0; ai < assignees.length; ai++) {
+          n++; status.style.color = 'var(--muted)'; status.textContent = 'Scheduling ' + n + ' of ' + total + '…';
+          try {
+            var vals = { res_model: targets[ti].model, res_id: targets[ti].id, summary: summary.value.trim(), date_deadline: due.value, user_id: assignees[ai] };
+            if (typeSel.value) vals.activity_type_id = parseInt(typeSel.value, 10);
+            if (note.value.trim()) vals.note = safe(note.value.trim()).replace(/\n/g, '<br>');
+            var id = await odooExecute(uid, 'mail.activity', 'create', [vals]);
+            if (Array.isArray(id)) id = id[0];
+            if (!id) throw new Error('Odoo returned no id');
+            created.push({ id: id, user: assignees[ai], date: due.value });
+          } catch (e) { failed++; lastErr = (e && e.message) || String(e); }
+        }
+        var verified = 0;
+        if (created.length) {
+          try {
+            var rb = await odooExecute(uid, 'mail.activity', 'read', [created.map(function(c) { return c.id; })], { fields: ['user_id', 'date_deadline'] });
+            verified = (rb || []).filter(function(r) { var c = created.find(function(x) { return x.id === r.id; }); return c && r.date_deadline === c.date && (Array.isArray(r.user_id) ? r.user_id[0] : r.user_id) === c.user; }).length;
+          } catch (e) { verified = 0; }
+        }
+        var result = { ok: created.length, failed: failed, verified: verified, created: created };
+        finish(result);
+        if (!created.length) toast('Not scheduled: ' + (lastErr || 'Odoo rejected the request'), 'error');
+        else if (failed) toast(created.length + ' scheduled, ' + failed + ' failed (' + lastErr + ')', 'warn');
+        else if (verified < created.length) toast(created.length + ' scheduled, but could not confirm all in Odoo — check the record', 'warn');
+        else toast(created.length + ' follow-up' + (created.length !== 1 ? 's' : '') + ' scheduled and confirmed in Odoo', 'success');
+      }
+    });
+  };
   window._oelNative = { alert: nativeAlert, confirm: nativeConfirm, prompt: nativePrompt };
 })();
 </script>
@@ -6808,23 +6966,8 @@ async function lftLoad() {
 
 async function lftSchedule(leadId, leadName) {
   if (!odooUid || !leadId) return;
-  const types = await loadActivityTypes().catch(() => []);
-  const typeId = types.length ? types[0].id : null;
-  if (!typeId) { alert('Could not load activity types'); return; }
-  const note = await oelPrompt(`Schedule follow-up for "${leadName}"?
-Note (optional):`);
-  if (note === null) return;
-  try {
-    await odooExecute(odooUid, 'mail.activity', 'create', [{
-      res_model: 'crm.lead', res_id: leadId,
-      activity_type_id: typeId,
-      summary: 'Follow-up',
-      note: note || '',
-      date_deadline: new Date(Date.now() + 86400000).toISOString().split('T')[0],
-      user_id: odooUid,
-    }]);
-    lftLoad();
-  } catch(e) { alert('Error scheduling: ' + e.message); }
+  const r = await oelScheduleDialog({ title: 'Schedule follow-up', targets: [{ model: 'crm.lead', id: leadId, name: leadName }], summary: 'Follow-up' });
+  if (r && r.ok) lftLoad();
 }
 
 
@@ -7050,47 +7193,22 @@ document.addEventListener('click', e => {
 // ── Add product line ──────────────────────────────────────────────────────────
 async function qbAddLine() {
   if (!odooUid) { alert('Connect to Odoo first'); return; }
-  const q = await oelPrompt('Search rental product name:');
-  if (!q) return;
-  const statusEl = document.getElementById('qb-status');
-  statusEl.style.color = 'var(--muted)';
-  statusEl.textContent = 'Searching products…';
-  try {
-    // Search rental products only (rent_ok=True)
-    const products = await odooExecute(odooUid,'product.product','search_read',
-      [[['name','ilike',q],['active','=',true],['rent_ok','=',true]]],
-      {fields:['id','name','list_price'],limit:10});
-    statusEl.textContent = '';
-    if (!products || !products.length) {
-      // Fallback: search all products if no rentals found
-      const all = await odooExecute(odooUid,'product.product','search_read',
-        [[['name','ilike',q],['active','=',true]]],
-        {fields:['id','name','list_price'],limit:10});
-      if (!all || !all.length) { statusEl.style.color='var(--warning)'; statusEl.textContent='No products found for "'+q+'"'; return; }
-      statusEl.style.color = 'var(--warning)';
-      statusEl.textContent = 'Note: no rental-enabled products found — showing all products';
-      const choiceList = all.map((p,i) => (i+1)+'. '+p.name).join('\n');
-      const choice = await oelPrompt('Pick a product (enter number):\n'+choiceList);
-      if (!choice) { statusEl.textContent = ''; return; }
-      const picked = all[parseInt(choice)-1];
-      if (!picked) return;
-      _qbLines.push({ productId: picked.id, productName: picked.name, qty: 1 });
-      qbRenderLines(); return;
+  let usedFallback = false;
+  const picked = await oelPickRecord({
+    title: 'Add a rental product', placeholder: 'Search rental products by name…', minChars: 2,
+    empty: 'No products found.',
+    footer: () => usedFallback ? 'No rental-enabled products matched — showing all products.' : '',
+    search: async (q) => {
+      const kw = { fields: ['id', 'name', 'list_price'], limit: 15, order: 'name asc' };
+      let rows = await odooExecute(odooUid, 'product.product', 'search_read', [[['name', 'ilike', q], ['active', '=', true], ['rent_ok', '=', true]]], kw);
+      usedFallback = false;
+      if (!rows || !rows.length) { rows = await odooExecute(odooUid, 'product.product', 'search_read', [[['name', 'ilike', q], ['active', '=', true]]], kw); usedFallback = !!(rows && rows.length); }
+      return (rows || []).map(p => ({ label: p.name, sub: p.list_price ? '$' + Number(p.list_price).toFixed(2) : '', value: p }));
     }
-    let picked;
-    if (products.length === 1) {
-      picked = products[0];
-    } else {
-      const choiceList2 = products.map((p,i) => (i+1)+'. '+p.name).join('\n');
-      const choice2 = await oelPrompt('Pick a rental product (enter number):\n'+choiceList2);
-      if (!choice2) return;
-      picked = products[parseInt(choice2)-1];
-      if (!picked) return;
-    }
-    _qbLines.push({ productId: picked.id, productName: picked.name, qty: 1 });
-    qbRenderLines();
-    statusEl.textContent = '';
-  } catch(e) { statusEl.style.color='var(--danger)'; statusEl.textContent='Error: '+e.message; }
+  });
+  if (!picked) return;
+  _qbLines.push({ productId: picked.id, productName: picked.name, qty: 1 });
+  qbRenderLines();
 }
 
 // ── Odoo quotation templates ──────────────────────────────────────────────────
@@ -11617,18 +11735,8 @@ async function oelSubmitNoteModal() {
 async function oelScheduleActivityForContact(idx) {
   const c = _oelLastRecords.contacts[idx];
   if (!c || !odooUid) return;
-  const summary = await oelPrompt('Activity for ' + c.name + ':', 'Follow up with ' + c.name);
-  if (!summary || !summary.trim()) return;
-  try {
-    if (typeof loadActivityTypes === 'function') await loadActivityTypes();
-    if (!_activityTypes || !_activityTypes.length) throw new Error('No activity types found in Odoo');
-    const deadline = new Date(Date.now() + 86400000).toISOString().split('T')[0];
-    await odooExecute(odooUid, 'mail.activity', 'create', [{
-      res_model: 'res.partner', res_id: c.id, activity_type_id: _activityTypes[0].id,
-      summary: summary.trim(), date_deadline: deadline, user_id: odooUid
-    }]);
-    oelCloseNavSearch();
-  } catch(e) { alert('Error scheduling activity: ' + e.message); }
+  const r = await oelScheduleDialog({ title: 'Schedule activity', targets: [{ model: 'res.partner', id: c.id, name: c.name }], summary: 'Follow up with ' + c.name });
+  if (r && r.ok) oelCloseNavSearch();
 }
 
 function oelCreateQuoteForContact(idx) {
@@ -11972,45 +12080,11 @@ async function cuBulkSchedule() {
   const selected = _cuLeads.filter(l => l._selected);
   if (!selected.length) { alert('Select contacts first'); return; }
   if (!odooUid) { alert('Connect to Odoo first'); return; }
-
-  const note = await oelPrompt('Schedule follow-up for ' + selected.length + ' contact' + (selected.length!==1?'s':'') + '.\n\nNote (optional):');
-  if (note === null) return; // cancelled
-
-  const types = await loadActivityTypes().catch(() => []);
-  const typeId = types.length ? types[0].id : null;
-  if (!typeId) { alert('Could not load activity types from Odoo'); return; }
-
-  const statusEl = document.getElementById('cu-status');
-  if (statusEl) { statusEl.style.color='var(--muted)'; statusEl.textContent='Scheduling activities…'; }
-
-  let done = 0;
-  let failed = 0;
-  const deadline = new Date(Date.now() + 7*86400000).toISOString().split('T')[0]; // 1 week out
-
-  for (const lead of selected) {
-    try {
-      const model = lead._isContact ? 'res.partner' : 'crm.lead';
-      await odooExecute(odooUid, 'mail.activity', 'create', [{
-        res_model:        model,
-        res_id:           lead.id,
-        activity_type_id: typeId,
-        summary:          'Re-engagement follow-up',
-        note:             note || '',
-        user_id:          odooUid,
-        date_deadline:    deadline,
-      }]);
-      done++;
-    } catch(e) {
-      failed++;
-      console.warn('Bulk schedule failed for', lead.name, e.message);
-    }
-  }
-
-  if (statusEl) {
-    statusEl.style.color = failed ? 'var(--warning)' : 'var(--success)';
-    statusEl.textContent = '\u2713 ' + done + ' activit' + (done!==1?'ies':'y') + ' scheduled' + (failed ? ' (' + failed + ' failed)' : '');
-    setTimeout(()=>{statusEl.textContent='';statusEl.style.color='var(--muted)';}, 3500);
-  }
+  await oelScheduleDialog({
+    title: 'Schedule follow-up for ' + selected.length + ' contact' + (selected.length !== 1 ? 's' : ''),
+    targets: selected.map(l => ({ model: l._isContact ? 'res.partner' : 'crm.lead', id: l.id, name: l.name })),
+    summary: 'Re-engagement follow-up', days: 7
+  });
 }
 
 
@@ -14782,21 +14856,15 @@ async function docLibAttachToOdoo(idx) {
   docLibLoad();
   const doc = _docLibrary[idx];
   if (!doc) return;
-  const q = await oelPrompt('Search for an Odoo contact to attach to:');
-  if (!q) return;
-  try {
-    const partners = await odooExecute(odooUid, 'res.partner', 'search_read',
-      [[['name','ilike',q],['active','=',true]]],
-      { fields: ['id','name'], limit: 6 }
-    );
-    if (!partners || !partners.length) { alert('No contacts found for "' + q + '"'); return; }
-    let picked = partners[0];
-    if (partners.length > 1) {
-      const list = partners.map(function(p,i){ return (i+1) + '. ' + p.name; }).join('\n');
-      const choice = parseInt(await oelPrompt('Pick:\n' + list)) - 1;
-      if (isNaN(choice)) return;
-      picked = partners[choice];
+  const picked = await oelPickRecord({
+    title: 'Attach "' + doc.name + '" to a contact', placeholder: 'Search Odoo contacts…', minChars: 2, empty: 'No contacts found.',
+    search: async (q) => {
+      const rows = await odooExecute(odooUid, 'res.partner', 'search_read', [[['name', 'ilike', q], ['active', '=', true]]], { fields: ['id', 'name', 'email'], limit: 15, order: 'name asc' });
+      return (rows || []).map(p => ({ label: p.name, sub: p.email || '', value: p }));
     }
+  });
+  if (!picked) return;
+  try {
     // Extract base64 content (strip data:...;base64, prefix)
     const fileBlob = await _docLibBlob(doc);
     if (!fileBlob) { alert('File data not found for "' + doc.name + '"'); return; }
@@ -14921,26 +14989,15 @@ function qsbPushLine(tmplId, name, qty) {
 
 async function qsbAddLine() {
   if (!odooUid) { alert('Connect to Odoo first'); return; }
-  const q = await oelPrompt('Search rental product:');
-  if (!q) return;
-  try {
-    const products = await odooExecute(odooUid, 'product.template', 'search_read',
-      [[['name','ilike',q],['active','=',true]]],
-      { fields: ['id','name','list_price'], limit: 10, order: 'name asc' }
-    );
-    if (!products || !products.length) { alert('No products found for "' + q + '"'); return; }
-    let picked;
-    if (products.length === 1) {
-      picked = products[0];
-    } else {
-      const list = products.map(function(p,i){ return (i+1) + '. ' + p.name + (p.list_price ? ' ($' + p.list_price.toFixed(2) + ')' : ''); }).join('\n');
-      const choice = await oelPrompt('Pick a product (enter number):\n' + list);
-      if (!choice) return;
-      picked = products[parseInt(choice)-1];
-      if (!picked) return;
+  const picked = await oelPickRecord({
+    title: 'Add a product', placeholder: 'Search products by name…', minChars: 2, empty: 'No products found.',
+    search: async (q) => {
+      const rows = await odooExecute(odooUid, 'product.template', 'search_read', [[['name', 'ilike', q], ['active', '=', true]]], { fields: ['id', 'name', 'list_price'], limit: 15, order: 'name asc' });
+      return (rows || []).map(p => ({ label: p.name, sub: p.list_price ? '$' + Number(p.list_price).toFixed(2) : '', value: p }));
     }
-    qsbPushLine(picked.id, picked.name, 1);
-  } catch(e) { alert('Error: ' + e.message); }
+  });
+  if (!picked) return;
+  qsbPushLine(picked.id, picked.name, 1);
 }
 
 function qsbOpenCatalog() {
@@ -29568,25 +29625,9 @@ async function cuLogNote(i) {
 
 async function cuScheduleActivity(i) {
   const lead = _cuLeads[i];
-  if (!odooUid) return;
-  const types = await loadActivityTypes().catch(() => []);
-  const typeId = types.length ? types[0].id : null;
-  if (!typeId) { alert('Could not load activity types'); return; }
-  const note = await oelPrompt(`Schedule follow-up for "${lead.name}"?\nNote:`);
-  if (note === null) return;
-  try {
-    const actModel = lead._isContact ? 'res.partner' : 'crm.lead';
-    await odooExecute(odooUid, 'mail.activity', 'create', [{
-      res_model: actModel, res_id: lead.id,
-      activity_type_id: typeId, summary: 'Re-engagement follow-up',
-      note: note || '', user_id: odooUid,
-      date_deadline: new Date(Date.now() + 86400000).toISOString().split('T')[0],
-    }]);
-    _cuLeads[i]._status = 'scheduled';
-    cuRenderResults();
-    const s = document.getElementById('cu-status');
-    if (s) { s.style.color='var(--success)'; s.textContent='Activity scheduled in Odoo'; setTimeout(()=>s.textContent='',2500); }
-  } catch(e) { alert('Schedule error: ' + e.message); }
+  if (!odooUid || !lead) return;
+  const r = await oelScheduleDialog({ title: 'Schedule follow-up', targets: [{ model: lead._isContact ? 'res.partner' : 'crm.lead', id: lead.id, name: lead.name }], summary: 'Re-engagement follow-up' });
+  if (r && r.ok) { _cuLeads[i]._status = 'scheduled'; cuRenderResults(); }
 }
 
 // ── Template management ───────────────────────────────────────────────────────
